@@ -1,0 +1,21 @@
+# Ambiente local. El almacenamiento S3 local (MinIO) se agrega en INC-07, cuando se implementen los archivos.
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: sublimaciones
+      POSTGRES_PASSWORD: sublimaciones
+      POSTGRES_DB: sublimaciones
+    ports:
+      - "5433:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+      - ./docker/postgres/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sublimaciones -d sublimaciones"]
+      interval: 2s
+      timeout: 3s
+      retries: 15
+
+volumes:
+  db-data:

@@ -1,0 +1,450 @@
+// Modelo de datos. Las entidades se agregan en cada incremento (especificación, sección 10).
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Rol {
+  CLIENTE
+  ADMIN
+}
+
+model Usuario {
+  id                String    @id @default(uuid()) @db.Uuid
+  /// Normalizado: sin espacios y en minúsculas.
+  email             String    @unique
+  hashContrasena    String    @map("hash_contrasena")
+  rol               Rol       @default(CLIENTE)
+  nombre            String
+  telefono          String?
+  emailVerificadoEn DateTime? @map("email_verificado_en") @db.Timestamptz
+  bloqueadoEn       DateTime? @map("bloqueado_en") @db.Timestamptz
+  creadoEn          DateTime  @default(now()) @map("creado_en") @db.Timestamptz
+  actualizadoEn     DateTime  @updatedAt @map("actualizado_en") @db.Timestamptz
+
+  sesiones Sesion[]
+  tokens   TokenUsuario[]
+  carrito  Carrito?
+  pedidos  Pedido[]
+
+  @@map("usuario")
+}
+
+/// Sesión en servidor (especificación, sección 17). Se guarda el hash del token, nunca el token.
+model Sesion {
+  id        String   @id @default(uuid()) @db.Uuid
+  usuarioId String   @map("usuario_id") @db.Uuid
+  hashToken String   @unique @map("hash_token")
+  expiraEn  DateTime @map("expira_en") @db.Timestamptz
+  creadoEn  DateTime @default(now()) @map("creado_en") @db.Timestamptz
+
+  usuario Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@index([usuarioId])
+  @@map("sesion")
+}
+
+enum TipoToken {
+  VERIFICACION_EMAIL
+  RESTABLECER_CONTRASENA
+}
+
+/// Token de un solo uso con vencimiento, guardado como hash (RF-01, RF-02).
+model TokenUsuario {
+  id        String    @id @default(uuid()) @db.Uuid
+  usuarioId String    @map("usuario_id") @db.Uuid
+  tipo      TipoToken
+  hashToken String    @unique @map("hash_token")
+  expiraEn  DateTime  @map("expira_en") @db.Timestamptz
+  usadoEn   DateTime? @map("usado_en") @db.Timestamptz
+  creadoEn  DateTime  @default(now()) @map("creado_en") @db.Timestamptz
+
+  usuario Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@index([usuarioId, tipo])
+  @@map("token_usuario")
+}
+
+/// Registro de acciones relevantes. Solo inserción; nunca contiene secretos.
+model EventoAuditoria {
+  id        String   @id @default(uuid()) @db.Uuid
+  actorId   String?  @map("actor_id") @db.Uuid
+  accion    String
+  entidad   String
+  entidadId String?  @map("entidad_id")
+  datos     Json?
+  ip        String?
+  creadoEn  DateTime @default(now()) @map("creado_en") @db.Timestamptz
+
+  @@index([entidad, entidadId])
+  @@index([actorId])
+  @@map("evento_auditoria")
+}
+
+/// Contador por clave y ventana de tiempo para limitar solicitudes abusivas.
+model LimiteSolicitud {
+  clave         String
+  ventanaInicio DateTime @map("ventana_inicio") @db.Timestamptz
+  cantidad      Int
+
+  @@id([clave, ventanaInicio])
+  @@map("limite_solicitud")
+}
+
+enum TipoProducto {
+  ESTANDAR
+  PERSONALIZABLE
+}
+
+model Categoria {
+  id            String   @id @default(uuid()) @db.Uuid
+  nombre        String
+  /// Se genera al crearla y no cambia: es parte de URLs públicas.
+  slug          String   @unique
+  activa        Boolean  @default(true)
+  creadoEn      DateTime @default(now()) @map("creado_en") @db.Timestamptz
+  actualizadoEn DateTime @updatedAt @map("actualizado_en") @db.Timestamptz
+
+  productos Producto[]
+
+  @@map("categoria")
+}
+
+/// Los productos no se borran: se desactivan (RF-07).
+model Producto {
+  id            String       @id @default(uuid()) @db.Uuid
+  nombre        String
+  /// Se genera al crearlo y no cambia: es la URL pública del producto.
+  slug          String       @unique
+  descripcion   String       @default("")
+  /// No cambia después de crearlo: define si las variantes llevan precio.
+  tipo          TipoProducto
+  categoriaId   String       @map("categoria_id") @db.Uuid
+  activo        Boolean      @default(true)
+  creadoEn      DateTime     @default(now()) @map("creado_en") @db.Timestamptz
+  actualizadoEn DateTime     @updatedAt @map("actualizado_en") @db.Timestamptz
+
+  categoria Categoria  @relation(fields: [categoriaId], references: [id])
+  variantes Variante[]
+
+  @@index([categoriaId])
+  @@map("producto")
+}
+
+/// Disponible = stock físico − stock reservado (sección 14.1); se calcula, no se guarda.
+model Variante {
+  id              String   @id @default(uuid()) @db.Uuid
+  productoId      String   @map("producto_id") @db.Uuid
+  sku             String   @unique
+  material        String?
+  medida          String?
+  color           String?
+  talle           String?
+  /// Precio final en centavos de ARS, impuestos incluidos (RN-26). Nulo en personalizables hasta definir D-10.
+  precioCentavos  Int?     @map("precio_centavos")
+  activa          Boolean  @default(true)
+  /// Unidades en el local.
+  stockFisico     Int      @default(0) @map("stock_fisico")
+  /// Unidades retenidas por pedidos (suma de retenciones activas).
+  stockReservado  Int      @default(0) @map("stock_reservado")
+  /// Alerta de stock bajo cuando lo disponible llega a este valor (RF-11).
+  umbralStockBajo Int?     @map("umbral_stock_bajo")
+  creadoEn        DateTime @default(now()) @map("creado_en") @db.Timestamptz
+  actualizadoEn   DateTime @updatedAt @map("actualizado_en") @db.Timestamptz
+
+  producto     Producto          @relation(fields: [productoId], references: [id])
+  movimientos  MovimientoStock[]
+  retenciones  RetencionStock[]
+  itemsCarrito ItemCarrito[]
+  itemsPedido  ItemPedido[]
+
+  @@index([productoId])
+  @@map("variante")
+}
+
+/// Insumos y bases en blanco (RF-09). Las cantidades son enteras: la unidad se elige para que alcance
+/// (por ejemplo cm² o ml). La reserva y el consumo automáticos dependen de D-09 y D-14.
+model Material {
+  id              String   @id @default(uuid()) @db.Uuid
+  nombre          String
+  unidad          String
+  stockFisico     Int      @default(0) @map("stock_fisico")
+  stockReservado  Int      @default(0) @map("stock_reservado")
+  umbralStockBajo Int?     @map("umbral_stock_bajo")
+  activo          Boolean  @default(true)
+  creadoEn        DateTime @default(now()) @map("creado_en") @db.Timestamptz
+  actualizadoEn   DateTime @updatedAt @map("actualizado_en") @db.Timestamptz
+
+  movimientos MovimientoStock[]
+
+  @@map("material")
+}
+
+enum EstadoRetencion {
+  ACTIVA
+  CONSUMIDA
+  LIBERADA
+}
+
+enum MotivoLiberacion {
+  CANCELACION
+  VENCIMIENTO_PAGO_ONLINE
+  VENCIMIENTO_RESERVA
+}
+
+/// Unidades de una variante asignadas a un pedido (sección 14.3).
+model RetencionStock {
+  id               String            @id @default(uuid()) @db.Uuid
+  pedidoId         String            @map("pedido_id") @db.Uuid
+  varianteId       String            @map("variante_id") @db.Uuid
+  cantidad         Int
+  estado           EstadoRetencion   @default(ACTIVA)
+  motivoLiberacion MotivoLiberacion? @map("motivo_liberacion")
+  cerradaEn        DateTime?         @map("cerrada_en") @db.Timestamptz
+  creadoEn         DateTime          @default(now()) @map("creado_en") @db.Timestamptz
+
+  variante    Variante          @relation(fields: [varianteId], references: [id])
+  pedido      Pedido            @relation(fields: [pedidoId], references: [id])
+  movimientos MovimientoStock[]
+
+  @@index([pedidoId])
+  @@index([varianteId, estado])
+  @@map("retencion_stock")
+}
+
+enum TipoMovimientoStock {
+  INGRESO
+  AJUSTE
+  RETENCION
+  LIBERACION
+  CONSUMO
+}
+
+/// Historial de stock, solo inserción (RF-10). La suma de los deltas reproduce el stock actual.
+model MovimientoStock {
+  id             String              @id @default(uuid()) @db.Uuid
+  tipo           TipoMovimientoStock
+  varianteId     String?             @map("variante_id") @db.Uuid
+  materialId     String?             @map("material_id") @db.Uuid
+  deltaFisico    Int                 @map("delta_fisico")
+  deltaReservado Int                 @map("delta_reservado")
+  retencionId    String?             @map("retencion_id") @db.Uuid
+  motivo         String?
+  autorId        String?             @map("autor_id") @db.Uuid
+  creadoEn       DateTime            @default(now()) @map("creado_en") @db.Timestamptz
+
+  variante  Variante?       @relation(fields: [varianteId], references: [id])
+  material  Material?       @relation(fields: [materialId], references: [id])
+  retencion RetencionStock? @relation(fields: [retencionId], references: [id])
+
+  /// Una retención se retiene, libera o consume una sola vez (sección 14.4).
+  @@unique([retencionId, tipo])
+  @@index([varianteId, creadoEn])
+  @@index([materialId, creadoEn])
+  @@map("movimiento_stock")
+}
+
+/// Carrito de un cliente (RF-12). No retiene stock: la disponibilidad se vuelve a validar al confirmar.
+model Carrito {
+  id            String   @id @default(uuid()) @db.Uuid
+  usuarioId     String   @unique @map("usuario_id") @db.Uuid
+  creadoEn      DateTime @default(now()) @map("creado_en") @db.Timestamptz
+  actualizadoEn DateTime @updatedAt @map("actualizado_en") @db.Timestamptz
+
+  usuario Usuario       @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  items   ItemCarrito[]
+
+  @@map("carrito")
+}
+
+model ItemCarrito {
+  id                      String   @id @default(uuid()) @db.Uuid
+  carritoId               String   @map("carrito_id") @db.Uuid
+  varianteId              String   @map("variante_id") @db.Uuid
+  cantidad                Int
+  /// Precio cuando se agregó o cuando el cliente aceptó el cambio; sirve para avisar si cambió (RF-13).
+  precioAlAgregarCentavos Int      @map("precio_al_agregar_centavos")
+  creadoEn                DateTime @default(now()) @map("creado_en") @db.Timestamptz
+  actualizadoEn           DateTime @updatedAt @map("actualizado_en") @db.Timestamptz
+
+  carrito  Carrito  @relation(fields: [carritoId], references: [id], onDelete: Cascade)
+  variante Variante @relation(fields: [varianteId], references: [id])
+
+  @@unique([carritoId, varianteId])
+  @@map("item_carrito")
+}
+
+enum TipoPedido {
+  ESTANDAR
+  PERSONALIZADO
+}
+
+/// Estados de la sección 9.2. Las transiciones válidas están en `order-transitions.ts`.
+enum EstadoPedido {
+  EN_DEFINICION
+  PENDIENTE_PAGO
+  RESERVADO
+  CONFIRMADO
+  EN_PRODUCCION
+  LISTO_PARA_RETIRO
+  DESPACHADO
+  ENTREGADO
+  CANCELADO
+  VENCIDO
+}
+
+enum ModalidadCierre {
+  ONLINE
+  EFECTIVO
+}
+
+enum ModalidadEntrega {
+  RETIRO
+  ENVIO
+}
+
+model Pedido {
+  id                         String           @id @default(uuid()) @db.Uuid
+  /// Número legible para el cliente y la tienda.
+  numero                     Int              @unique @default(autoincrement())
+  clienteId                  String           @map("cliente_id") @db.Uuid
+  tipo                       TipoPedido       @default(ESTANDAR)
+  estado                     EstadoPedido
+  modalidadCierre            ModalidadCierre  @map("modalidad_cierre")
+  modalidadEntrega           ModalidadEntrega @map("modalidad_entrega")
+  /// Plazo para pagar (RN-06, RN-22).
+  venceEn                    DateTime?        @map("vence_en") @db.Timestamptz
+  moneda                     String           @default("ARS")
+  subtotalProductosCentavos  Int              @map("subtotal_productos_centavos")
+  costoEnvioCentavos         Int              @default(0) @map("costo_envio_centavos")
+  totalCentavos              Int              @map("total_centavos")
+  /// Porcentaje del cargo de cancelación vigente al confirmar (RN-15, R-15).
+  porcentajeCargoCancelacion Int?             @map("porcentaje_cargo_cancelacion")
+  /// Clave del cliente para no crear dos pedidos por el mismo intento (RF-21).
+  claveIdempotencia          String           @map("clave_idempotencia")
+  creadoEn                   DateTime         @default(now()) @map("creado_en") @db.Timestamptz
+  actualizadoEn              DateTime         @updatedAt @map("actualizado_en") @db.Timestamptz
+
+  cliente     Usuario                 @relation(fields: [clienteId], references: [id])
+  items       ItemPedido[]
+  pagos       Pago[]
+  historial   HistorialEstadoPedido[]
+  retenciones RetencionStock[]
+
+  @@unique([clienteId, claveIdempotencia])
+  @@index([estado, venceEn])
+  @@index([clienteId, creadoEn])
+  @@map("pedido")
+}
+
+/// Descripción y precio congelados al confirmar (RN-27).
+model ItemPedido {
+  id                     String @id @default(uuid()) @db.Uuid
+  pedidoId               String @map("pedido_id") @db.Uuid
+  varianteId             String @map("variante_id") @db.Uuid
+  descripcion            String
+  precioUnitarioCentavos Int    @map("precio_unitario_centavos")
+  cantidad               Int
+
+  pedido   Pedido   @relation(fields: [pedidoId], references: [id], onDelete: Cascade)
+  variante Variante @relation(fields: [varianteId], references: [id])
+
+  @@index([pedidoId])
+  @@map("item_pedido")
+}
+
+enum ConceptoPago {
+  TOTAL
+  SENA
+  SALDO
+}
+
+enum MedioPago {
+  ONLINE
+  EFECTIVO
+}
+
+enum EstadoPago {
+  APROBADO
+  RECHAZADO
+  ERROR
+}
+
+/// Cada intento de pago queda registrado, también los rechazados (sección 9.6).
+model Pago {
+  id                String       @id @default(uuid()) @db.Uuid
+  pedidoId          String       @map("pedido_id") @db.Uuid
+  concepto          ConceptoPago
+  medio             MedioPago
+  /// `SIMULADO` en los pagos online de la v1; nulo en el efectivo.
+  proveedor         String?
+  simulado          Boolean
+  estado            EstadoPago
+  importeCentavos   Int          @map("importe_centavos")
+  referenciaExterna String?      @map("referencia_externa")
+  registradoPorId   String?      @map("registrado_por_id") @db.Uuid
+  creadoEn          DateTime     @default(now()) @map("creado_en") @db.Timestamptz
+
+  pedido Pedido @relation(fields: [pedidoId], references: [id])
+
+  @@index([pedidoId])
+  @@map("pago")
+}
+
+model HistorialEstadoPedido {
+  id             String        @id @default(uuid()) @db.Uuid
+  pedidoId       String        @map("pedido_id") @db.Uuid
+  estadoAnterior EstadoPedido? @map("estado_anterior")
+  estadoNuevo    EstadoPedido  @map("estado_nuevo")
+  actorId        String?       @map("actor_id") @db.Uuid
+  motivo         String?
+  creadoEn       DateTime      @default(now()) @map("creado_en") @db.Timestamptz
+
+  pedido Pedido @relation(fields: [pedidoId], references: [id])
+
+  @@index([pedidoId, creadoEn])
+  @@map("historial_estado_pedido")
+}
+
+/// Notificación dentro del sitio (RF-33).
+model Notificacion {
+  id        String    @id @default(uuid()) @db.Uuid
+  usuarioId String    @map("usuario_id") @db.Uuid
+  tipo      String
+  titulo    String
+  mensaje   String
+  leidaEn   DateTime? @map("leida_en") @db.Timestamptz
+  creadoEn  DateTime  @default(now()) @map("creado_en") @db.Timestamptz
+
+  @@index([usuarioId, creadoEn])
+  @@map("notificacion")
+}
+
+enum EstadoSalida {
+  PENDIENTE
+  ENVIADA
+  FALLIDA
+}
+
+/// Cola de correos (outbox, sección 16.3): se escribe en la misma transacción que la operación.
+/// El envío y los reintentos se implementan en INC-10.1.
+model SalidaNotificacion {
+  id               String       @id @default(uuid()) @db.Uuid
+  tipo             String
+  destinatario     String
+  asunto           String
+  cuerpo           String
+  estado           EstadoSalida @default(PENDIENTE)
+  intentos         Int          @default(0)
+  proximoIntentoEn DateTime     @default(now()) @map("proximo_intento_en") @db.Timestamptz
+  error            String?
+  creadoEn         DateTime     @default(now()) @map("creado_en") @db.Timestamptz
+
+  @@index([estado, proximoIntentoEn])
+  @@map("salida_notificacion")
+}

@@ -1,0 +1,2 @@
+-- Migración inicial: deja armado el historial de migraciones.
+-- Las tablas del dominio se agregan desde INC-02 (especificación, sección 10).
