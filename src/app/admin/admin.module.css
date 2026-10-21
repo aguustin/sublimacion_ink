@@ -1,0 +1,232 @@
+/* Panel de INK: tokens de marca, barra lateral y área de contenido. */
+
+/* El panel es su propio layout raíz: sin el margen por defecto del navegador. */
+.body {
+  margin: 0;
+  background: #fbf8f2;
+}
+
+.shell {
+  --ink-yellow: #f5d627;
+  --ink-yellow-soft: #fbeb93;
+  --ink-black: #1c1b1b;
+  --ink-paper: #fbf8f2;
+  --ink-cream: #f3ecdc;
+  --ink-line: #e5dcc8;
+  --ink-muted: #625a4f;
+  --ink-success: #2c6a3b;
+  --ink-success-bg: #e6f2e7;
+  --ink-danger: #a3301d;
+  --ink-danger-bg: #fbe9e4;
+  --ink-info-bg: #fdf6cf;
+  --ink-radius: 16px;
+  --ink-radius-lg: 22px;
+  --ink-shadow: 0 1px 2px rgb(28 27 27 / 6%), 0 4px 14px rgb(28 27 27 / 6%);
+  --ink-shadow-deep: 0 24px 60px rgb(28 27 27 / 28%), 0 6px 18px rgb(28 27 27 / 14%);
+  --ink-focus: 0 0 0 3px var(--ink-paper), 0 0 0 6px var(--ink-black);
+
+  display: grid;
+  grid-template-columns: 1fr;
+  /* Las filas no se estiran: la barra superior conserva su alto en tablet y móvil. */
+  align-content: start;
+  min-height: 100vh;
+  background: var(--ink-paper);
+  color: var(--ink-black);
+  font-family: var(--font-ink), "Nunito Sans", system-ui, sans-serif;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+/* Los altos mínimos (44 px de área táctil) incluyen el relleno. */
+.shell,
+.shell *,
+.shell *::before,
+.shell *::after {
+  box-sizing: border-box;
+}
+
+.shell *:focus-visible {
+  outline: none;
+  box-shadow: var(--ink-focus);
+  border-radius: 10px;
+}
+
+/* Barra superior (tablet y móvil) */
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.75rem 1.25rem;
+  background: var(--ink-black);
+  color: var(--ink-cream);
+}
+
+.menuButton {
+  min-height: 44px;
+  padding: 0.5rem 1rem;
+  border: 1.5px solid rgb(243 236 220 / 35%);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--ink-cream);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.sidebar {
+  display: none;
+  background: var(--ink-black);
+  color: var(--ink-cream);
+}
+
+.sidebarOpen {
+  display: block;
+  position: sticky;
+  top: 68px;
+  z-index: 19;
+  padding: 0.5rem 1rem 1rem;
+}
+
+/* Logotipo: palabra INK con una gota de tinta */
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  color: var(--ink-yellow);
+  font-weight: 900;
+  font-size: 1.5rem;
+  letter-spacing: 0.08em;
+  text-decoration: none;
+}
+
+.brand small {
+  color: var(--ink-cream);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  opacity: 0.75;
+}
+
+.brandMark {
+  width: 28px;
+  height: 28px;
+  flex: none;
+}
+
+.sidebarBrand {
+  display: none;
+}
+
+.nav ul {
+  display: grid;
+  align-content: start;
+  gap: 0.25rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.navLink {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0.55rem 0.9rem 0.55rem 1.1rem;
+  border-radius: 12px;
+  color: var(--ink-cream);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.navLink:hover {
+  background: rgb(243 236 220 / 8%);
+}
+
+.navLink[aria-current="page"] {
+  background: rgb(245 214 39 / 14%);
+  color: #fff;
+  font-weight: 800;
+}
+
+/* Marca de la sección activa: no depende solo del color, también del trazo y el peso. */
+.navLink[aria-current="page"]::before {
+  content: "";
+  position: absolute;
+  left: 0.3rem;
+  top: 0.6rem;
+  bottom: 0.6rem;
+  width: 4px;
+  border-radius: 4px;
+  background: var(--ink-yellow);
+}
+
+.main {
+  min-width: 0;
+  padding: 1.5rem 1.25rem 4rem;
+}
+
+/* Tablet: navegación compacta en dos columnas al abrir el menú */
+@media (min-width: 640px) {
+  .sidebarOpen .nav ul {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .main {
+    padding: 2rem 2rem 4rem;
+  }
+}
+
+/* Pantallas grandes: barra lateral persistente */
+@media (min-width: 1024px) {
+  .shell {
+    grid-template-columns: 264px minmax(0, 1fr);
+  }
+
+  .topbar {
+    display: none;
+  }
+
+  .sidebar {
+    position: sticky;
+    top: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    height: 100vh;
+    padding: 1.75rem 1rem;
+    overflow-y: auto;
+  }
+
+  .sidebarOpen .nav ul {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebarBrand {
+    display: inline-flex;
+    padding: 0 0.6rem;
+  }
+
+  .main {
+    padding: 2.5rem 3rem 5rem;
+  }
+}
+
+/* Pantallas muy grandes o televisores: todo un poco más grande y legible a distancia */
+@media (min-width: 1800px) {
+  .shell {
+    grid-template-columns: 320px minmax(0, 1fr);
+    font-size: 1.2rem;
+  }
+
+  .navLink {
+    min-height: 54px;
+  }
+
+  .main {
+    padding: 3rem 4.5rem 6rem;
+  }
+}

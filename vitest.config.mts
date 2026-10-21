@@ -28,9 +28,13 @@ export default defineConfig({
             DATABASE_URL: process.env.TEST_DATABASE_URL ?? "",
             APP_URL: "http://localhost:3000",
             EMAIL_PROVIDER: "memoria",
+            STORAGE_PROVIDER: "memoria",
             LOG_LEVEL: "silent",
+            CRON_SECRET: "secreto-de-pruebas-del-cron-0123456789",
           },
           fileParallelism: false,
+          // Cada registro calcula un hash Argon2 y las pruebas usan PostgreSQL real.
+          testTimeout: 15_000,
         },
       },
     ],

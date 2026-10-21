@@ -1,19 +1,27 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import { Nunito_Sans } from "next/font/google";
 import type { ReactNode } from "react";
+import { AdminNav } from "./admin-nav";
+import styles from "./admin.module.css";
 
-export const metadata: Metadata = { title: "Administración · Sublimaciones", robots: { index: false, follow: false } };
+export const metadata: Metadata = { title: "Administración · INK", robots: { index: false, follow: false } };
 
-// El acceso se verifica en cada página con requireAdminPage(); el layout solo agrega la navegación.
+// Tipografía redondeada de INK, servida por Next (sin dependencias nuevas).
+const nunito = Nunito_Sans({ subsets: ["latin"], variable: "--font-ink", display: "swap" });
+
+/**
+ * Layout raíz del panel: el sitio público tiene el suyo en `(sitio)/layout.tsx`, así el panel no
+ * hereda la barra pública ni sus márgenes. El acceso se verifica en cada página con requireAdminPage().
+ */
 export default function AdminLayout({ children }: { children: ReactNode }) {
   return (
-    <>
-      <nav>
-        <Link href="/admin">Administración</Link> · <Link href="/admin/productos">Productos</Link> ·{" "}
-        <Link href="/admin/categorias">Categorías</Link> · <Link href="/admin/inventario">Inventario</Link> ·{" "}
-        <Link href="/admin/pedidos">Pedidos</Link>
-      </nav>
-      {children}
-    </>
+    <html lang="es-AR">
+      <body className={styles.body}>
+        <div className={`${styles.shell} ${nunito.variable}`}>
+          <AdminNav />
+          <div className={styles.main}>{children}</div>
+        </div>
+      </body>
+    </html>
   );
 }

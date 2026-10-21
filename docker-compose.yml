@@ -1,4 +1,4 @@
-# Ambiente local. El almacenamiento S3 local (MinIO) se agrega en INC-07, cuando se implementen los archivos.
+# Ambiente local: PostgreSQL y almacenamiento S3 (MinIO). Credenciales solo de desarrollo.
 services:
   db:
     image: postgres:17-alpine
@@ -17,5 +17,42 @@ services:
       timeout: 3s
       retries: 15
 
+  # Archivos (INC-07, sección 16.1). MinIO RELEASE.2025-09-07T16-13-09Z, fijado por digest.
+  storage:
+    image: minio/minio@sha256:14cea493d9a34af32f524e538b8346cf79f3321eff8e708c1e2960462bd8936e
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${S3_ACCESS_KEY_ID:-sublimaciones}
+      MINIO_ROOT_PASSWORD: ${S3_SECRET_ACCESS_KEY:-sublimaciones-local}
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - storage-data:/data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 2s
+      timeout: 3s
+      retries: 15
+
+  # Crea los buckets privados (desarrollo y pruebas) y termina. Idempotente.
+  storage-init:
+    image: minio/minio@sha256:14cea493d9a34af32f524e538b8346cf79f3321eff8e708c1e2960462bd8936e
+    depends_on:
+      storage:
+        condition: service_healthy
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - >
+        mc alias set local http://storage:9000 "$${MINIO_ROOT_USER}" "$${MINIO_ROOT_PASSWORD}" &&
+        mc mb --ignore-existing local/sublimaciones local/sublimaciones-test &&
+        mc anonymous set none local/sublimaciones &&
+        mc anonymous set none local/sublimaciones-test
+    environment:
+      MINIO_ROOT_USER: ${S3_ACCESS_KEY_ID:-sublimaciones}
+      MINIO_ROOT_PASSWORD: ${S3_SECRET_ACCESS_KEY:-sublimaciones-local}
+    restart: "no"
+
 volumes:
   db-data:
+  storage-data:

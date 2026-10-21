@@ -9,7 +9,7 @@ export type ApiResult<T> = { ok: true; data: T } | { ok: false; error: ApiError 
 const NETWORK_ERROR: ApiError = { codigo: "SIN_CONEXION", mensaje: "No pudimos conectarnos. Revisá tu conexión." };
 
 /** Solicitud con cuerpo JSON a la API propia; nunca lanza, devuelve el error con su código estable. */
-export async function sendJson<T = unknown>(method: "POST" | "PATCH" | "DELETE", url: string, body?: unknown): Promise<ApiResult<T>> {
+export async function sendJson<T = unknown>(method: "POST" | "PUT" | "PATCH" | "DELETE", url: string, body?: unknown): Promise<ApiResult<T>> {
   let response: Response;
   try {
     response = await fetch(url, {

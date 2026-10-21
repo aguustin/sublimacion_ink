@@ -1,0 +1,602 @@
+/* Fechas excluidas de la ventana de 48 h (INC-10.2). Usa los tokens de admin.module.css. */
+
+.page {
+  max-width: 1080px;
+}
+
+/* Encabezado */
+.header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1.25rem 2rem;
+  margin-bottom: 2rem;
+}
+
+.eyebrow {
+  margin: 0 0 0.35rem;
+  color: var(--ink-muted);
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.title {
+  position: relative;
+  display: inline-block;
+  margin: 0;
+  font-size: clamp(1.9rem, 1.4rem + 1.6vw, 2.75rem);
+  font-weight: 900;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+}
+
+/* Trazo de marcador amarillo bajo el título: el único adorno del encabezado */
+.stroke {
+  position: absolute;
+  left: -0.2em;
+  right: -0.3em;
+  bottom: -0.18em;
+  z-index: -1;
+  width: calc(100% + 0.5em);
+  height: 0.55em;
+  color: var(--ink-yellow);
+}
+
+.titleWrap {
+  position: relative;
+  z-index: 0;
+}
+
+.lead {
+  max-width: 62ch;
+  margin: 0.9rem 0 0;
+  color: var(--ink-muted);
+  font-size: 1.05rem;
+}
+
+/* Botones */
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 48px;
+  padding: 0.7rem 1.35rem;
+  border: 2px solid var(--ink-black);
+  border-radius: 999px;
+  font: inherit;
+  font-weight: 800;
+  line-height: 1.2;
+  cursor: pointer;
+  transition:
+    transform 120ms ease,
+    box-shadow 120ms ease,
+    background-color 120ms ease;
+}
+
+.button:disabled {
+  cursor: progress;
+  opacity: 0.7;
+}
+
+.primary {
+  background: var(--ink-yellow);
+  color: var(--ink-black);
+  box-shadow: 0 3px 0 var(--ink-black);
+}
+
+.primary:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 0 var(--ink-black);
+}
+
+.primary:active:not(:disabled) {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 var(--ink-black);
+}
+
+.secondary {
+  background: #fff;
+  color: var(--ink-black);
+}
+
+.secondary:hover:not(:disabled) {
+  background: var(--ink-cream);
+}
+
+.ghost {
+  border-color: transparent;
+  background: transparent;
+  color: var(--ink-black);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+/* Lista híbrida */
+.list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-radius: var(--ink-radius-lg);
+  background: #fff;
+  box-shadow: var(--ink-shadow);
+}
+
+.row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-areas:
+    "date body"
+    "date action";
+  gap: 0.75rem 1.25rem;
+  align-items: center;
+  padding: 1.25rem 1.25rem;
+}
+
+.row + .row {
+  border-top: 1.5px dashed var(--ink-line);
+}
+
+@media (min-width: 640px) {
+  .row {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-areas: "date body action";
+    padding: 1.4rem 1.75rem;
+  }
+}
+
+/* Día destacado */
+.day {
+  grid-area: date;
+  align-self: start;
+  display: grid;
+  place-items: center;
+  width: 84px;
+  padding: 0.55rem 0.4rem 0.6rem;
+  border-radius: 18px;
+  background: var(--ink-yellow);
+  color: var(--ink-black);
+  text-align: center;
+  line-height: 1.05;
+}
+
+.dayMonth {
+  font-size: 0.75rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.dayNumber {
+  font-size: 2.15rem;
+  font-weight: 900;
+}
+
+.dayWeekday {
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.body {
+  grid-area: body;
+  min-width: 0;
+}
+
+.reason {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 800;
+  overflow-wrap: anywhere;
+}
+
+.meta {
+  margin: 0.25rem 0 0;
+  color: var(--ink-muted);
+  font-size: 0.92rem;
+}
+
+.fullDate {
+  margin: 0.2rem 0 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.action {
+  grid-area: action;
+  justify-self: start;
+}
+
+@media (min-width: 640px) {
+  .action {
+    justify-self: end;
+  }
+}
+
+/* Estado vacío */
+.empty {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 1.5rem;
+  align-items: center;
+  max-width: 720px;
+  padding: 1.75rem 2rem;
+  border: 2px dashed var(--ink-line);
+  border-radius: var(--ink-radius-lg);
+  background: #fff;
+}
+
+.emptyArt {
+  width: 112px;
+  height: 112px;
+}
+
+.emptyTitle {
+  margin: 0;
+  font-size: 1.3rem;
+  font-weight: 900;
+}
+
+.emptyText {
+  margin: 0.4rem 0 1rem;
+  color: var(--ink-muted);
+}
+
+@media (max-width: 520px) {
+  .empty {
+    grid-template-columns: 1fr;
+    text-align: center;
+    justify-items: center;
+  }
+}
+
+/* Carga inicial */
+.skeleton {
+  height: 92px;
+  border-radius: var(--ink-radius);
+  background: linear-gradient(90deg, var(--ink-cream) 25%, #fff 50%, var(--ink-cream) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite linear;
+}
+
+.skeleton + .skeleton {
+  margin-top: 0.75rem;
+}
+
+@keyframes shimmer {
+  to {
+    background-position: -200% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton {
+    animation: none;
+  }
+
+  .button {
+    transition: none;
+  }
+}
+
+/* Modales */
+.dialog {
+  width: min(560px, calc(100vw - 2rem));
+  max-height: min(88vh, 860px);
+  padding: 0;
+  border: none;
+  border-radius: var(--ink-radius-lg);
+  background: var(--ink-paper);
+  color: var(--ink-black);
+  box-shadow: var(--ink-shadow-deep);
+  font-family: var(--font-ink), "Nunito Sans", system-ui, sans-serif;
+  overflow: hidden;
+}
+
+.dialogWide {
+  width: min(760px, calc(100vw - 2rem));
+}
+
+.dialog::backdrop {
+  background: rgb(28 27 27 / 55%);
+  backdrop-filter: blur(2px);
+}
+
+.dialogInner {
+  display: flex;
+  flex-direction: column;
+  max-height: inherit;
+}
+
+.dialogHeader {
+  padding: 1.5rem 1.75rem 1rem;
+  border-bottom: 1.5px solid var(--ink-line);
+  background: #fff;
+}
+
+.step {
+  display: inline-block;
+  margin: 0 0 0.5rem;
+  padding: 0.2rem 0.65rem;
+  border-radius: 999px;
+  background: var(--ink-black);
+  color: var(--ink-yellow);
+  font-size: 0.75rem;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.dialogTitle {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 900;
+  line-height: 1.2;
+}
+
+.dialogBody {
+  padding: 1.5rem 1.75rem;
+  overflow-y: auto;
+}
+
+.dialogFooter {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding: 1rem 1.75rem 1.25rem;
+  border-top: 1.5px solid var(--ink-line);
+  background: #fff;
+}
+
+/* Formulario */
+.field {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.field + .field {
+  margin-top: 1.25rem;
+}
+
+.label {
+  font-weight: 800;
+}
+
+.hint {
+  color: var(--ink-muted);
+  font-size: 0.9rem;
+}
+
+.input {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 48px;
+  padding: 0.65rem 0.9rem;
+  border: 2px solid var(--ink-line);
+  border-radius: 12px;
+  background: #fff;
+  color: var(--ink-black);
+  font: inherit;
+}
+
+.input:hover {
+  border-color: #cbbfa6;
+}
+
+.input[aria-invalid="true"] {
+  border-color: var(--ink-danger);
+}
+
+textarea.input {
+  min-height: 96px;
+  resize: vertical;
+}
+
+.fieldError {
+  display: flex;
+  gap: 0.4rem;
+  align-items: baseline;
+  margin: 0;
+  color: var(--ink-danger);
+  font-weight: 700;
+  font-size: 0.92rem;
+}
+
+/* Avisos dentro de los modales */
+.alert {
+  display: flex;
+  gap: 0.6rem;
+  margin: 0 0 1.25rem;
+  padding: 0.85rem 1rem;
+  border-radius: 12px;
+  background: var(--ink-danger-bg);
+  color: var(--ink-danger);
+  font-weight: 700;
+}
+
+.note {
+  margin: 1.25rem 0 0;
+  color: var(--ink-muted);
+  font-size: 0.9rem;
+}
+
+/* Resumen de la vista previa */
+.summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.25rem;
+  align-items: center;
+  margin-top: 1rem;
+}
+
+.summaryDate {
+  font-size: 1.05rem;
+  font-weight: 800;
+}
+
+.summaryReason {
+  margin: 0.15rem 0 0;
+  color: var(--ink-muted);
+  overflow-wrap: anywhere;
+}
+
+.count {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.85rem;
+  border: 2px solid var(--ink-black);
+  border-radius: 999px;
+  background: var(--ink-yellow);
+  font-weight: 900;
+}
+
+.countNone {
+  background: #fff;
+}
+
+/* Pedidos afectados: tarjetas apiladas, sin desplazamiento horizontal */
+.orders {
+  display: grid;
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.order {
+  padding: 1rem 1.1rem;
+  border: 1.5px solid var(--ink-line);
+  border-radius: var(--ink-radius);
+  background: #fff;
+}
+
+.orderTitle {
+  margin: 0 0 0.6rem;
+  font-weight: 900;
+}
+
+.orderTitle a {
+  color: inherit;
+  text-underline-offset: 0.2em;
+}
+
+.orderFacts {
+  display: grid;
+  gap: 0.6rem;
+  margin: 0;
+}
+
+@media (min-width: 640px) {
+  .orderFacts {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.orderFacts dt {
+  color: var(--ink-muted);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.orderFacts dd {
+  margin: 0.15rem 0 0;
+  font-weight: 600;
+}
+
+.previous {
+  text-decoration: line-through;
+  text-decoration-thickness: 1.5px;
+  color: var(--ink-muted);
+}
+
+/* El inicio nuevo se destaca con fondo y con el rótulo «Nuevo», no solo con el color. */
+.newStart {
+  display: inline-block;
+  padding: 0.1rem 0.5rem;
+  border-radius: 8px;
+  background: var(--ink-yellow);
+  font-weight: 900;
+}
+
+.nothing {
+  padding: 1.25rem 1.25rem;
+  border-radius: var(--ink-radius);
+  background: var(--ink-info-bg);
+}
+
+.nothing strong {
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+/* Notificaciones de resultado */
+.toasts {
+  position: fixed;
+  right: 1rem;
+  bottom: 1rem;
+  left: 1rem;
+  z-index: 50;
+  display: grid;
+  gap: 0.6rem;
+  justify-items: end;
+  pointer-events: none;
+}
+
+.toast {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+  width: min(460px, 100%);
+  padding: 1rem 1rem 1rem 1.15rem;
+  border-left: 6px solid var(--ink-success);
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: var(--ink-shadow-deep);
+  pointer-events: auto;
+}
+
+.toastInfo {
+  border-left-color: var(--ink-yellow);
+}
+
+.toastError {
+  border-left-color: var(--ink-danger);
+}
+
+.toastBody {
+  flex: 1;
+  min-width: 0;
+}
+
+.toastTitle {
+  margin: 0;
+  font-weight: 900;
+}
+
+.toastText {
+  margin: 0.2rem 0 0;
+  color: var(--ink-muted);
+  overflow-wrap: anywhere;
+}
+
+.toastClose {
+  min-width: 40px;
+  min-height: 40px;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  font: inherit;
+  font-size: 1.25rem;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.retry {
+  margin-top: 1rem;
+}

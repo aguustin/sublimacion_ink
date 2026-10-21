@@ -22,6 +22,12 @@ export default async function AdminHomePage() {
         <li>
           <Link href="/admin/pedidos">Pedidos</Link>
         </li>
+        <li>
+          <Link href="/admin/feriados">Feriados (plazo de las reservas)</Link>
+        </li>
+        <li>
+          <Link href="/admin/configuracion">Datos de contacto de la tienda</Link>
+        </li>
       </ul>
     </main>
   );

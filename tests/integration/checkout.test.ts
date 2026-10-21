@@ -8,6 +8,7 @@ import { POST as payRoute } from "@/app/api/payments/simulated/[orderId]/route";
 import { createCategory, createProduct, createVariant, updateVariant } from "@/server/modules/catalog/catalog-admin.service";
 import { registerVariantMovement } from "@/server/modules/inventory/stock.service";
 import { assertSimulatedPaymentsEnabled } from "@/server/modules/orders/order-payment.service";
+import { reservationExpiry } from "@/server/modules/orders/reservation.policy";
 import { getDb } from "@/server/shared/db";
 import { APP_URL, apiRequest, params, resetDatabase, sessionCookieFrom } from "./helpers";
 
@@ -75,17 +76,6 @@ describe("confirmación del pedido con retiro (RF-14 a RF-17)", () => {
     const empty = await checkout(ana.cookie, { precios: [] });
     expect(empty.status).toBe(422);
     expect((await empty.json()).codigo).toBe("CARRITO_VACIO");
-  });
-
-  it("no acepta todavía pedidos con envío (D-06, F-10 pendiente)", async () => {
-    const ana = await client();
-    const varianteId = await variant(5);
-    await addToCart(ana.cookie, varianteId, 1);
-    const response = await checkout(ana.cookie, { modalidadEntrega: "ENVIO", precios: [{ varianteId, precioUnitarioCentavos: 150000 }] });
-
-    expect(response.status).toBe(422);
-    expect((await response.json()).codigo).toBe("ENVIO_NO_DISPONIBLE");
-    expect(await db().pedido.count()).toBe(0);
   });
 
   it("crea el pedido con pago online: precios congelados, stock retenido, plazo de 30 min y carrito vacío", async () => {
@@ -165,7 +155,7 @@ describe("confirmación del pedido con retiro (RF-14 a RF-17)", () => {
     expect(await db().pedido.count()).toBe(1);
   });
 
-  it("la reserva en efectivo exige teléfono y vence a las 24 h (RN-13, RN-18, RN-06)", async () => {
+  it("la reserva en efectivo exige teléfono y vence a las 24 h hábiles (RN-13, RN-18, RN-06, RN-29)", async () => {
     const withoutPhone = await client("sin@ejemplo.com");
     const withPhone = await client("con@ejemplo.com", "+54 11 5555-1234");
     const varianteId = await variant(5);
@@ -174,10 +164,13 @@ describe("confirmación del pedido con retiro (RF-14 a RF-17)", () => {
     const rejected = await checkout(withoutPhone.cookie, { modalidadCierre: "EFECTIVO", precios: [{ varianteId, precioUnitarioCentavos: 150000 }] });
     expect((await rejected.json()).codigo).toBe("TELEFONO_REQUERIDO");
 
+    const before = reservationExpiry(new Date(), new Set(), "America/Argentina/Buenos_Aires");
     const orderId = await placeOrder(withPhone.cookie, varianteId, 1, 150000, "EFECTIVO");
+    const after = reservationExpiry(new Date(), new Set(), "America/Argentina/Buenos_Aires");
     const order = await db().pedido.findUniqueOrThrow({ where: { id: orderId } });
     expect(order.estado).toBe("RESERVADO");
-    expect(minutesFromNow(order.venceEn) / 60).toBeCloseTo(24, 1);
+    expect(order.venceEn!.getTime()).toBeGreaterThanOrEqual(before.getTime());
+    expect(order.venceEn!.getTime()).toBeLessThanOrEqual(after.getTime());
   });
 });
 

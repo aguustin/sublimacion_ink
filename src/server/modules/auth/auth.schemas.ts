@@ -13,13 +13,15 @@ const newPasswordSchema = z
   .min(PASSWORD_MIN_LENGTH, `La contraseña debe tener al menos ${PASSWORD_MIN_LENGTH} caracteres.`)
   .max(PASSWORD_MAX_LENGTH, `La contraseña puede tener hasta ${PASSWORD_MAX_LENGTH} caracteres.`);
 
+/** Teléfono argentino o internacional, con espacios o guiones. */
+export const phoneSchema = z
+  .string()
+  .trim()
+  .regex(/^\+?[0-9][0-9\s-]{5,19}$/, "Ingresá un teléfono válido.");
+
 const optionalPhoneSchema = z.preprocess(
   (value) => (typeof value === "string" && value.trim() === "" ? undefined : value),
-  z
-    .string()
-    .trim()
-    .regex(/^\+?[0-9][0-9\s-]{5,19}$/, "Ingresá un teléfono válido.")
-    .optional(),
+  phoneSchema.optional(),
 );
 
 const tokenSchema = z.string().min(20).max(200);

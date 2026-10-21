@@ -31,12 +31,16 @@ export type PublicProductSummary = {
   variasPrecios: boolean;
   /** Alguna variante activa tiene unidades disponibles. `null` en personalizables (D-18). */
   hayStock: boolean | null;
+  /** Archivo de la primera imagen (RF-07); la URL firmada se genera al mostrarla. */
+  imagenId: string | null;
 };
 
 export type PublicProductDetail = PublicProductSummary & {
   descripcion: string;
   actualizadoEn: Date;
   variantes: PublicVariant[];
+  /** Archivos de las imágenes, en orden (RF-07). */
+  imagenIds: string[];
 };
 
 const visibleProduct = { activo: true, categoria: { activa: true }, variantes: { some: { activa: true } } };
@@ -44,6 +48,7 @@ const visibleProduct = { activo: true, categoria: { activa: true }, variantes: {
 const publicInclude = {
   categoria: { select: { nombre: true, slug: true } },
   variantes: { where: { activa: true }, orderBy: { creadoEn: "asc" } },
+  imagenes: { where: { archivo: { estado: "ACTIVO" } }, orderBy: { orden: "asc" }, select: { archivoId: true } },
 } satisfies Prisma.ProductoInclude;
 
 type ProductWithVariants = Prisma.ProductoGetPayload<{ include: typeof publicInclude }>;
@@ -74,6 +79,7 @@ function toSummary(product: ProductWithVariants): PublicProductSummary {
     precioDesdeCentavos: prices.length > 0 ? Math.min(...prices) : null,
     variasPrecios: new Set(prices).size > 1,
     hayStock: product.tipo === "PERSONALIZABLE" ? null : product.variantes.some((variant) => available(variant) > 0),
+    imagenId: product.imagenes[0]?.archivoId ?? null,
   };
 }
 
@@ -144,6 +150,7 @@ export async function getProductBySlug(slug: string, db: Db = getDb()): Promise<
     descripcion: product.descripcion,
     actualizadoEn: product.actualizadoEn,
     variantes: product.variantes.map((variant) => toPublicVariant(variant, product.tipo)),
+    imagenIds: product.imagenes.map((image) => image.archivoId),
   };
 }
 

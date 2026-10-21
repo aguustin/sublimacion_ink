@@ -7,6 +7,9 @@ const detailInclude = {
   items: { orderBy: { id: "asc" } },
   pagos: { orderBy: { creadoEn: "asc" } },
   historial: { orderBy: { creadoEn: "asc" } },
+  cancelacion: true,
+  ajustes: { orderBy: { creadoEn: "asc" } },
+  reembolsos: { orderBy: { creadoEn: "asc" } },
 } satisfies Prisma.PedidoInclude;
 
 const isUuid = (id: string) => /^[0-9a-f-]{36}$/i.test(id);
@@ -30,7 +33,20 @@ export async function getCustomerOrder(clienteId: string, pedidoId: string, db: 
 
 const adminListSchema = z.object({
   estado: z
-    .enum(["EN_DEFINICION", "PENDIENTE_PAGO", "RESERVADO", "CONFIRMADO", "EN_PRODUCCION", "LISTO_PARA_RETIRO", "DESPACHADO", "ENTREGADO", "CANCELADO", "VENCIDO"])
+    .enum([
+      "EN_DEFINICION",
+      "ENVIO_A_COTIZAR",
+      "ENVIO_COTIZADO",
+      "PENDIENTE_PAGO",
+      "RESERVADO",
+      "CONFIRMADO",
+      "EN_PRODUCCION",
+      "LISTO_PARA_RETIRO",
+      "DESPACHADO",
+      "ENTREGADO",
+      "CANCELADO",
+      "VENCIDO",
+    ])
     .optional()
     .catch(undefined),
   pagina: z.coerce.number().int().min(1).catch(1),
@@ -59,7 +75,11 @@ export async function getAdminOrder(pedidoId: string, db: Db = getDb()) {
   const order = isUuid(pedidoId)
     ? await db.pedido.findUnique({
         where: { id: pedidoId },
-        include: { ...detailInclude, cliente: { select: { nombre: true, email: true, telefono: true } } },
+        include: {
+          ...detailInclude,
+          cliente: { select: { nombre: true, email: true, telefono: true } },
+          cotizacionesEnvio: { orderBy: { creadoEn: "asc" } },
+        },
       })
     : null;
   if (!order) throw new AppError("PEDIDO_NO_ENCONTRADO", "No encontramos ese pedido.", 404);

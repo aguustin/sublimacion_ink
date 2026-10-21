@@ -27,10 +27,11 @@ model Usuario {
   creadoEn          DateTime  @default(now()) @map("creado_en") @db.Timestamptz
   actualizadoEn     DateTime  @updatedAt @map("actualizado_en") @db.Timestamptz
 
-  sesiones Sesion[]
-  tokens   TokenUsuario[]
-  carrito  Carrito?
-  pedidos  Pedido[]
+  sesiones    Sesion[]
+  tokens      TokenUsuario[]
+  carrito     Carrito?
+  pedidos     Pedido[]
+  direcciones Direccion[]
 
   @@map("usuario")
 }
@@ -129,8 +130,9 @@ model Producto {
   creadoEn      DateTime     @default(now()) @map("creado_en") @db.Timestamptz
   actualizadoEn DateTime     @updatedAt @map("actualizado_en") @db.Timestamptz
 
-  categoria Categoria  @relation(fields: [categoriaId], references: [id])
+  categoria Categoria        @relation(fields: [categoriaId], references: [id])
   variantes Variante[]
+  imagenes  ImagenProducto[]
 
   @@index([categoriaId])
   @@map("producto")
@@ -162,6 +164,7 @@ model Variante {
   retenciones  RetencionStock[]
   itemsCarrito ItemCarrito[]
   itemsPedido  ItemPedido[]
+  solicitudes  SolicitudPersonalizacion[]
 
   @@index([productoId])
   @@map("variante")
@@ -287,6 +290,10 @@ enum TipoPedido {
 /// Estados de la sección 9.2. Las transiciones válidas están en `order-transitions.ts`.
 enum EstadoPedido {
   EN_DEFINICION
+  /// Envío pedido: la tienda tiene 48 h corridas para cotizarlo (F-10, D-46).
+  ENVIO_A_COTIZAR
+  /// Envío cotizado: el cliente tiene 48 h corridas para aceptarlo, pasar a retiro o cancelar (D-46, D-47).
+  ENVIO_COTIZADO
   PENDIENTE_PAGO
   RESERVADO
   CONFIRMADO
@@ -321,20 +328,50 @@ model Pedido {
   venceEn                    DateTime?        @map("vence_en") @db.Timestamptz
   moneda                     String           @default("ARS")
   subtotalProductosCentavos  Int              @map("subtotal_productos_centavos")
+  /// Cupón usado en este pedido y su descuento sobre los productos, sin envío (RN-20).
+  cuponId                    String?          @map("cupon_id") @db.Uuid
+  descuentoCuponCentavos     Int              @default(0) @map("descuento_cupon_centavos")
   costoEnvioCentavos         Int              @default(0) @map("costo_envio_centavos")
+  /// Copia de la dirección elegida al pedir el envío: editar la libreta no cambia el pedido.
+  direccionEnvio             Json?            @map("direccion_envio")
   totalCentavos              Int              @map("total_centavos")
   /// Porcentaje del cargo de cancelación vigente al confirmar (RN-15, R-15).
   porcentajeCargoCancelacion Int?             @map("porcentaje_cargo_cancelacion")
+  /// Fecha comprometida de despacho o de disponibilidad para retiro, confirmada por el admin (RN-14).
+  fechaDespachoComprometida  DateTime?        @map("fecha_despacho_comprometida") @db.Timestamptz
+  /// Desde este momento cancelar tiene cargo (RN-03, RN-30). Se guarda al confirmar o cambiar la fecha.
+  inicioVentanaCargo         DateTime?        @map("inicio_ventana_cargo") @db.Timestamptz
+  /// La fecha se confirmó con 48 h o menos: cualquier cancelación posterior cae en la ventana (RN-14).
+  ventanaCargoFija           Boolean          @default(false) @map("ventana_cargo_fija")
+  /// Personalizados (RN-21): porcentaje y monto de la seña, fijados al aceptar la cotización.
+  porcentajeSena             Int?             @map("porcentaje_sena")
+  senaCentavos               Int?             @map("sena_centavos")
+  /// Reemisión de una cotización vencida (D-42): pedido original. Uno solo por original.
+  pedidoOrigenId             String?          @unique @map("pedido_origen_id") @db.Uuid
   /// Clave del cliente para no crear dos pedidos por el mismo intento (RF-21).
   claveIdempotencia          String           @map("clave_idempotencia")
   creadoEn                   DateTime         @default(now()) @map("creado_en") @db.Timestamptz
   actualizadoEn              DateTime         @updatedAt @map("actualizado_en") @db.Timestamptz
 
-  cliente     Usuario                 @relation(fields: [clienteId], references: [id])
-  items       ItemPedido[]
-  pagos       Pago[]
-  historial   HistorialEstadoPedido[]
-  retenciones RetencionStock[]
+  cliente              Usuario                 @relation(fields: [clienteId], references: [id])
+  cupon                Cupon?                  @relation("CuponUsado", fields: [cuponId], references: [id])
+  cuponEmitido         Cupon?                  @relation("CuponOrigen")
+  pedidoOrigen         Pedido?                 @relation("Reemision", fields: [pedidoOrigenId], references: [id])
+  reemision            Pedido?                 @relation("Reemision")
+  solicitud            SolicitudPersonalizacion?
+  referencias          ReferenciaPedido[]
+  cotizaciones         Cotizacion[]
+  cambiosVentana       CambioVentanaCargo[]
+  items                ItemPedido[]
+  pagos                Pago[]
+  historial            HistorialEstadoPedido[]
+  cambiosFechaDespacho CambioFechaDespacho[]
+  extensionesReserva   ExtensionReserva[]
+  cotizacionesEnvio    CotizacionEnvio[]
+  cancelacion          Cancelacion?
+  ajustes              AjusteEconomico[]
+  reembolsos           Reembolso[]
+  retenciones          RetencionStock[]
 
   @@unique([clienteId, claveIdempotencia])
   @@index([estado, venceEn])
@@ -353,6 +390,7 @@ model ItemPedido {
 
   pedido   Pedido   @relation(fields: [pedidoId], references: [id], onDelete: Cascade)
   variante Variante @relation(fields: [varianteId], references: [id])
+  diseno   Diseno?
 
   @@index([pedidoId])
   @@map("item_pedido")
@@ -390,7 +428,8 @@ model Pago {
   registradoPorId   String?      @map("registrado_por_id") @db.Uuid
   creadoEn          DateTime     @default(now()) @map("creado_en") @db.Timestamptz
 
-  pedido Pedido @relation(fields: [pedidoId], references: [id])
+  pedido     Pedido      @relation(fields: [pedidoId], references: [id])
+  reembolsos Reembolso[]
 
   @@index([pedidoId])
   @@map("pago")
@@ -447,4 +486,488 @@ model SalidaNotificacion {
 
   @@index([estado, proximoIntentoEn])
   @@map("salida_notificacion")
+}
+
+/// Direcciones de envío del cliente (RF-03). Se usan en el checkout con envío (F-10).
+model Direccion {
+  id            String   @id @default(uuid()) @db.Uuid
+  usuarioId     String   @map("usuario_id") @db.Uuid
+  calle         String
+  ciudad        String
+  provincia     String
+  codigoPostal  String   @map("codigo_postal")
+  referencias   String?
+  creadoEn      DateTime @default(now()) @map("creado_en") @db.Timestamptz
+  actualizadoEn DateTime @updatedAt @map("actualizado_en") @db.Timestamptz
+
+  usuario Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@index([usuarioId])
+  @@map("direccion")
+}
+
+/// Datos de la tienda, una sola fila (RF-49).
+model ConfiguracionTienda {
+  id               Int      @id @default(1)
+  emailContacto    String?  @map("email_contacto")
+  telefonoContacto String?  @map("telefono_contacto")
+  zonaHoraria      String   @default("America/Argentina/Buenos_Aires") @map("zona_horaria")
+  actualizadoEn    DateTime @updatedAt @map("actualizado_en") @db.Timestamptz
+
+  @@map("configuracion_tienda")
+}
+
+/// Cada confirmación o cambio de la fecha comprometida (RN-14). Solo inserción.
+model CambioFechaDespacho {
+  id                     String    @id @default(uuid()) @db.Uuid
+  pedidoId               String    @map("pedido_id") @db.Uuid
+  fechaAnterior          DateTime? @map("fecha_anterior") @db.Timestamptz
+  fechaNueva             DateTime  @map("fecha_nueva") @db.Timestamptz
+  inicioVentanaAnterior  DateTime? @map("inicio_ventana_anterior") @db.Timestamptz
+  inicioVentanaNuevo     DateTime  @map("inicio_ventana_nuevo") @db.Timestamptz
+  confirmadaCon48hOMenos Boolean   @map("confirmada_con_48h_o_menos")
+  motivo                 String?
+  autorId                String    @map("autor_id") @db.Uuid
+  creadoEn               DateTime  @default(now()) @map("creado_en") @db.Timestamptz
+
+  pedido Pedido @relation(fields: [pedidoId], references: [id])
+
+  @@index([pedidoId, creadoEn])
+  @@map("cambio_fecha_despacho")
+}
+
+/// Días que no cuentan para el plazo de 24 h de las reservas (RN-29). Los carga el admin.
+model Feriado {
+  id          String   @id @default(uuid()) @db.Uuid
+  fecha       DateTime @unique @db.Date
+  descripcion String
+  creadoPorId String   @map("creado_por_id") @db.Uuid
+  creadoEn    DateTime @default(now()) @map("creado_en") @db.Timestamptz
+
+  @@map("feriado")
+}
+
+enum TipoExtensionReserva {
+  EXTENSION
+  REACTIVACION
+}
+
+/// Extensión o reactivación de una reserva por el admin (RN-28). Solo inserción.
+model ExtensionReserva {
+  id              String               @id @default(uuid()) @db.Uuid
+  pedidoId        String               @map("pedido_id") @db.Uuid
+  tipo            TipoExtensionReserva
+  venceEnAnterior DateTime?            @map("vence_en_anterior") @db.Timestamptz
+  venceEnNuevo    DateTime             @map("vence_en_nuevo") @db.Timestamptz
+  motivo          String
+  autorId         String               @map("autor_id") @db.Uuid
+  creadoEn        DateTime             @default(now()) @map("creado_en") @db.Timestamptz
+
+  pedido Pedido @relation(fields: [pedidoId], references: [id])
+
+  @@index([pedidoId, creadoEn])
+  @@map("extension_reserva")
+}
+
+enum EstadoCotizacionEnvio {
+  PROPUESTA
+  ACEPTADA
+  RECHAZADA
+  REEMPLAZADA
+}
+
+/// Costo de envío cotizado por la tienda (F-10). Sin importe: la tienda no puede enviar (D-49).
+model CotizacionEnvio {
+  id              String                @id @default(uuid()) @db.Uuid
+  pedidoId        String                @map("pedido_id") @db.Uuid
+  importeCentavos Int?                  @map("importe_centavos")
+  nota            String?
+  estado          EstadoCotizacionEnvio @default(PROPUESTA)
+  autorId         String                @map("autor_id") @db.Uuid
+  creadoEn        DateTime              @default(now()) @map("creado_en") @db.Timestamptz
+  respondidaEn    DateTime?             @map("respondida_en") @db.Timestamptz
+
+  pedido Pedido @relation(fields: [pedidoId], references: [id])
+
+  @@index([pedidoId, creadoEn])
+  @@map("cotizacion_envio")
+}
+
+enum RolCancelacion {
+  CLIENTE
+  TIENDA
+}
+
+/// Regla de cargo aplicada según la precedencia de RN-24.
+enum ReglaCancelacion {
+  RN_19
+  RN_21
+  RN_15
+  SIN_CARGO
+}
+
+/// Una por pedido. Los importes se copian al cancelar y no se recalculan (RF-55, D-36).
+model Cancelacion {
+  id                        String           @id @default(uuid()) @db.Uuid
+  pedidoId                  String           @unique @map("pedido_id") @db.Uuid
+  solicitadaPorId           String           @map("solicitada_por_id") @db.Uuid
+  rol                       RolCancelacion
+  motivo                    String
+  estadoPrevio              EstadoPedido     @map("estado_previo")
+  dentroVentana             Boolean          @map("dentro_ventana_48h")
+  /// Inicio de la ventana que regía al cancelar (RN-30, T-135).
+  inicioVentanaCargo        DateTime?        @map("inicio_ventana_cargo") @db.Timestamptz
+  regla                     ReglaCancelacion @map("regla_aplicada")
+  subtotalProductosCentavos Int              @map("subtotal_productos_centavos")
+  descuentoCuponCentavos    Int              @map("descuento_cupon_centavos")
+  productosCobradosCentavos Int              @map("productos_cobrados_centavos")
+  envioCentavos             Int              @map("envio_centavos")
+  senaPagadaCentavos        Int              @map("sena_pagada_centavos")
+  saldoPagadoCentavos       Int              @map("saldo_pagado_centavos")
+  totalPagadoCentavos       Int              @map("total_pagado_centavos")
+  porcentajeAplicado        Int?             @map("porcentaje_aplicado")
+  cargoCentavos             Int              @map("cargo_centavos")
+  aReembolsarCentavos       Int              @map("a_reembolsar_centavos")
+  incluyeEnvio              Boolean          @map("incluye_envio")
+  consecuencias             String
+  creadoEn                  DateTime         @default(now()) @map("creado_en") @db.Timestamptz
+
+  pedido Pedido @relation(fields: [pedidoId], references: [id])
+
+  @@map("cancelacion")
+}
+
+enum TipoAjuste {
+  CARGO_SERVICIO_CANCELACION
+  RETENCION_SENA
+}
+
+enum EstadoAjuste {
+  /// Cubierto por lo pagado: se descontó del reembolso.
+  REGISTRADO
+  /// Hay que arreglarlo con el cliente (RN-18).
+  PENDIENTE_ARREGLO
+  COBRADO
+  CONDONADO
+  INCOBRABLE
+}
+
+/// Cargo de cancelación (RN-15) o retención de la seña (RN-21). Un solo cargo por pedido (índice único parcial, RN-24).
+model AjusteEconomico {
+  id                        String       @id @default(uuid()) @db.Uuid
+  pedidoId                  String       @map("pedido_id") @db.Uuid
+  tipo                      TipoAjuste
+  baseCentavos              Int          @map("base_centavos")
+  porcentaje                Int?
+  importeCentavos           Int          @map("importe_centavos")
+  estado                    EstadoAjuste
+  /// Referencia interna editable (RF-53, R-15): no cambia el cargo.
+  costoRealEstimadoCentavos Int?         @map("costo_real_estimado_centavos")
+  notaCierre                String?      @map("nota_cierre")
+  cerradoPorId              String?      @map("cerrado_por_id") @db.Uuid
+  cerradoEn                 DateTime?    @map("cerrado_en") @db.Timestamptz
+  creadoEn                  DateTime     @default(now()) @map("creado_en") @db.Timestamptz
+
+  pedido Pedido @relation(fields: [pedidoId], references: [id])
+
+  @@index([pedidoId])
+  @@map("ajuste_economico")
+}
+
+enum EstadoReembolso {
+  /// Online: calculado, falta que el admin lo ejecute (simulado).
+  PENDIENTE
+  REALIZADO_SIMULADO
+  /// Efectivo: la tienda lo arregla con el cliente (RN-18).
+  PENDIENTE_ARREGLO
+  DEVUELTO
+}
+
+model Reembolso {
+  id                String          @id @default(uuid()) @db.Uuid
+  pedidoId          String          @map("pedido_id") @db.Uuid
+  pagoId            String          @map("pago_id") @db.Uuid
+  importeCentavos   Int             @map("importe_centavos")
+  incluyeEnvio      Boolean         @map("incluye_envio")
+  estado            EstadoReembolso
+  simulado          Boolean
+  motivo            String
+  referenciaExterna String?         @map("referencia_externa")
+  notaCierre        String?         @map("nota_cierre")
+  cerradoPorId      String?         @map("cerrado_por_id") @db.Uuid
+  cerradoEn         DateTime?       @map("cerrado_en") @db.Timestamptz
+  creadoEn          DateTime        @default(now()) @map("creado_en") @db.Timestamptz
+
+  pedido Pedido @relation(fields: [pedidoId], references: [id])
+  pago   Pago   @relation(fields: [pagoId], references: [id])
+
+  @@index([pedidoId])
+  @@map("reembolso")
+}
+
+enum EstadoCupon {
+  ACTIVO
+  USADO
+  VENCIDO
+  ANULADO
+}
+
+/// Cupón de compensación por cancelación de la tienda (RN-19, RN-20). Nominativo, uno por pedido cancelado.
+model Cupon {
+  id              String      @id @default(uuid()) @db.Uuid
+  codigo          String      @unique
+  clienteId       String      @map("cliente_id") @db.Uuid
+  pedidoOrigenId  String      @unique @map("pedido_origen_id") @db.Uuid
+  montoCentavos   Int         @map("monto_centavos")
+  porcentaje      Int
+  emitidoEn       DateTime    @default(now()) @map("emitido_en") @db.Timestamptz
+  venceEn         DateTime    @map("vence_en") @db.Timestamptz
+  estado          EstadoCupon @default(ACTIVO)
+  usadoEnPedidoId String?     @map("usado_en_pedido_id") @db.Uuid
+  restauradoEn    DateTime?   @map("restaurado_en") @db.Timestamptz
+  anuladoPorId    String?     @map("anulado_por_id") @db.Uuid
+  motivoAnulacion String?     @map("motivo_anulacion")
+
+  pedidoOrigen Pedido   @relation("CuponOrigen", fields: [pedidoOrigenId], references: [id])
+  pedidos      Pedido[] @relation("CuponUsado")
+
+  @@index([clienteId, estado])
+  @@index([estado, venceEn])
+  @@map("cupon")
+}
+
+enum ContextoArchivo {
+  REFERENCIA
+  VERSION_DISENO
+  CHAT
+  PRODUCTO
+  COMPROBANTE
+}
+
+enum EstadoArchivo {
+  ACTIVO
+  ELIMINADO
+}
+
+/// Metadatos de un archivo (16.1). El binario está en el almacenamiento S3, nunca en la base.
+model Archivo {
+  id                   String          @id @default(uuid()) @db.Uuid
+  /// Generada por el servidor: el nombre original nunca forma parte de la clave.
+  claveObjeto          String          @unique @map("clave_objeto")
+  nombreOriginal       String          @map("nombre_original")
+  /// Tipo según el contenido real (D-08), no según la extensión ni lo que declara el cliente.
+  tipoMimeDetectado    String          @map("tipo_mime_detectado")
+  tamanoBytes          Int             @map("tamano_bytes")
+  hashSha256           String          @map("hash_sha256")
+  subidoPorId          String          @map("subido_por_id") @db.Uuid
+  /// Cliente dueño del archivo; nulo en los de la tienda (imágenes de productos).
+  propietarioClienteId String?         @map("propietario_cliente_id") @db.Uuid
+  contexto             ContextoArchivo
+  estado               EstadoArchivo   @default(ACTIVO)
+  eliminadoEn          DateTime?       @map("eliminado_en") @db.Timestamptz
+  eliminadoPorId       String?         @map("eliminado_por_id") @db.Uuid
+  creadoEn             DateTime        @default(now()) @map("creado_en") @db.Timestamptz
+
+  imagenProducto ImagenProducto?
+  referencias    ReferenciaPedido[]
+  versionesDiseno ArchivoVersionDiseno[]
+
+  @@index([propietarioClienteId, creadoEn])
+  @@map("archivo")
+}
+
+/// Imágenes de un producto (RF-07), en el orden en que se muestran.
+model ImagenProducto {
+  id         String   @id @default(uuid()) @db.Uuid
+  productoId String   @map("producto_id") @db.Uuid
+  archivoId  String   @unique @map("archivo_id") @db.Uuid
+  orden      Int
+  creadoEn   DateTime @default(now()) @map("creado_en") @db.Timestamptz
+
+  producto Producto @relation(fields: [productoId], references: [id])
+  archivo  Archivo  @relation(fields: [archivoId], references: [id])
+
+  @@index([productoId, orden])
+  @@map("imagen_producto")
+}
+
+/// Solicitud de personalización (RF-22). El ítem del pedido se crea al aceptar la cotización, con su precio.
+model SolicitudPersonalizacion {
+  id           String   @id @default(uuid()) @db.Uuid
+  pedidoId     String   @unique @map("pedido_id") @db.Uuid
+  /// Producto base y variante elegida: definen la medida y el material.
+  varianteId   String   @map("variante_id") @db.Uuid
+  cantidad     Int
+  descripcion  String
+  fechaDeseada DateTime @map("fecha_deseada") @db.Date
+  creadoEn     DateTime @default(now()) @map("creado_en") @db.Timestamptz
+
+  pedido   Pedido   @relation(fields: [pedidoId], references: [id])
+  variante Variante @relation(fields: [varianteId], references: [id])
+
+  @@map("solicitud_personalizacion")
+}
+
+/// Archivos de referencia de un pedido personalizado (contexto REFERENCIA, 16.1).
+model ReferenciaPedido {
+  pedidoId  String   @map("pedido_id") @db.Uuid
+  archivoId String   @map("archivo_id") @db.Uuid
+  creadoEn  DateTime @default(now()) @map("creado_en") @db.Timestamptz
+
+  pedido  Pedido  @relation(fields: [pedidoId], references: [id])
+  archivo Archivo @relation(fields: [archivoId], references: [id])
+
+  @@id([pedidoId, archivoId])
+  @@index([archivoId])
+  @@map("referencia_pedido")
+}
+
+enum EstadoCotizacion {
+  PROPUESTA
+  ACEPTADA
+  RECHAZADA
+  REEMPLAZADA
+}
+
+/// Cotización manual de un personalizado (D-10, RF-23). Una sola PROPUESTA vigente por pedido; no vence.
+model Cotizacion {
+  id                      String           @id @default(uuid()) @db.Uuid
+  pedidoId                String           @map("pedido_id") @db.Uuid
+  precioUnitarioCentavos  Int              @map("precio_unitario_centavos")
+  /// Precio unitario × cantidad de la solicitud.
+  precioProductosCentavos Int              @map("precio_productos_centavos")
+  /// Solo con envío: se cotiza junto con el producto y se cobra con el saldo (D-48).
+  costoEnvioCentavos      Int?             @map("costo_envio_centavos")
+  fechaEntregaPropuesta   DateTime         @map("fecha_entrega_propuesta") @db.Date
+  detalle                 String
+  estado                  EstadoCotizacion @default(PROPUESTA)
+  autorId                 String           @map("autor_id") @db.Uuid
+  creadoEn                DateTime         @default(now()) @map("creado_en") @db.Timestamptz
+  respondidaPorId         String?          @map("respondida_por_id") @db.Uuid
+  respondidaEn            DateTime?        @map("respondida_en") @db.Timestamptz
+
+  pedido Pedido @relation(fields: [pedidoId], references: [id])
+
+  @@index([pedidoId, creadoEn])
+  @@map("cotizacion")
+}
+
+/// Estado informativo del diseño (9.1). La fuente de verdad para fabricar es la aprobación de la versión vigente (15.4).
+enum EstadoDiseno {
+  SIN_PROPUESTA
+  PENDIENTE_APROBACION
+  CAMBIOS_SOLICITADOS
+  APROBADO
+}
+
+/// Un diseño por ítem personalizado (15.1).
+model Diseno {
+  id               String       @id @default(uuid()) @db.Uuid
+  itemPedidoId     String       @unique @map("item_pedido_id") @db.Uuid
+  estado           EstadoDiseno @default(SIN_PROPUESTA)
+  versionVigenteId String?      @unique @map("version_vigente_id") @db.Uuid
+  creadoEn         DateTime     @default(now()) @map("creado_en") @db.Timestamptz
+  actualizadoEn    DateTime     @updatedAt @map("actualizado_en") @db.Timestamptz
+
+  item           ItemPedido      @relation(fields: [itemPedidoId], references: [id])
+  versionVigente VersionDiseno?  @relation("VersionVigente", fields: [versionVigenteId], references: [id])
+  versiones      VersionDiseno[] @relation("Versiones")
+
+  @@map("diseno")
+}
+
+/// Versión numerada e inmutable (RN-P-05): la base rechaza modificarla o borrarla.
+model VersionDiseno {
+  id          String   @id @default(uuid()) @db.Uuid
+  disenoId    String   @map("diseno_id") @db.Uuid
+  numero      Int
+  nota        String?
+  creadaPorId String   @map("creada_por_id") @db.Uuid
+  creadaEn    DateTime @default(now()) @map("creada_en") @db.Timestamptz
+  /// SHA-256 de la lista ordenada de hashes de sus archivos (15.1).
+  huella      String
+
+  diseno      Diseno                 @relation("Versiones", fields: [disenoId], references: [id])
+  vigenteDe   Diseno?                @relation("VersionVigente")
+  archivos    ArchivoVersionDiseno[]
+  aprobacion  AprobacionDiseno?
+  solicitudes SolicitudCambio[]
+
+  @@unique([disenoId, numero])
+  @@map("version_diseno")
+}
+
+model ArchivoVersionDiseno {
+  versionId String @map("version_id") @db.Uuid
+  archivoId String @map("archivo_id") @db.Uuid
+  orden     Int
+
+  version VersionDiseno @relation(fields: [versionId], references: [id])
+  archivo Archivo       @relation(fields: [archivoId], references: [id])
+
+  @@id([versionId, archivoId])
+  @@index([archivoId])
+  @@map("archivo_version_diseno")
+}
+
+/// Aprobación del cliente de una versión concreta (RN-07, RF-25). Solo el cliente aprueba (D-19).
+model AprobacionDiseno {
+  id             String   @id @default(uuid()) @db.Uuid
+  versionId      String   @unique @map("version_id") @db.Uuid
+  aprobadaPorId  String   @map("aprobada_por_id") @db.Uuid
+  aprobadaEn     DateTime @default(now()) @map("aprobada_en") @db.Timestamptz
+  huellaAprobada String   @map("huella_aprobada")
+
+  version VersionDiseno @relation(fields: [versionId], references: [id])
+
+  @@map("aprobacion_diseno")
+}
+
+/// Pedido de cambios del cliente sobre una versión (RF-26). Sin límite de rondas (D-29).
+model SolicitudCambio {
+  id         String   @id @default(uuid()) @db.Uuid
+  versionId  String   @map("version_id") @db.Uuid
+  autorId    String   @map("autor_id") @db.Uuid
+  comentario String
+  creadoEn   DateTime @default(now()) @map("creado_en") @db.Timestamptz
+
+  version VersionDiseno @relation(fields: [versionId], references: [id])
+
+  @@index([versionId])
+  @@map("solicitud_cambio")
+}
+
+/// Fecha completa que no cuenta para la ventana de 48 h (RN-30). No afecta las reservas (RN-29).
+model DiaExcluidoVentana {
+  id          String   @id @default(uuid()) @db.Uuid
+  fecha       DateTime @unique @db.Date
+  motivo      String
+  creadoPorId String   @map("creado_por_id") @db.Uuid
+  creadoEn    DateTime @default(now()) @map("creado_en") @db.Timestamptz
+
+  @@map("dia_excluido_ventana")
+}
+
+enum CausaCambioVentana {
+  FECHA_EXCLUIDA_AGREGADA
+  FECHA_EXCLUIDA_QUITADA
+}
+
+/// Recálculo del inicio de la ventana por una fecha excluida (RN-30). Solo inserción. Los cambios
+/// por la fecha comprometida quedan en CambioFechaDespacho.
+model CambioVentanaCargo {
+  id             String             @id @default(uuid()) @db.Uuid
+  pedidoId       String             @map("pedido_id") @db.Uuid
+  causa          CausaCambioVentana
+  fechaExcluida  DateTime           @map("fecha_excluida") @db.Date
+  inicioAnterior DateTime           @map("inicio_anterior") @db.Timestamptz
+  inicioNuevo    DateTime           @map("inicio_nuevo") @db.Timestamptz
+  autorId        String             @map("autor_id") @db.Uuid
+  notificacionId String             @map("notificacion_id") @db.Uuid
+  creadoEn       DateTime           @default(now()) @map("creado_en") @db.Timestamptz
+
+  pedido Pedido @relation(fields: [pedidoId], references: [id])
+
+  @@index([pedidoId, creadoEn])
+  @@map("cambio_ventana_cargo")
 }

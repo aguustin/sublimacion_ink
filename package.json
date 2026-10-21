@@ -17,12 +17,15 @@
     "check": "npm run lint && npm run typecheck && npm test",
     "db:up": "docker compose up -d --wait db",
     "db:down": "docker compose down",
+    "storage:up": "docker compose up -d --wait storage && docker compose up storage-init",
     "db:migrate": "prisma migrate dev",
     "db:deploy": "prisma migrate deploy",
     "postinstall": "prisma generate",
     "admin:promover": "node scripts/promover-admin.mjs"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "3.1152.0",
+    "@aws-sdk/s3-request-presigner": "3.1152.0",
     "@node-rs/argon2": "2.2.1",
     "@prisma/adapter-pg": "7.10.0",
     "@prisma/client": "7.10.0",

@@ -1,5 +1,6 @@
 import type { Prisma } from "@/generated/prisma/client";
 import { available } from "@/server/modules/inventory/stock.service";
+import { expireOverdueOrdersHolding } from "@/server/modules/orders/expiration.service";
 import { getDb, type Db, type DbClient } from "@/server/shared/db";
 import { AppError } from "@/server/shared/errors";
 import { addItemSchema, guestCartSchema, MAX_QUANTITY, updateItemSchema } from "./cart.schemas";
@@ -118,18 +119,29 @@ export async function getCart(userId: string, db: Db = getDb()): Promise<CartVie
 /** Agrega unidades; si la variante ya está en el carrito, se suman. */
 export async function addItem(userId: string, input: unknown, db: Db = getDb()): Promise<CartView> {
   const { varianteId, cantidad } = addItemSchema.parse(input);
-  await db.$transaction(async (tx) => {
-    const variant = await findVariant(tx, varianteId);
-    const carritoId = await cartIdOf(tx, userId);
-    const existing = await tx.itemCarrito.findUnique({ where: { carritoId_varianteId: { carritoId, varianteId } } });
-    const total = (existing?.cantidad ?? 0) + cantidad;
-    assertAvailable(variant, total);
-    await tx.itemCarrito.upsert({
-      where: { carritoId_varianteId: { carritoId, varianteId } },
-      create: { carritoId, varianteId, cantidad, precioAlAgregarCentavos: variant.precioCentavos! },
-      update: { cantidad: total },
+  const add = () =>
+    db.$transaction(async (tx) => {
+      const variant = await findVariant(tx, varianteId);
+      const carritoId = await cartIdOf(tx, userId);
+      const existing = await tx.itemCarrito.findUnique({ where: { carritoId_varianteId: { carritoId, varianteId } } });
+      const total = (existing?.cantidad ?? 0) + cantidad;
+      assertAvailable(variant, total);
+      await tx.itemCarrito.upsert({
+        where: { carritoId_varianteId: { carritoId, varianteId } },
+        create: { carritoId, varianteId, cantidad, precioAlAgregarCentavos: variant.precioCentavos! },
+        update: { cantidad: total },
+      });
     });
-  });
+
+  try {
+    await add();
+  } catch (error) {
+    // Vencimiento oportunista (14.5): el stock puede estar retenido por un pedido ya vencido que el
+    // proceso periódico todavía no procesó; se vence y se reintenta una sola vez.
+    const outOfStock = error instanceof AppError && error.code === "STOCK_INSUFICIENTE";
+    if (!outOfStock || (await expireOverdueOrdersHolding(varianteId, db)) === 0) throw error;
+    await add();
+  }
   return getCart(userId, db);
 }
 

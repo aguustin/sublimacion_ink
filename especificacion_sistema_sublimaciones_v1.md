@@ -3,7 +3,7 @@
 | Campo | Valor |
 |---|---|
 | Documento | `especificacion_sistema_sublimaciones_v1.md` |
-| Versión | 1.13 (borrador para revisión) |
+| Versión | 1.33 (borrador para revisión) |
 | Fecha | 2026-10-14 |
 | Estado | **En revisión.** Las versiones 1.1 a 1.7 incorporan las decisiones D-01 a D-04, D-05 (modo piloto), D-11, D-15 a D-17, D-20 a D-25, D-28, D-30 y D-31 a D-43. Quedan decisiones pendientes (sección 22) que bloquean partes concretas de la implementación. |
 | Alcance | Primera versión (v1) para un piloto con usuarios reales. Sin pagos reales. |
@@ -27,6 +27,26 @@
 | 1.11 | 2026-10-14 | Avance: INC-04 (inventario) implementado y verificado (14.9, 23.1). Stock por variante y por material, retención/liberación/consumo atómicos e idempotentes, movimientos con deltas, conciliación, alerta de stock bajo, disponibilidad en el catálogo. Revisión del orden de las migraciones: sin riesgo (23.1). Pruebas T-165 a T-171. Sin cambios en reglas de negocio. |
 | 1.12 | 2026-10-14 | D-06: confirmada la opción B (el admin cotiza el envío después del pedido); flujo propuesto F-10 y decisiones pendientes D-45 a D-49. INC-05 dividido en INC-05.1 (carrito), INC-05.2 (checkout y pedidos) e INC-05.3 (datos operativos). Avance: INC-05.1 implementado y verificado. Pruebas T-172 a T-177. |
 | 1.13 | 2026-10-14 | Avance: INC-05.2 implementado para retiro en el local (checkout con pago online simulado y reserva en efectivo, pedidos, transiciones, historial, registro del efectivo, notificaciones en la cola). El checkout con envío sigue pendiente de D-45, D-46, D-47 y D-49. Pruebas T-178 a T-183. Sin cambios en reglas de negocio. |
+| 1.14 | 2026-10-15 | Avance: INC-05.3 implementado (perfil y direcciones, contacto de la tienda, fecha comprometida con ventana de 48 h corridas, registro dentro del checkout). Nueva pregunta D-50 (dirección y horario del local). Pruebas T-184 a T-188. Sin cambios en reglas de negocio. |
+| 1.15 | 2026-10-15 | Avance: INC-06.1 implementado (vencimiento de pagos online y de reservas como procesos independientes, vencimiento oportunista en checkout y carrito, endpoints del cron con secreto, conciliación y limpieza periódicas). R-22 mitigado. Pruebas T-189 a T-191. Sin cambios en reglas de negocio. |
+| 1.16 | 2026-10-15 | Avance: INC-06.2 implementado (vencimiento de reservas en 24 h hábiles en la zona horaria de la tienda, gestión de feriados y recálculo al agregar uno). El criterio de horas completas de día hábil y el recálculo solo para extender siguen como [PROPUESTA] en RN-29. Pruebas T-192 y T-193. Sin cambios en reglas de negocio. |
+| 1.17 | 2026-10-15 | Avance: INC-06.3 implementado (extensión de reservas vigentes y reactivación de reservas estándar vencidas por el admin, con nueva retención atómica de stock, precios vigentes y nuevo vencimiento hábil). La parte [PROPUESTA] de RN-28 sigue pendiente de confirmación. Pruebas T-194 y T-195. Sin cambios en reglas de negocio. |
+| 1.18 | 2026-10-15 | Confirmadas dos partes de RN-28: la reactivación usa los precios vigentes, el admin confirma el total actualizado y, si cambia antes de confirmar, se rechaza; el nuevo vencimiento se calcula desde la reactivación con RN-29. Sigue como [PROPUESTA] solo la condición del cupón. Sin cambios en el código. |
+| 1.19 | 2026-10-15 | D-45, D-46, D-47 y D-49 resueltas: sin retención de stock mientras se cotiza; 48 h corridas para cotizar y 48 h para responder, con cancelación sin cupón al vencer; el cliente puede rechazar y cancelar sin cargo o pasar a retiro; si la tienda no puede enviar, la cancelación genera el cupón (RN-19, RN-20), salvo que el cliente pase a retiro. F-10 acordado. Avance: INC-05.2 completado en local con la parte de envío (estados `ENVIO_A_COTIZAR` y `ENVIO_COTIZADO`, entidad `CotizacionEnvio`, tercer proceso de vencimiento). El cupón de D-49 queda registrado para INC-11. Pruebas T-183 (reemplazada) y T-196 a T-202. |
+| 1.20 | 2026-10-16 | Confirmado: si la tienda no puede enviar y el cliente no responde en 48 h, el pedido se cancela por vencimiento, sin cupón; el cupón de D-49 corresponde solo cuando la cancelación se debe a que la tienda no puede enviar. El cron de vencimientos de envío corre cada 15 min. Sin cambios en el código. |
+| 1.21 | 2026-10-16 | D-48 resuelta: en personalizados con envío, el envío se cotiza en la misma cotización que el producto y se cobra con el saldo, antes del despacho; la seña del 20 % se calcula sobre los productos, sin el envío (RN-21). Los personalizados no usan el flujo F-10. Se implementa en INC-08.1 e INC-08.2. Sin cambios en el código. |
+| 1.22 | 2026-10-16 | Avance: INC-10.1 dividido; INC-10.1a implementado en local (cancelación por el cliente con vista previa y por la tienda, política única de RN-24 con la regla de la seña probada en forma unitaria, cargo único garantizado por la base, reembolsos simulados, devoluciones y cargos en efectivo, costo real estimado). El rechazo del envío cotizado usa la misma cancelación. El cupón de RN-19 queda registrado para INC-11. Nuevo pendiente D-51. Pruebas T-203 a T-206. |
+| 1.23 | 2026-10-16 | D-51 resuelta: el cliente puede cancelar sin cargo un pedido con envío mientras espera la cotización. Sin cambios en el código. |
+| 1.24 | 2026-10-16 | Avance: INC-11 implementado en local (emisión del cupón en toda cancelación de la tienda, también la de D-49; uso atómico en el checkout, también con envío; restauración única al cancelar o vencer; reactivación que vuelve a usar el cupón; "Mis cupones"; listado y anulación por el admin). Las marcas provisorias `PENDIENTE_MODULO_CUPONES` desaparecen; no hay datos reales que migrar. Nuevo pendiente D-52. |
+| 1.25 | 2026-10-16 | Confirmadas la parte propuesta de RN-20 (nominativo, uno por pedido, no acumulable, solo productos, sin saldo) y la condición del cupón de RN-28. D-52 resuelta → RN-32: un pedido con total final de $0 se confirma sin pago (pendiente de implementación). Sin cambios en el código. |
+| 1.26 | 2026-10-16 | Avance: INC-10.1b implementado en local (envío del outbox por cron con reintentos de espera creciente, correos fallidos visibles y reencolables por el admin). El proveedor real sigue pendiente de D-44. Pruebas T-207 y T-208. |
+| 1.27 | 2026-10-16 | Avance: RN-32 implementado (confirmación sin pago de pedidos con total final de $0 en el checkout con retiro, al aceptar el envío o pasar a retiro, y al reactivar). Nuevas transiciones `ENVIO_COTIZADO → CONFIRMADO` y `VENCIDO → CONFIRMADO`. Corregido: una solicitud repetida con cupón devolvía `CUPON_INVALIDO` en lugar del pedido ya creado. Pruebas T-209 a T-212. |
+| 1.28 | 2026-10-16 | D-08 resuelta: JPG, PNG, WEBP y PDF, detectados por contenido; tamaño máximo configurable (`FILES_MAX_BYTES`, 20 MB inicial a revisar antes de producción). Avance: INC-07 implementado en local (MinIO con bucket privado, entidad `Archivo`, subida validada con compensación, URLs firmadas tras autorizar, baja lógica, imágenes de productos con la nueva entidad `ImagenProducto`). Miniaturas pendientes. Pruebas T-213 a T-216. |
+| 1.29 | 2026-10-20 | D-10, D-14 y D-18 resueltas (cotización manual por pedido; sin reservar ni exigir materiales). Nuevas D-53 (rechazo de la cotización) y D-54 (la cotización pendiente no vence), resueltas. Avance: INC-08.1 implementado en local (solicitud con referencias, cotización con reemplazo, aceptación con inicio del plazo, rechazo, reemisión vinculada). Entidades `SolicitudPersonalizacion`, `ReferenciaPedido` y `Cotizacion`. El cobro de la seña sigue en INC-08.2. Pruebas T-217 a T-222. |
+| 1.30 | 2026-10-20 | D-55, D-56 y D-57 resueltas (seña de $0 con envío, saldo en efectivo solo al retirar, saldo online desde la confirmación). Avance: INC-08.2 implementado en local (cobro de seña y saldo con el importe calculado en el servidor, un pago aprobado por concepto garantizado por la base, guarda de saldo pendiente en las transiciones a despacho y entrega). Pruebas T-223 a T-225. |
+| 1.31 | 2026-10-20 | D-19, D-26 y D-29 resueltas: solo el cliente aprueba; una versión nueva con el pedido en producción se permite y bloquea el avance hasta aprobarla; sin límite de rondas. Avance: INC-09 implementado en local (versiones inmutables con huella, aprobación de la versión vigente, pedido de cambios, paso a producción con RN-07 dentro de la transición). Entidad nueva `ArchivoVersionDiseno`. Pruebas T-226 a T-229. |
+| 1.32 | 2026-10-20 | Confirmada la regla de RN-30 / T-133: un recálculo nunca deja el inicio de la ventana antes del aviso. Avance: INC-10.2 implementado en local en el backend (fechas excluidas, vista previa, recálculo con registro y aviso en una transacción, cálculo hacia atrás en la utilidad de horas, fecha comprometida que ya considera las exclusiones); la interfaz queda en pausa para definir su diseño. `Cancelacion` guarda el inicio de la ventana que regía. Pruebas T-230 y T-231. |
+| 1.33 | 2026-10-21 | Avance: interfaz de INC-10.2 implementada (pantalla `/admin/fechas-excluidas` con la identidad de INK y barra lateral del panel). El contrato suma `desdeAhora` en la vista previa, `clientesNotificados` en el resultado y el autor en el listado. Sin cambios en reglas de negocio. |
 
 ---
 
@@ -224,7 +244,7 @@ Si el objetivo de "alcance para atraer clientes" necesita algo visual antes, una
 | Gestionar productos, precios, stock, materiales | — | — | ✔ |
 | Ver auditoría | — | — | ✔ |
 
-**Nota sobre aprobación de diseño:** RN-07 exige aprobación explícita **del cliente**. **[PROPUESTA]** Si la tienda necesita registrar una aprobación recibida por otro canal (por ejemplo, en persona), el administrador puede registrarla **solo con un motivo obligatorio y quedando identificado como "aprobación registrada por admin en nombre del cliente"**. Esto debe ser autorizado por la tienda (D-19); hasta entonces, solo el cliente aprueba.
+**Nota sobre aprobación de diseño:** RN-07 exige aprobación explícita **del cliente**. **Resuelto (D-19, v1.31):** solo el cliente aprueba, desde el sitio. El administrador no registra aprobaciones en nombre del cliente.
 
 ---
 
@@ -234,9 +254,9 @@ Si el objetivo de "alcance para atraer clientes" necesita algo visual antes, una
 
 | Código | Requisito | Prioridad | Reglas |
 |---|---|---|---|
-| RF-01 | Registro de cliente con correo y contraseña, verificación de correo, inicio y cierre de sesión. El registro puede hacerse dentro del checkout, en un solo paso, sin perder el carrito. Comprar, reservar, solicitar personalizaciones y usar cupones requiere cuenta. | DEBE | RN-25 |
+| RF-01 | Registro de cliente con correo y contraseña, verificación de correo, inicio y cierre de sesión. El registro puede hacerse dentro del checkout, en un solo paso, sin perder el carrito (**implementado en INC-05.3**). Comprar, reservar, solicitar personalizaciones y usar cupones requiere cuenta. | DEBE | RN-25 |
 | RF-02 | Recuperación de contraseña mediante enlace de un solo uso con vencimiento. | DEBE | — |
-| RF-03 | Perfil del cliente: nombre, teléfono, direcciones de envío. El teléfono es obligatorio para reservar en efectivo. | DEBE | RN-10, RN-18 |
+| RF-03 | Perfil del cliente: nombre, teléfono, direcciones de envío. El teléfono es obligatorio para reservar en efectivo. **Implementado en INC-05.3** (nombre, teléfono y hasta 10 direcciones; el email no se edita). | DEBE | RN-10, RN-18 |
 | RF-04 | Gestión administrativa de clientes: listado, búsqueda, detalle con pedidos y conversación, bloqueo de cuenta. | DEBE | — |
 
 ### 6.2 Catálogo e inventario
@@ -245,7 +265,7 @@ Si el objetivo de "alcance para atraer clientes" necesita algo visual antes, una
 |---|---|---|---|
 | RF-05 | Catálogo público con categorías, búsqueda por texto y filtros (tipo, material, medida, precio). **Implementado en INC-03.** | DEBE | — |
 | RF-06 | Detalle de producto con variantes (medida, material, color, talle) y disponibilidad por variante. **Implementado: detalle y variantes en INC-03; disponibilidad de los estándar en INC-04. La de los personalizables depende de D-18.** | DEBE | RN-01 |
-| RF-07 | Gestión administrativa de productos, variantes, precios, imágenes y estado (activo/inactivo). **Implementado en INC-03, salvo las imágenes, que se agregan en INC-07 con el sistema general de archivos (decisión de INC-03).** Los productos con pedidos no se borran: se desactivan. | DEBE | — |
+| RF-07 | Gestión administrativa de productos, variantes, precios, imágenes y estado (activo/inactivo). **Implementado en INC-03; las imágenes, en INC-07** con el sistema general de archivos: el catálogo las muestra con URLs firmadas generadas al renderizar. Los productos con pedidos no se borran: se desactivan. | DEBE | — |
 | RF-08 | Gestión del stock físico de productos terminados: ingresos, ajustes con motivo obligatorio. Cada cambio genera un movimiento de stock. **Implementado en INC-04.** | DEBE | RN-01, RN-05 |
 | RF-09 | Gestión de materiales (insumos y bases en blanco) con unidad de medida y stock. **Implementado en INC-04** (alta, edición, ingresos, ajustes); la reserva y el consumo automáticos de materiales dependen de D-09 y D-14. | DEBE | D-09, D-14 |
 | RF-10 | Historial de movimientos de stock por variante y por material. **Implementado en INC-04.** | DEBE | RN-06 |
@@ -260,23 +280,23 @@ Si el objetivo de "alcance para atraer clientes" necesita algo visual antes, una
 | RF-14 | Iniciar la confirmación exige carrito no vacío (validado en servidor). **Implementado en INC-05.2.** | DEBE | RN-02 |
 | RF-15 | Confirmación de la operación con revalidación de stock y precio en servidor y retención atómica del stock de **todos** los ítems (todo o nada). Se cobra el **precio vigente**: si cambió, el cliente ve el total actualizado y debe aceptarlo antes de confirmar. **Implementado en INC-05.2.** | DEBE | RN-01, RN-05, RN-27 |
 | RF-16 | Elección de modalidad de cierre: pago online (simulado) o reserva para pago en efectivo. La reserva en efectivo solo se ofrece con retiro en el local. **Implementado en INC-05.2.** | DEBE | RN-06, RN-09, RN-13 |
-| RF-17 | Elección de modalidad de entrega: retiro en local o envío (con dirección). El envío solo admite pago online. **INC-05.2 implementó el retiro en el local; el envío espera D-45 a D-49 (F-10).** | DEBE | RN-10, RN-13 |
-| RF-18 | Reserva para pago en efectivo, a pagar en el local, con vencimiento a las 24 h hábiles (sin contar fines de semana ni feriados, RN-29) desde su creación (en personalizados, desde la aceptación de la cotización); el cliente ve la hora exacta de vencimiento. **Implementado en INC-05.2 con 24 h corridas; INC-06.2 aplica las horas hábiles (RN-29).** | DEBE | RN-06, RN-13, RN-17 |
+| RF-17 | Elección de modalidad de entrega: retiro en local o envío (con dirección). El envío solo admite pago online. **Implementado en INC-05.2: el retiro y el envío cotizado (F-10).** | DEBE | RN-10, RN-13 |
+| RF-18 | Reserva para pago en efectivo, a pagar en el local, con vencimiento a las 24 h hábiles (sin contar fines de semana ni feriados, RN-29) desde su creación (en personalizados, desde la aceptación de la cotización); el cliente ve la hora exacta de vencimiento. **Implementado en INC-05.2; las 24 h hábiles, en INC-06.2.** | DEBE | RN-06, RN-13, RN-17 |
 | RF-19 | Registro por el administrador del pago en efectivo de una reserva vigente. **Implementado en INC-05.2.** | DEBE | RN-06 |
-| RF-20 | Vencimiento automático, como **dos procesos independientes**, de los pagos online pendientes (30 min) y de las reservas impagas (24 h), con liberación de stock idempotente y motivo de liberación propio. | DEBE | RN-06, RN-22 |
+| RF-20 | Vencimiento automático, como **dos procesos independientes**, de los pagos online pendientes (30 min) y de las reservas impagas (24 h), con liberación de stock idempotente y motivo de liberación propio. **Implementado en INC-06.1; el plazo hábil de las reservas, en INC-06.2.** | DEBE | RN-06, RN-22 |
 | RF-21 | Protección contra confirmaciones duplicadas (doble clic, reintentos de red) mediante clave de idempotencia. **Implementado en INC-05.2.** | DEBE | RN-05 |
 
 ### 6.4 Personalización y diseños
 
 | Código | Requisito | Prioridad | Reglas |
 |---|---|---|---|
-| RF-22 | Solicitud de personalización: producto base, medida, material, cantidad, descripción, fecha deseada y archivos de referencia. | DEBE | — |
-| RF-23 | Cotización del personalizado por el administrador (precio y fecha estimada) y aceptación por el cliente. Al aceptar empieza el plazo de pago o de reserva. Si la seña no se paga a tiempo, el admin puede reemitir la cotización en un pedido nuevo que copia la solicitud. | DEBE | RN-17, RN-21, D-10 |
-| RF-24 | Carga de propuestas de diseño como **versiones numeradas e inmutables**, con uno o más archivos. | DEBE | RN-07 |
-| RF-25 | Aprobación explícita del cliente sobre una versión concreta, con registro de usuario, fecha/hora y huella de los archivos aprobados. | DEBE | RN-07 |
-| RF-26 | Solicitud de cambios por el cliente con comentario; genera la necesidad de una nueva versión. | DEBE | RN-07 |
-| RF-27 | Bloqueo en servidor del paso a fabricación si algún ítem personalizado no tiene aprobada su versión vigente. | DEBE | RN-07 |
-| RF-28 | Vista para el cliente del historial de versiones y de su estado. | DEBE | RN-07 |
+| RF-22 | Solicitud de personalización: producto base, medida, material, cantidad, descripción, fecha deseada y archivos de referencia. | DEBE | — **Implementado en INC-08.1** (el producto base es una variante de un producto personalizable, que define medida y material). |
+| RF-23 | Cotización del personalizado por el administrador (precio y fecha estimada) y aceptación por el cliente. Al aceptar empieza el plazo de pago o de reserva. Si la seña no se paga a tiempo, el admin puede reemitir la cotización en un pedido nuevo que copia la solicitud. | DEBE | RN-17, RN-21, D-10 **Implementado en INC-08.1**, salvo el cobro de la seña (INC-08.2). |
+| RF-24 | Carga de propuestas de diseño como **versiones numeradas e inmutables**, con uno o más archivos. | DEBE | RN-07 **Implementado en INC-09.** |
+| RF-25 | Aprobación explícita del cliente sobre una versión concreta, con registro de usuario, fecha/hora y huella de los archivos aprobados. | DEBE | RN-07 **Implementado en INC-09.** |
+| RF-26 | Solicitud de cambios por el cliente con comentario; genera la necesidad de una nueva versión. | DEBE | RN-07 **Implementado en INC-09.** |
+| RF-27 | Bloqueo en servidor del paso a fabricación si algún ítem personalizado no tiene aprobada su versión vigente. | DEBE | RN-07 **Implementado en INC-09.** |
+| RF-28 | Vista para el cliente del historial de versiones y de su estado. | DEBE | RN-07 **Implementado en INC-09.** |
 
 ### 6.5 Comunicación y notificaciones
 
@@ -296,25 +316,25 @@ Si el objetivo de "alcance para atraer clientes" necesita algo visual antes, una
 | RF-35 | Listado y detalle de pedidos del cliente con estado, pagos, diseños, entregas e historial. **INC-05.2: listado y detalle con estado, productos, pagos e historial; diseños y entregas, en sus etapas.** | DEBE | — |
 | RF-36 | Gestión administrativa de pedidos con filtros por estado, fechas, modalidad, vencimiento próximo. **INC-05.2: listado filtrable por estado y detalle con el contacto del cliente.** | DEBE | — |
 | RF-37 | Cambios de estado solo por transiciones válidas (sección 9), validadas en servidor. | DEBE | RN-07 |
-| RF-38 | Fecha comprometida de despacho confirmada por el administrador; el cliente recibe un aviso y cada cambio queda registrado. | DEBE | RN-03, RN-04, RN-14 |
-| RF-39 | Cancelación por el cliente, con motivo. Antes de confirmar, el sistema informa si corresponde un cargo (15 %, RN-15, o retención de la seña completa, RN-21) y su importe. Rechaza la cancelación en los estados no permitidos e indica cómo contactar a la tienda. | DEBE | RN-03, RN-08, RN-15, RN-23 |
-| RF-40 | Cancelación por la administración, con motivo, sin cargo para el cliente y con devolución total incluido el envío. | DEBE | RN-08, RN-19 |
+| RF-38 | Fecha comprometida de despacho confirmada por el administrador; el cliente recibe un aviso y cada cambio queda registrado. **Implementado en INC-05.3** para pedidos confirmados o en producción. | DEBE | RN-03, RN-04, RN-14 |
+| RF-39 | Cancelación por el cliente, con motivo. Antes de confirmar, el sistema informa si corresponde un cargo (15 %, RN-15, o retención de la seña completa, RN-21) y su importe. Rechaza la cancelación en los estados no permitidos e indica cómo contactar a la tienda. | DEBE | RN-03, RN-08, RN-15, RN-23 **Implementado en INC-10.1a** (la retención de la seña, cuando haya pagos parciales en INC-08.2). |
+| RF-40 | Cancelación por la administración, con motivo, sin cargo para el cliente y con devolución total incluido el envío. | DEBE | RN-08, RN-19 **Implementado en INC-10.1a**; el cupón de RN-20 lo emite INC-11. |
 | RF-41 | Registro de cargos y compensaciones con importe, motivo y autor. El cargo de cancelación (15 %, RN-15, o retención de la seña, RN-21) lo calcula el sistema; la compensación por demora la carga el administrador manualmente durante el piloto, con motivo, importe y autor, y genera la devolución correspondiente (D-05); la compensación por cancelación de la tienda es un cupón (RN-20). Los cargos sin pago previo quedan pendientes de arreglo y se cierran con un resultado. | DEBE | RN-03, RN-04, RN-15, RN-18, RN-19, RN-21, D-05 |
-| RF-42 | Reembolso simulado para pedidos pagados online, claramente identificado como simulado. Si corresponde un cargo (15 % o seña retenida), se reembolsa lo pagado menos ese cargo. | DEBE | RN-09, RN-15, RN-21 |
+| RF-42 | Reembolso simulado para pedidos pagados online, claramente identificado como simulado. Si corresponde un cargo (15 % o seña retenida), se reembolsa lo pagado menos ese cargo. | DEBE | RN-09, RN-15, RN-21 **Implementado en INC-10.1a**: el reembolso se calcula al cancelar y el admin lo ejecuta. |
 | RF-43 | Gestión de entregas: retiro (listo, entregado) y envío (despachado, entregado, con datos de seguimiento opcionales). | DEBE | RN-10, D-06 |
 | RF-44 | Historial de estados por pedido y registro de auditoría de acciones relevantes. | DEBE | RN-08 |
 | RF-45 | Panel administrativo inicial: pedidos por estado, reservas por vencer, diseños pendientes de aprobación, mensajes sin leer, stock bajo, cargos pendientes de arreglo. | DEBERÍA | — |
-| RF-49 | Datos de contacto de la tienda (email y teléfono) configurables por el administrador y visibles en el sitio y en los avisos de cancelación. | DEBE | RN-18 |
-| RF-50 | Emisión automática de un cupón de compensación cuando la tienda cancela un pedido; se envía por email y queda visible en "Mis cupones". | DEBE | RN-20 |
-| RF-51 | Aplicación de un cupón en el checkout, con validación en servidor y uso único atómico. Si el pedido se cancela o vence, el cupón se restaura una sola vez, conservando su vencimiento original. | DEBE | RN-20 |
-| RF-52 | Seña del 20 % (sobre el precio después del cupón) que confirma el pedido personalizado; saldo online antes del despacho o, si se retira, online o en efectivo al retirar. El backend rechaza despachar o entregar con saldo pendiente. Si el cliente cancela dentro de las últimas 48 h, la seña se retiene completa. | DEBE | RN-21 |
-| RF-53 | Campo de costo real estimado en cada cancelación con cargo, precargado con el 20 % del valor de los productos como referencia editable. No modifica el cargo comercial del 15 % ni se aplica como cargo. | DEBERÍA | R-15 |
-| RF-54 | Gestión administrativa de cupones: listado, filtro por estado y anulación con motivo. | DEBERÍA | RN-20 |
-| RF-55 | Desglose de cada cancelación, visible para el admin y el cliente y guardado tal como se calculó: subtotal original de productos, descuento del cupón, importe de productos cobrado, envío, seña y saldo pagados (personalizados), total pagado, regla aplicada, porcentaje, cargo y reembolso. | DEBE | RN-15, RN-21, RN-24 |
+| RF-49 | Datos de contacto de la tienda (email y teléfono) configurables por el administrador y visibles en el sitio y en los avisos de cancelación. **Implementado en INC-05.3:** página `/contacto` y aviso de reserva en efectivo; los avisos de cancelación llegan en INC-10.1. | DEBE | RN-18 |
+| RF-50 | Emisión automática de un cupón de compensación cuando la tienda cancela un pedido; se envía por email y queda visible en "Mis cupones". | DEBE | RN-20 **Implementado en INC-11.** |
+| RF-51 | Aplicación de un cupón en el checkout, con validación en servidor y uso único atómico. Si el pedido se cancela o vence, el cupón se restaura una sola vez, conservando su vencimiento original. | DEBE | RN-20 **Implementado en INC-11.** |
+| RF-52 | Seña del 20 % (sobre el precio después del cupón) que confirma el pedido personalizado; saldo online antes del despacho o, si se retira, online o en efectivo al retirar. El backend rechaza despachar o entregar con saldo pendiente. Si el cliente cancela dentro de las últimas 48 h, la seña se retiene completa. | DEBE | RN-21 **Precisiones (v1.30):** el saldo es el total final (productos − cupón + envío) menos lo cobrado. El saldo online se habilita con el pedido confirmado y saldo pendiente, sin plazo, sin retención de stock y sin cambio de estado; con envío, solo antes del despacho (D-57). El saldo en efectivo se registra solo con el pedido `LISTO_PARA_RETIRO` (D-56). Si el cupón cubre todos los productos y solo queda el envío, la seña es $0: el pedido se confirma al aceptar sin registrar un pago (motivo `SIN_SENA_REQUERIDA`) y el envío queda como saldo, online antes del despacho (D-55). **Implementado en INC-08.2.** **Implementado en INC-08.2**; el bloqueo de despacho y entrega es una guarda de las transiciones, que heredan las operaciones de INC-12. |
+| RF-53 | Campo de costo real estimado en cada cancelación con cargo, precargado con el 20 % del valor de los productos como referencia editable. No modifica el cargo comercial del 15 % ni se aplica como cargo. | DEBERÍA | R-15 **Implementado en INC-10.1a.** |
+| RF-54 | Gestión administrativa de cupones: listado, filtro por estado y anulación con motivo. | DEBERÍA | RN-20 **Implementado en INC-11.** |
+| RF-55 | Desglose de cada cancelación, visible para el admin y el cliente y guardado tal como se calculó: subtotal original de productos, descuento del cupón, importe de productos cobrado, envío, seña y saldo pagados (personalizados), total pagado, regla aplicada, porcentaje, cargo y reembolso. | DEBE | RN-15, RN-21, RN-24 **Implementado en INC-10.1a.** |
 | RF-56 | Registro en el pedido de los comprobantes emitidos fuera del sistema (factura y, si hay cancelación, nota de crédito): tipo, punto de venta, número, fecha y PDF opcional. El cliente puede descargarlos desde su pedido. | DEBE | RN-26 |
-| RF-57 | Extensión de una reserva vigente y reactivación de una reserva vencida, solo por el administrador, con motivo obligatorio y registro de la fecha anterior y la nueva. | DEBE | RN-28 |
-| RF-58 | Gestión de feriados por el administrador (alta, baja, listado por año); el cálculo de vencimientos usa esa lista. | DEBE | RN-29 |
-| RF-59 | Gestión de fechas excluidas de la ventana de 48 h por el administrador: antes de confirmar ve los pedidos afectados; al confirmar, el sistema recalcula sus ventanas y avisa a esos clientes por email e in-app. El cliente ve en su pedido desde cuándo cancelar tiene cargo. | DEBE | RN-30 |
+| RF-57 | Extensión de una reserva vigente y reactivación de una reserva vencida, solo por el administrador, con motivo obligatorio y registro de la fecha anterior y la nueva. **Implementado en INC-06.3.** | DEBE | RN-28 |
+| RF-58 | Gestión de feriados por el administrador (alta, baja, listado por año); el cálculo de vencimientos usa esa lista. **Implementado en INC-06.2.** | DEBE | RN-29 |
+| RF-59 | Gestión de fechas excluidas de la ventana de 48 h por el administrador: antes de confirmar ve los pedidos afectados; al confirmar, el sistema recalcula sus ventanas y avisa a esos clientes por email e in-app. El cliente ve en su pedido desde cuándo cancelar tiene cargo. | DEBE | RN-30 **Implementado en INC-10.2** (backend). **Implementado en INC-10.2** (pantalla `/admin/fechas-excluidas`). |
 
 ### 6.7 Pagos
 
@@ -421,18 +441,19 @@ Surgen de las respuestas de la tienda a las decisiones pendientes. Tienen el mis
 | RN-17 | **Inicio del plazo en personalizados.** El plazo de 24 h de la reserva en efectivo (y el del pago online) empieza cuando el cliente acepta la cotización, no al crear la solicitud. | RN-06 | D-01 |
 | RN-18 | **Cargos y devoluciones que requieren arreglo.** Si corresponde un cargo y el pedido no tenía pago (o el pago no lo cubre), o si hay que devolver dinero pagado en efectivo, el registro queda `PENDIENTE_ARREGLO` y la administración se comunica con el cliente por email o teléfono. Por eso el teléfono es obligatorio para reservar en efectivo, y la tienda publica su email y teléfono de contacto. Los cargos se cierran como `COBRADO`, `CONDONADO` o `INCOBRABLE`; las devoluciones en efectivo, como `DEVUELTO`; siempre con nota y autor. | RN-03, RN-08, RN-09 | D-22, D-23 |
 | RN-19 | **Cancelación por la tienda.** No se cobra ningún cargo al cliente. Se le devuelve todo lo pagado, **incluido el envío** (reembolso simulado si pagó online; arreglo con el admin si pagó en efectivo, RN-18), y se le emite automáticamente un cupón de compensación (RN-20). | RN-08, RN-09 | D-04, D-31 |
-| RN-20 | **Cupón de compensación.** Monto fijo igual al **10 % del subtotal de los productos** del pedido cancelado, **sin el envío** (D-34). Vigencia de **un mes** desde su emisión: el pedido que lo usa debe crearse antes del vencimiento. Se envía por email y queda visible en "Mis cupones". El uso se valida y se consume de forma **atómica**, en la misma transacción que crea el pedido, para que no se use en dos pedidos a la vez. Si el pedido donde se usó se cancela o vence, el cupón vuelve a quedar activo **una sola vez** y **conserva su vencimiento original** (una misma cancelación o vencimiento no lo restaura dos veces; no hay otro límite, porque el vencimiento original ya acota el uso, D-41). **[PROPUESTA]** Es nominativo y uno por pedido; no se combina con otros; descuenta solo sobre productos (no sobre el envío); no da vuelto ni deja saldo. | RN-08 | D-31, D-34 |
-| RN-21 | **Seña en personalizados.** Cuando el administrador revisa la solicitud y envía la cotización, y el cliente la acepta, el cliente paga una **seña del 20 %** del precio cotizado, calculada **después del descuento del cupón** si lo hay (D-40), dentro del plazo de RN-17 (24 h en efectivo en el local, RN-06, o 30 min online, RN-22). La seña registrada **confirma el pedido** (RN-16). **Saldo:** con envío, se paga online antes del despacho; con retiro, online o en efectivo al momento del retiro. **El backend rechaza despachar o entregar con saldo pendiente.** **Cancelación por el cliente:** con más de 48 h de anticipación se devuelve la seña completa (y el saldo, si se pagó); dentro de las últimas 48 h **se retiene la seña completa** y se devuelve solo el saldo, si se había pagado (D-39). Esta regla **prevalece sobre RN-15** (RN-24). **Cancelación por la tienda:** RN-19. **Seña no pagada a tiempo:** el pedido vence (estado final) y el admin puede reemitir la cotización en un pedido nuevo que copia la solicitud (D-42). | RN-03, RN-09, RN-16 | D-33, D-37 a D-40, D-42 |
+| RN-20 | **Cupón de compensación.** Monto fijo igual al **10 % del subtotal de los productos** del pedido cancelado, **sin el envío** (D-34). Vigencia de **un mes** desde su emisión: el pedido que lo usa debe crearse antes del vencimiento. Se envía por email y queda visible en "Mis cupones". El uso se valida y se consume de forma **atómica**, en la misma transacción que crea el pedido, para que no se use en dos pedidos a la vez. Si el pedido donde se usó se cancela o vence, el cupón vuelve a quedar activo **una sola vez** y **conserva su vencimiento original** (una misma cancelación o vencimiento no lo restaura dos veces; no hay otro límite, porque el vencimiento original ya acota el uso, D-41). Es nominativo y uno por pedido; no se combina con otros; descuenta solo sobre productos (no sobre el envío); no da vuelto ni deja saldo (confirmado en v1.25). | RN-08 | D-31, D-34 **Implementado en INC-11.** La vigencia es un mes calendario desde la emisión (si el día no existe, el último del mes). |
+| RN-21 | **Seña en personalizados.** Cuando el administrador revisa la solicitud y envía la cotización, y el cliente la acepta, el cliente paga una **seña del 20 %** del precio cotizado de los productos, **sin el envío** (D-48), calculada **después del descuento del cupón** si lo hay (D-40), dentro del plazo de RN-17 (24 h en efectivo en el local, RN-06, o 30 min online, RN-22). La seña registrada **confirma el pedido** (RN-16). **Saldo:** con envío, incluye el costo del envío cotizado junto con el producto (D-48) y se paga online antes del despacho; con retiro, online o en efectivo al momento del retiro. **El backend rechaza despachar o entregar con saldo pendiente.** **Cancelación por el cliente:** con más de 48 h de anticipación se devuelve la seña completa (y el saldo, si se pagó); dentro de las últimas 48 h **se retiene la seña completa** y se devuelve solo el saldo, si se había pagado (D-39). Esta regla **prevalece sobre RN-15** (RN-24). **Cancelación por la tienda:** RN-19. **Seña no pagada a tiempo:** el pedido vence (estado final) y el admin puede reemitir la cotización en un pedido nuevo que copia la solicitud (D-42). | RN-03, RN-09, RN-16 | D-33, D-37 a D-40, D-42 |
 | RN-22 | **Plazo del pago online.** Un pago online iniciado retiene el stock **30 minutos** (en personalizados, desde la aceptación de la cotización, RN-17). Al vencer, el pedido pasa a `VENCIDO` y el stock se libera. Es un mecanismo **independiente** del vencimiento de 24 h de las reservas (RN-06): proceso, motivo de liberación y notificación propios (14.5). No aplica al pago del saldo de un personalizado, que no retiene stock nuevo. El valor es configurable para adaptarlo a una pasarela real. | RN-06 | D-16 |
-| RN-23 | **Cancelación por el cliente según estado.** `EN_DEFINICION`, `PENDIENTE_PAGO` y `RESERVADO`: sin cargo. `CONFIRMADO` y `EN_PRODUCCION`: cargo del 15 % solo dentro de la ventana (RN-14, RN-15); fuera de ella, reembolso completo (en personalizados con seña, RN-21; precedencia en RN-24). `LISTO_PARA_RETIRO`, `DESPACHADO` y `ENTREGADO`: el cliente no puede cancelar desde la web y debe comunicarse con la tienda. Las devoluciones de productos entregados quedan fuera de la v1. | RN-03, RN-08 | D-17 |
+| RN-23 | **Cancelación por el cliente según estado.** `EN_DEFINICION`, `ENVIO_A_COTIZAR` (D-51), `PENDIENTE_PAGO` y `RESERVADO`: sin cargo. `CONFIRMADO` y `EN_PRODUCCION`: cargo del 15 % solo dentro de la ventana (RN-14, RN-15); fuera de ella, reembolso completo (en personalizados con seña, RN-21; precedencia en RN-24). `LISTO_PARA_RETIRO`, `DESPACHADO` y `ENTREGADO`: el cliente no puede cancelar desde la web y debe comunicarse con la tienda. Las devoluciones de productos entregados quedan fuera de la v1. | RN-03, RN-08 | D-17 |
 | RN-24 | **Precedencia en cancelaciones.** Cada cancelación aplica **una sola** regla de cargo, evaluada en este orden: (1) si cancela la tienda → RN-19 (sin cargo, devolución total con envío, cupón); (2) si el estado no permite cancelar → se rechaza (RN-23); (3) si es un personalizado con seña registrada → **RN-21**, que prevalece sobre RN-15 (dentro de la ventana se retiene la seña completa); (4) en el resto → RN-15 dentro de la ventana, o devolución completa fuera de ella; (5) si hay que cobrar o devolver en efectivo → arreglo según RN-18. La regla aplicada y su desglose se guardan en la cancelación (RF-55). La base de datos impide dos cargos de cancelación para el mismo pedido. | RN-03, RN-08, RN-15, RN-19, RN-21 | D-37 |
 | RN-25 | **Cuenta obligatoria.** El catálogo y la disponibilidad son públicos, pero comprar, reservar, solicitar una personalización y usar cupones requiere una cuenta de cliente. El registro se ofrece dentro del checkout, en un solo paso (nombre, email, contraseña y teléfono; el teléfono es obligatorio para reservar en efectivo, RN-18), sin perder el carrito. **[PROPUESTA]** La verificación del email no bloquea la primera compra: el correo de confirmación del pedido incluye el enlace de verificación. | RN-01, RN-02 | D-11 |
 | RN-26 | **Moneda, impuestos y facturación.** Única moneda: **pesos argentinos (ARS)**. Los precios publicados son **finales, con impuestos incluidos**; el sistema no calcula ni discrimina impuestos. La tienda es **monotributista** y en la v1 **factura fuera del sistema** (por ejemplo, con el facturador de ARCA); el admin registra en el pedido el comprobante emitido y, si el pedido se cancela después de facturado, la nota de crédito correspondiente. El tipo de comprobante (para monotributo, en general factura C) y las obligaciones vigentes se confirman con el contador de la tienda. | RN-09 | D-24 |
 | RN-27 | **Precio vigente al confirmar.** El carrito no congela precios: siempre muestra el precio actual y avisa si cambió desde que se agregó el producto (RF-13). El checkout cobra el precio vigente al confirmar; si cambió entre que el cliente vio el resumen y confirmó, el servidor rechaza la operación (`PRECIO_CAMBIADO`) y muestra el nuevo total para que lo acepte. Una vez confirmado, el precio queda fijo en el pedido. En personalizados rige el precio de la cotización aceptada. | RN-01 | D-28 |
-| RN-28 | **Extensión y reactivación de reservas, solo por el administrador.** El cliente no puede extender ni reactivar una reserva. El admin puede, con motivo obligatorio: (a) **extender** una reserva vigente fijando un nuevo vencimiento futuro; (b) **reactivar** una reserva **estándar** vencida, que vuelve a `RESERVADO` solo si se puede volver a retener el stock de todos los ítems (misma retención atómica de 14.3). **[PROPUESTA]** La reactivación usa los precios vigentes, por coherencia con RN-27, y el admin ve el total antes de confirmar; el nuevo vencimiento se calcula con RN-29 desde la reactivación; si el pedido había usado un cupón que ya no está disponible, la reactivación se rechaza. Los personalizados vencidos no se reactivan: se reemite la cotización (D-42). | RN-06 | D-20 |
-| RN-29 | **El plazo de 24 h no corre fines de semana ni feriados.** El vencimiento de una reserva en efectivo (RN-06, también en personalizados según RN-17) se calcula sumando 24 horas que caen en días hábiles: los sábados, domingos y feriados no cuentan. Los feriados los carga el administrador; el sistema no los deduce. El cálculo usa la zona horaria de la tienda y el resultado se guarda en `vence_en`. **[PROPUESTA]** Se cuentan horas corridas de los días hábiles completos, no el horario de atención del local. Ejemplos: reserva del viernes 18:00 → vence el lunes 18:00; reserva del sábado 10:00 → vence el martes 00:00; viernes 18:00 con lunes feriado → martes 18:00. Si el admin agrega un feriado que afecta reservas vigentes, sus vencimientos se recalculan y solo pueden extenderse; quitar un feriado no acorta reservas ya creadas. No se aplica al plazo de 30 min del pago online (RN-22) ni a la ventana de 48 h de cancelación (RN-30). | RN-06 | D-30 |
-| RN-30 | **Ventana de 48 h para cancelar con cargo.** Son 48 horas corridas antes de la fecha comprometida de despacho, **incluidos fines de semana y feriados**. El administrador puede elegir **fechas excluidas**: esos días completos no cuentan, así que la ventana empieza antes para sumar 48 h. Al agregar o quitar una fecha excluida, el sistema recalcula el inicio de la ventana de los pedidos afectados (confirmados, con fecha comprometida, todavía no despachados, sin la marca fija de RN-14) y **avisa a esos clientes** por email e in-app con la nueva hora de inicio. El inicio se guarda en el pedido y es el que usa la cancelación. La marca fija de RN-14 se evalúa contra ese inicio. **[PROPUESTA]** Un recálculo nunca deja el inicio antes del momento en que se avisa al cliente: un cambio de la tienda no genera cargos retroactivos. **Flexibilidad:** el cálculo vive en una sola función que usa la misma utilidad de horas que RN-29; excluir también los fines de semana sería cambiar el criterio de esa función, sin tocar el resto. | RN-03, RN-14 | D-43 |
+| RN-28 | **Extensión y reactivación de reservas, solo por el administrador.** El cliente no puede extender ni reactivar una reserva. El admin puede, con motivo obligatorio: (a) **extender** una reserva vigente fijando un nuevo vencimiento futuro; (b) **reactivar** una reserva **estándar** vencida, que vuelve a `RESERVADO` solo si se puede volver a retener el stock de todos los ítems (misma retención atómica de 14.3). La reactivación usa los precios vigentes en ese momento, por coherencia con RN-27: el admin revisa y confirma el total actualizado y, si cambia antes de confirmar, la operación se rechaza. El nuevo vencimiento se calcula desde la reactivación, con las 24 h hábiles y los feriados de RN-29 (confirmado en v1.18). Si el pedido había usado un cupón que ya no está disponible, la reactivación se rechaza (confirmado en v1.25). Los personalizados vencidos no se reactivan: se reemite la cotización (D-42). **Implementado en INC-06.3.** Condición del cupón (confirmada en v1.25, **implementada en INC-11**): la reactivación vuelve a usar el cupón y, si ya no está disponible, se rechaza (`CUPON_NO_DISPONIBLE`). | RN-06 | D-20 |
+| RN-29 | **El plazo de 24 h no corre fines de semana ni feriados.** El vencimiento de una reserva en efectivo (RN-06, también en personalizados según RN-17) se calcula sumando 24 horas que caen en días hábiles: los sábados, domingos y feriados no cuentan. Los feriados los carga el administrador; el sistema no los deduce. El cálculo usa la zona horaria de la tienda y el resultado se guarda en `vence_en`. **[PROPUESTA]** Se cuentan horas corridas de los días hábiles completos, no el horario de atención del local. Ejemplos: reserva del viernes 18:00 → vence el lunes 18:00; reserva del sábado 10:00 → vence el martes 00:00; viernes 18:00 con lunes feriado → martes 18:00. Si el admin agrega un feriado que afecta reservas vigentes, sus vencimientos se recalculan y solo pueden extenderse; quitar un feriado no acorta reservas ya creadas. No se aplica al plazo de 30 min del pago online (RN-22) ni a la ventana de 48 h de cancelación (RN-30). **Implementado en INC-06.2 tal como está escrito; la parte [PROPUESTA] sigue pendiente de confirmación.** | RN-06 | D-30 |
+| RN-30 | **Ventana de 48 h para cancelar con cargo.** Son 48 horas corridas antes de la fecha comprometida de despacho, **incluidos fines de semana y feriados**. El administrador puede elegir **fechas excluidas**: esos días completos no cuentan, así que la ventana empieza antes para sumar 48 h. Al agregar o quitar una fecha excluida, el sistema recalcula el inicio de la ventana de los pedidos afectados (confirmados, con fecha comprometida, todavía no despachados, sin la marca fija de RN-14) y **avisa a esos clientes** por email e in-app con la nueva hora de inicio. El inicio se guarda en el pedido y es el que usa la cancelación. La marca fija de RN-14 se evalúa contra ese inicio. Un recálculo nunca deja el inicio antes del momento en que se avisa al cliente: un cambio de la tienda no genera cargos retroactivos (confirmado en v1.32). Una ventana que ya empezó y seguiría empezada no cambia. **Flexibilidad:** el cálculo vive en una sola función que usa la misma utilidad de horas que RN-29; excluir también los fines de semana sería cambiar el criterio de esa función, sin tocar el resto. | RN-03, RN-14 | D-43 |
 | RN-31 | **Precio de los personalizables en el catálogo.** Hasta definir D-10, los productos personalizables se muestran con «Consultá el precio» y sus variantes no llevan precio; los estándar muestran su precio final en pesos con impuestos incluidos (RN-26). | RN-26 | Decisión de INC-03 |
+| RN-32 | **Pedido sin importe a cobrar.** Si el total final de un pedido es **exactamente $0**, después de aplicar el cupón y calcular todos los conceptos (productos, envío), se confirma automáticamente, sin pasar por la pasarela y **sin registrar un pago ficticio**: no se cobra $0 a un proveedor. La confirmación conserva todas las validaciones del checkout (stock, precios, cupón y demás reglas) y respeta el modelo de estados; el historial distingue una confirmación sin pago requerido de un cobro real. **Implementado:** el pedido se crea o pasa directamente a `CONFIRMADO`, sin `Pago` y sin plazo de pago, con el porcentaje del cargo guardado (RN-15) y el motivo `SIN_PAGO_REQUERIDO` en el historial. Se evalúa donde se conoce el total final: en el checkout con retiro; con envío, recién al aceptar la cotización o pasar a retiro (productos en $0 con envío pendiente no alcanzan); y al reactivar una reserva. El pago simulado y el registro de efectivo rechazan un total de $0 (`SIN_PAGO_REQUERIDO`). | RN-16, RN-20 | D-52 |
 
 ### 7.3 Reglas propuestas (no aprobadas)
 
@@ -460,7 +481,7 @@ Resumen de cómo interactúan las reglas generales y las específicas. Si dos re
 | Pago online pendiente y reserva en efectivo | RN-06, RN-22 | Mecanismos independientes (14.5): cada proceso vence solo su propio estado. |
 | Reserva de 24 h y fines de semana o feriados | RN-06, RN-17, RN-29 | El plazo solo corre en días hábiles; el 30 min online y la ventana de 48 h no se ven afectados. |
 | Ventana de 48 h y fechas excluidas | RN-03, RN-14, RN-30 | Fines de semana y feriados cuentan; solo las fechas excluidas por el admin no cuentan. Los feriados de RN-29 no afectan esta ventana. |
-| Reactivación de una reserva vencida | RN-20, RN-27, RN-28 | Solo el admin y solo para estándar; nueva retención atómica de stock y precios vigentes [PROPUESTA]; personalizados por reemisión (D-42). |
+| Reactivación de una reserva vencida | RN-20, RN-27, RN-28 | Solo el admin y solo para estándar; nueva retención atómica de stock y precios vigentes; personalizados por reemisión (D-42). |
 | Vencimiento de un pedido que usó cupón | RN-06/RN-22, RN-20 | El cupón se restaura (misma regla que en la cancelación). |
 | Pago del saldo | RN-21, RN-22 | No crea retención ni plazo de 30 min: el stock ya está retenido por el pedido confirmado. |
 | Despacho o entrega con saldo pendiente | RN-21 | Rechazado por el backend (`SALDO_PENDIENTE`). |
@@ -501,7 +522,7 @@ Los flujos indican en negrita las validaciones que **deben hacerse en el servido
 2. **Extensión:** con la reserva vigente, el admin fija un nuevo vencimiento futuro y un motivo → el servidor actualiza `vence_en` con un `UPDATE` condicional sobre `RESERVADO`, registra `ExtensionReserva` y notifica al cliente.
 3. **Reactivación:** con una reserva estándar `VENCIDO`, el admin ve el total a precios vigentes y confirma con motivo → **en una transacción**, el servidor vuelve a retener el stock de todos los ítems (14.3); si alguno no alcanza, rechaza todo. Si alcanza, pasa el pedido a `RESERVADO` con un nuevo `vence_en` (RN-29), registra `ExtensionReserva` y el historial, y notifica.
 
-### 8.3 F-03 Pedido personalizado [inicio del plazo ACORDADO (RN-17); precio depende de D-10]
+### 8.3 F-03 Pedido personalizado [ACORDADO: RN-17, D-10, D-14, D-18, D-42, D-48, D-53, D-54]
 
 ```
 Solicitud ──► Aclaración (chat) ──► Cotización ──► Aceptación ──► Pago/Reserva ──► Diseño v1..vN ──► Aprobación ──► Fabricación ──► Entrega
@@ -511,11 +532,14 @@ Solicitud ──► Aclaración (chat) ──► Cotización ──► Aceptaci�
 
 1. El cliente crea una solicitud (RF-22) con referencias. El pedido se crea en `EN_DEFINICION`: **no retiene stock y no tiene vencimiento de 24 h**.
 2. La administración aclara requisitos por chat asociado al pedido.
-3. La administración carga la cotización: precio y fecha estimada (RF-23). La fecha comprometida de despacho la confirma después (RN-14).
+3. La administración carga la cotización **manual** (D-10): precio por unidad (el de los productos es precio × cantidad), detalle y fecha estimada de entrega (RF-23); con envío, también el costo del envío (D-48). La fecha comprometida de despacho la confirma después (RN-14). Una cotización nueva **reemplaza** a la vigente (`REEMPLAZADA`); la vigente **no vence** (D-54). Los materiales no se reservan ni se exigen para cotizar (D-14, D-18).
+   - Si el cliente **rechaza** la cotización, queda `RECHAZADA` y el pedido sigue en `EN_DEFINICION`, sin reserva ni plazo, a la espera de otra cotización (D-53).
 4. El cliente acepta la cotización y paga la **seña del 20 %** (RN-21): online (`PENDIENTE_PAGO`, 30 min, RN-22) o en efectivo en el local si retira (`RESERVADO`, 24 h, RN-13). **El plazo empieza en este momento (RN-17).** Con la seña registrada, el pedido pasa a `CONFIRMADO` (RN-16).
 5. La administración carga la versión 1 del diseño → el ítem queda `PENDIENTE_APROBACION`; se notifica al cliente.
 6. El cliente aprueba (RF-25) o pide cambios (RF-26). Si pide cambios, la administración carga la versión 2, y así sucesivamente.
 7. Con pedido `CONFIRMADO` y **todas las versiones vigentes aprobadas**, la administración pasa a `EN_PRODUCCION` → **servidor valida RN-07 en la misma transacción que el cambio de estado**.
+
+**Implementación (INC-08.1):** `orders/custom-order.service.ts`. La solicitud vive en `SolicitudPersonalizacion` (variante base, cantidad, descripción, fecha deseada) y sus referencias en `ReferenciaPedido`; el `ItemPedido` se crea **al aceptar**, con el precio cotizado (la base exige precio unitario positivo). Al aceptar se fijan `porcentaje_sena` y `sena_centavos` (RN-21), el cupón se consume en la misma transacción (F-08) y, si el total final es $0, se confirma sin pago (RN-32). **El cobro de la seña es de INC-08.2:** hasta entonces, el pago simulado y el registro de efectivo rechazan los personalizados (`SENA_NO_DISPONIBLE`), así que un personalizado aceptado vence si no se cobra por otra vía. La reemisión (D-42) se permite una sola vez por pedido original (`pedido_origen_id` único) y solo si venció por falta de pago. Los pasos 2 (chat, INC-13) y 5 a 7 (diseños, INC-09) quedan fuera.
 8. Si durante la producción se modifica el diseño, se crea una nueva versión: **la aprobación anterior deja de habilitar**; si el pedido está `EN_PRODUCCION`, se registra el evento y se exige nueva aprobación antes de continuar (ver 15.5).
 9. Saldo (80 %): con envío, se paga online antes del despacho; con retiro, online o en efectivo al momento del retiro (el admin registra el pago `SALDO` y luego la entrega). Pagar el saldo no crea una retención nueva ni un plazo de 30 min. **El backend rechaza despachar o entregar con saldo pendiente (RN-21).**
 10. Si la seña no se paga a tiempo, el pedido pasa a `VENCIDO` y no se reabre. El admin puede **reemitir la cotización** en un pedido nuevo que copia la solicitud y las referencias y queda vinculado al original (`pedido_origen_id`). El plazo de la seña empieza cuando el cliente acepta la nueva cotización (D-42).
@@ -562,23 +586,34 @@ El administrador confirma la fecha comprometida de despacho (o de disponibilidad
 ### 8.9 F-09 Fechas excluidas de la ventana de 48 h (solo admin)
 
 1. El admin elige una fecha y un motivo. El sistema muestra una **vista previa**: los pedidos cuya ventana cambiaría, con el inicio actual y el nuevo.
-2. Al confirmar, **en una transacción**: se guarda `DiaExcluidoVentana`; para cada pedido afectado se actualiza `inicio_ventana_cargo` (sin dejarlo antes del momento actual, [PROPUESTA]), se registra `CambioVentanaCargo` y se encola un aviso al cliente en el outbox.
+2. Al confirmar, **en una transacción**: se guarda `DiaExcluidoVentana`; para cada pedido afectado se actualiza `inicio_ventana_cargo` (sin dejarlo antes del momento actual, confirmado en v1.32), se registra `CambioVentanaCargo` y se encola un aviso al cliente en el outbox.
 3. Quitar una fecha excluida sigue el mismo flujo: recálculo, registro y aviso.
 4. Si el proceso se reintenta, cada pedido se actualiza y se avisa una sola vez (el `UPDATE` es condicional sobre el inicio anterior).
 
-### 8.10 F-10 Envío cotizado por la tienda [D-06 opción B ACORDADA; flujo PROPUESTO, pendiente D-45 a D-49]
+**Implementación (INC-10.2):** `orders/cancellation-window.service.ts` y `cancellationWindowStart` / `recalculatedWindowStart` en `order.policy.ts`, sobre `subtractCountedHours` (la utilidad de horas de RN-29, ahora también hacia atrás). Afectados: pedidos `CONFIRMADO` o `EN_PRODUCCION` con fecha comprometida y sin la marca fija, cuyo inicio cambia. La vista previa y el recálculo usan el mismo cálculo. Fecha, recálculo, registro y aviso (outbox) van en una sola transacción: un reintento de la misma fecha choca con la fecha única y no recalcula ni avisa. Los cambios del calendario se serializan con un bloqueo de la base que también toma la confirmación de la fecha comprometida, antes de bloquear el pedido, así que dos cambios simultáneos ven las exclusiones definitivas y no se traban. La fecha comprometida nueva ya descuenta las fechas excluidas.
+
+### 8.10 F-10 Envío cotizado por la tienda [ACORDADO: D-06 opción B, D-45, D-46, D-47, D-49]
 
 **Acordado:** el administrador cotiza el envío después de que el cliente hace el pedido (D-06, opción B).
 
-**Propuesta** (no aprobada; depende de D-45 a D-49):
+1. En el checkout, el cliente elige envío y una dirección de su libreta (RF-03); el envío solo admite pago online (RN-13). El pedido se crea en **`ENVIO_A_COTIZAR`** con una copia de la dirección, el subtotal de productos al precio vigente (RN-27) y sin costo de envío. **No retiene stock** (D-45), pero se rechaza si hoy no hay stock suficiente. No se puede pagar en este estado.
+2. La tienda tiene **48 h corridas** desde la creación para responder (D-46) con una **`CotizacionEnvio`**: un importe en centavos con nota opcional, o la indicación de que **no puede enviar** a esa dirección, con motivo (D-49). El pedido pasa a **`ENVIO_COTIZADO`** y el cliente recibe un aviso. Si el administrador corrige la respuesta, la anterior queda `REEMPLAZADA` y el cliente recibe otro aviso y un nuevo plazo de 48 h.
+3. El cliente tiene **48 h corridas** desde la cotización para responder (D-46). Ve el desglose a precios de hoy (productos + envío = total) y puede:
+   - **Aceptar** la cotización vigente, enviando su id y el total que vio. Se rechaza si fue reemplazada (`COTIZACION_DESACTUALIZADA`), si el total cambió (`PRECIO_CAMBIADO`, RN-27) o si la tienda no puede enviar (`ENVIO_NO_POSIBLE`). Al aceptar, **en una transacción**, se retiene el stock de todos los ítems con la retención atómica de 14.3 (sin stock no cambia nada, D-45), se guardan los precios vigentes y el pedido pasa a `PENDIENTE_PAGO` con el plazo de 30 min (RN-22).
+   - **Pasar a retiro en el local** (D-47), con pago online (`PENDIENTE_PAGO`, 30 min) o en efectivo (`RESERVADO`, 24 h hábiles, RN-29; exige teléfono). Misma revalidación de precios y retención de stock; el envío queda en cero.
+   - **Cancelar sin cargo** (D-47): todavía no pagó ni retiene stock.
+4. **Cancelación con cupón (D-49):** si la tienda indicó que no puede enviar y el cliente cancela, la cancelación cuenta como **cancelación por la tienda** y corresponde el cupón del 10 % (RN-19, RN-20). Si el cliente pasa a retiro y el pedido continúa, no corresponde cupón.
+5. **Vencimientos (D-46):** un tercer proceso, independiente de los de 14.5, cancela los pedidos `ENVIO_A_COTIZAR` sin cotización (motivo `PLAZO_COTIZACION_ENVIO`) y los `ENVIO_COTIZADO` sin respuesta (motivo `PLAZO_RESPUESTA_ENVIO`), sin cargo y **sin cupón**. Toda acción se controla contra el plazo al ejecutarse (`PLAZO_VENCIDO`), aunque el proceso todavía no haya corrido.
+6. El pago online solo se acepta en `PENDIENTE_PAGO` y por el total calculado en el servidor (productos + envío aceptado − cupón).
+7. Trazabilidad: cada cotización (importe o "no se puede enviar", nota, autor, fecha, estado `PROPUESTA`/`ACEPTADA`/`RECHAZADA`/`REEMPLAZADA`, fecha de respuesta), el historial de estados con el motivo de cada cancelación y la auditoría.
 
-1. En el checkout, el cliente elige envío y da la dirección. El pedido se crea en un estado nuevo, **`ENVIO_A_COTIZAR`**, con el subtotal de productos fijado al precio vigente (RN-27) y sin costo de envío. No se puede pagar en este estado.
-2. El administrador carga una **`CotizacionEnvio`** (importe en centavos, nota opcional, autor y fecha). El cliente recibe un aviso. Si el administrador corrige el importe, la cotización anterior queda `REEMPLAZADA` y hace falta una nueva aceptación.
-3. El cliente ve el desglose (productos + envío = total) y **acepta la cotización vigente**, enviando su id y el total que vio. El servidor rechaza la aceptación si la cotización fue reemplazada o si el total no coincide (`COTIZACION_DESACTUALIZADA`). Al aceptar, el pedido pasa a `PENDIENTE_PAGO` y empieza el plazo de pago online (RN-22).
-4. El pago online solo se acepta si el pedido tiene una cotización aceptada y el importe a pagar coincide con el total calculado en el servidor (productos + envío aceptado − cupón). Un total incompleto o desactualizado se rechaza.
-5. Trazabilidad: cada cotización (importe, autor, fecha, estado `PROPUESTA`/`ACEPTADA`/`RECHAZADA`/`REEMPLAZADA`), su aceptación o rechazo (quién y cuándo) y el total pagado quedan registrados y en la auditoría.
+**Personalizados (D-48):** no usan este flujo; el envío se cotiza en la misma cotización del producto (INC-08.1) y se cobra con el saldo, antes del despacho (RN-21).
 
 Interacción con reglas vigentes: el cargo del 15 % y el cupón del 10 % siguen excluyendo el envío (RN-15, RN-20); si cancela la tienda, el envío pagado se devuelve (RN-19); el efectivo sigue solo con retiro (RN-13).
+
+**Implementación (INC-05.2):** `orders/shipping-quote.service.ts`. La cancelación por D-49 queda en el historial con motivo `ENVIO_NO_POSIBLE` y como `Cancelacion` con rol `TIENDA`, que emite el cupón (INC-11). Si el pedido usó un cupón, el descuento se recalcula sobre los productos a precio vigente al aceptar o pasar a retiro.
+
+**Confirmado (v1.20):** si la tienda indicó que no puede enviar y el cliente no responde en 48 h, el pedido se cancela por vencimiento del plazo (`PLAZO_RESPUESTA_ENVIO`), **sin cupón**. El cupón de D-49 corresponde solo cuando la cancelación se debe a que la tienda no puede cumplir con el envío, no a la falta de respuesta del cliente.
 
 ---
 
@@ -601,6 +636,8 @@ Ningún estado se infiere de otro: que exista una reserva no implica pago; que e
 | Estado | Significado | Retiene stock |
 |---|---|:-:|
 | `EN_DEFINICION` | Personalizado en aclaración/cotización. | No |
+| `ENVIO_A_COTIZAR` | Pedido con envío esperando que la tienda lo cotice; 48 h corridas (D-46). | No (D-45) |
+| `ENVIO_COTIZADO` | Envío cotizado o declarado imposible; el cliente tiene 48 h corridas para responder (D-46, D-47). | No (D-45) |
 | `PENDIENTE_PAGO` | Pago online iniciado; vence a los 30 minutos (RN-22). | Sí |
 | `RESERVADO` | Reserva para pago en efectivo; vence a las 24 h. | Sí |
 | `CONFIRMADO` | Tiene un pago registrado: el total o, en personalizados, la seña (RN-16, RN-21). | Sí (hasta entregar) |
@@ -614,8 +651,15 @@ Ningún estado se infiere de otro: que exista una reserva no implica pago; que e
 ```mermaid
 stateDiagram-v2
     [*] --> EN_DEFINICION: solicitud personalizada
+    [*] --> ENVIO_A_COTIZAR: confirmar (envío)
+    ENVIO_A_COTIZAR --> ENVIO_COTIZADO: tienda cotiza
+    ENVIO_A_COTIZAR --> CANCELADO: 48 h sin cotizar
+    ENVIO_COTIZADO --> PENDIENTE_PAGO: acepta o pasa a retiro (online)
+    ENVIO_COTIZADO --> RESERVADO: pasa a retiro (efectivo)
+    ENVIO_COTIZADO --> CANCELADO: rechaza o 48 h sin respuesta
     [*] --> PENDIENTE_PAGO: confirmar (online)
     [*] --> RESERVADO: confirmar (efectivo)
+    [*] --> CONFIRMADO: total $0 (RN-32)
     EN_DEFINICION --> PENDIENTE_PAGO: cotización aceptada (online)
     EN_DEFINICION --> RESERVADO: cotización aceptada (efectivo)
     EN_DEFINICION --> CANCELADO
@@ -646,7 +690,13 @@ stateDiagram-v2
 | Desde | Hacia | Actor | Guardas (validadas en servidor) | Efectos |
 |---|---|---|---|---|
 | — | `PENDIENTE_PAGO` / `RESERVADO` | Cliente | Carrito no vacío (RN-02); stock retenido atómicamente (RN-01, RN-05); idempotencia; `RESERVADO` solo con retiro y teléfono (RN-13, RN-18) | Retención de stock, `vence_en`, notificación |
+| — | `ENVIO_A_COTIZAR` | Cliente | Carrito no vacío; precios vistos (RN-27); pago online (RN-13); dirección propia; stock disponible hoy, sin retenerlo (D-45); idempotencia | `vence_en` = creación + 48 h corridas, copia de la dirección, notificación |
+| `ENVIO_A_COTIZAR` | `ENVIO_COTIZADO` | Admin | `vence_en > ahora`; importe ≥ 0 o "no se puede enviar" con motivo | `CotizacionEnvio`, `vence_en` = cotización + 48 h, auditoría, notificación |
+| `ENVIO_COTIZADO` | `ENVIO_COTIZADO` (corrección) | Admin | `vence_en > ahora` | Cotización anterior `REEMPLAZADA`, nuevo `vence_en`, notificación |
+| `ENVIO_COTIZADO` | `PENDIENTE_PAGO` / `RESERVADO` | Cliente | `vence_en > ahora`; cotización vigente aceptada con su total, o paso a retiro (D-47; `RESERVADO` solo con retiro y teléfono); stock retenido atómicamente | Retención de stock, precios vigentes, plazo de pago (RN-22, RN-29), notificación |
+| `ENVIO_A_COTIZAR` / `ENVIO_COTIZADO` | `CANCELADO` | Cliente / Sistema | Rechazo del cliente (D-47) o plazo vencido (D-46) | Sin cargo; cupón solo si la tienda no podía enviar y el cliente cancela (D-49) |
 | `EN_DEFINICION` | `PENDIENTE_PAGO` / `RESERVADO` | Cliente | Cotización vigente aceptada; `vence_en` desde la aceptación (RN-17); `RESERVADO` solo con retiro (RN-13); retención de stock/material si aplica (D-14, D-18) | Igual que arriba |
+| — / `ENVIO_COTIZADO` / `VENCIDO` | `CONFIRMADO` (sin pago) | Cliente / Admin | Total final exactamente $0 con todas las validaciones del checkout, de la aceptación del envío o de la reactivación (RN-32) | Sin `Pago`, sin `vence_en`, porcentaje del cargo guardado, motivo `SIN_PAGO_REQUERIDO`, notificación |
 | `PENDIENTE_PAGO` | `CONFIRMADO` | Sistema | Pago simulado aprobado; `vence_en > ahora` | Registro de pago, notificación (RN-12) |
 | `RESERVADO` | `CONFIRMADO` | Admin | Pago en efectivo registrado; `vence_en > ahora` | Registro de pago, notificación (RN-12) |
 | `RESERVADO` | `RESERVADO` (extensión) | Admin | `vence_en > ahora`; nuevo vencimiento futuro; motivo | `ExtensionReserva`, auditoría, notificación (RN-28) |
@@ -656,8 +706,8 @@ stateDiagram-v2
 | `CONFIRMADO` | `EN_PRODUCCION` | Admin | **Todos los ítems personalizados con versión vigente aprobada (RN-07)** | Consumo de materiales (D-09) |
 | varios | `CANCELADO` | Cliente/Admin | Política de cancelación (RN-03, RN-08, RN-14, RN-19, RN-23) | `Cancelacion`, liberación de stock, un único cargo según RN-24 (15 %, RN-15, o retención de la seña, RN-21), reembolso simulado de la diferencia o cargo pendiente de arreglo (RN-18), cupón si cancela la tienda (RN-20) |
 | `CONFIRMADO`/`EN_PRODUCCION` | `LISTO_PARA_RETIRO` | Admin | Modalidad = retiro; RN-07 si es personalizado | Notificación |
-| `CONFIRMADO`/`EN_PRODUCCION` | `DESPACHADO` | Admin | Modalidad = envío; RN-07 si es personalizado; saldo pagado (RN-21) | Stock retenido → consumido; notificación |
-| `LISTO_PARA_RETIRO` / `DESPACHADO` | `ENTREGADO` | Admin | Saldo pagado (RN-21) | Stock retenido → consumido (si no se hizo antes) |
+| `CONFIRMADO`/`EN_PRODUCCION` | `DESPACHADO` | Admin | Modalidad = envío; RN-07 si es personalizado; saldo pagado (RN-21, **guarda implementada en INC-08.2** dentro de `transitionOrder`: `SALDO_PENDIENTE`) | Stock retenido → consumido; notificación |
+| `LISTO_PARA_RETIRO` / `DESPACHADO` | `ENTREGADO` | Admin | Saldo pagado (RN-21, **guarda implementada en INC-08.2**: `SALDO_PENDIENTE`) | Stock retenido → consumido (si no se hizo antes) |
 
 Toda transición: se ejecuta con el pedido bloqueado (`SELECT … FOR UPDATE`) o con un `UPDATE … WHERE estado = :estado_esperado`, se registra en `HistorialEstadoPedido` y en auditoría.
 
@@ -750,39 +800,42 @@ Convenciones: claves primarias UUID; fechas en `timestamptz` (UTC); importes en 
 | Entidad | Campos clave | Restricciones / notas |
 |---|---|---|
 | **Usuario** | email (único, normalizado), hash_contraseña, rol (`CLIENTE`/`ADMIN`), nombre, teléfono (opcional al registrarse; obligatorio para reservar en efectivo, RN-18), email_verificado_en, bloqueado_en | Nunca se guarda la contraseña en claro (Argon2id). `CHECK` de email normalizado (sin espacios y en minúsculas) además del índice único. |
-| **Direccion** | usuario_id, calle, ciudad, provincia, código postal, referencias | — |
+| **Direccion** | usuario_id, calle, ciudad, provincia, código postal, referencias | — **Implementado en INC-05.3** (código postal normalizado; máximo 10 por cliente). |
 | **Producto** | nombre, slug (único, generado y fijo), descripción, categoría, tipo (`ESTANDAR`/`PERSONALIZABLE`, fijo después de crearlo), activo | No se borra: se desactiva (RF-07). Visible en la tienda si está activo, su categoría está activa y tiene al menos una variante activa. **Implementado en INC-03**, junto con **Categoria** (nombre, slug único, activa). |
 | **Variante** | producto_id, sku (único), atributos (medida, material, color, talle), precio_centavos, **stock_fisico**, **stock_reservado**, umbral_stock_bajo, activo | `CHECK (stock_reservado >= 0)`, `CHECK (stock_reservado <= stock_fisico)`. Disponible = físico − reservado (calculado, no guardado). **INC-03 implementó** sku (generado si no se informa), atributos y `precio_centavos` (obligatorio en estándar, nulo en personalizables, RN-31; `CHECK` > 0); **INC-04 implementó** `stock_fisico`, `stock_reservado`, `umbral_stock_bajo` y sus `CHECK`. |
 | **Material** | nombre, unidad, **stock_fisico**, **stock_reservado**, umbral_stock_bajo, activo | Mismas restricciones `CHECK` que la variante. Cantidades enteras: la unidad se elige para que alcancen (por ejemplo cm² o ml). **Implementado en INC-04.** |
 | **RecetaMaterial** | producto/variante_id, material_id, cantidad_por_unidad | [PENDIENTE D-09] Solo si la tienda usa consumo estándar. |
 | **MovimientoStock** | variante_id o material_id (`CHECK`: exactamente uno), tipo (`INGRESO`, `AJUSTE`, `RETENCION`, `LIBERACION`, `CONSUMO`), **delta_fisico**, **delta_reservado**, retencion_id, motivo, autor_id | Solo inserción. La suma de los deltas reproduce el stock guardado, lo que permite conciliar (14.8). Único `(retencion_id, tipo)`. **Implementado en INC-04.** |
 | **Carrito / ItemCarrito** | usuario_id (único); variante_id, cantidad (`CHECK` > 0), precio_al_agregar_centavos | Único `(carrito_id, variante_id)`. No retiene stock. `precio_al_agregar` se actualiza cuando el cliente marca los precios nuevos como vistos. **Implementado en INC-05.1.** |
-| **Pedido** | numero (legible, único), cliente_id, tipo (`ESTANDAR`/`PERSONALIZADO`), estado, modalidad_cierre (`ONLINE`/`EFECTIVO`), modalidad_entrega (`RETIRO`/`ENVIO`), direccion_snapshot, **fecha_despacho_comprometida** (nula hasta que el admin la confirma), **ventana_cargo_fija** (bool, RN-14), **inicio_ventana_cargo** (calculado según RN-30 y guardado), **vence_en**, moneda (`ARS`, `CHECK`), subtotal_productos_centavos (original), cupon_id, descuento_cupon_centavos, productos_cobrados_centavos (= subtotal − descuento), costo_envio_centavos, total_centavos (= productos cobrados + envío), **porcentaje_cargo_cancelacion** (guardado al confirmar, R-15), porcentaje_sena y sena_centavos (personalizados, sobre el precio después del cupón, RN-21), pedido_origen_id (reemisión de una cotización vencida, D-42), clave_idempotencia, version (bloqueo optimista opcional) | Único `(cliente_id, clave_idempotencia)`. Índice `(estado, vence_en)` para el proceso de vencimiento. `CHECK (modalidad_cierre <> 'EFECTIVO' OR modalidad_entrega = 'RETIRO')` (RN-13). **Implementado en INC-05.2** con número, estado, modalidades, `vence_en`, importes en ARS, `porcentaje_cargo_cancelacion` (al confirmar) y clave de idempotencia; `CHECK` de importes y de efectivo solo con retiro. Las columnas de fecha comprometida, ventana, cupón y seña se agregan en INC-05.3, INC-11 e INC-08.2. |
-| **ItemPedido** | pedido_id, variante_id, descripcion_snapshot, precio_unitario_snapshot, cantidad, especificacion_personalizada (medida, material, notas) | Los precios no cambian si cambia el catálogo. **Implementado en INC-05.2** (descripción y precio congelados; la especificación personalizada llega en INC-08.1). |
+| **Pedido** | numero (legible, único), cliente_id, tipo (`ESTANDAR`/`PERSONALIZADO`), estado, modalidad_cierre (`ONLINE`/`EFECTIVO`), modalidad_entrega (`RETIRO`/`ENVIO`), direccion_snapshot, **fecha_despacho_comprometida** (nula hasta que el admin la confirma), **ventana_cargo_fija** (bool, RN-14), **inicio_ventana_cargo** (calculado según RN-30 y guardado), **vence_en**, moneda (`ARS`, `CHECK`), subtotal_productos_centavos (original), cupon_id, descuento_cupon_centavos, productos_cobrados_centavos (= subtotal − descuento), costo_envio_centavos, total_centavos (= productos cobrados + envío), **porcentaje_cargo_cancelacion** (guardado al confirmar, R-15), porcentaje_sena y sena_centavos (personalizados, sobre el precio después del cupón, RN-21), pedido_origen_id (reemisión de una cotización vencida, D-42), clave_idempotencia, version (bloqueo optimista opcional) | Único `(cliente_id, clave_idempotencia)`. Índice `(estado, vence_en)` para el proceso de vencimiento. `CHECK (modalidad_cierre <> 'EFECTIVO' OR modalidad_entrega = 'RETIRO')` (RN-13). **Implementado en INC-05.2** con número, estado, modalidades, `vence_en`, importes en ARS, `porcentaje_cargo_cancelacion` (al confirmar) y clave de idempotencia; `CHECK` de importes y de efectivo solo con retiro. INC-05.3 agregó `fecha_despacho_comprometida`, `inicio_ventana_cargo` y `ventana_cargo_fija`; cupón y seña se agregan en INC-11 e INC-08.2. **INC-11:** `cupon_id` y `descuento_cupon_centavos` (`CHECK`: entre 0 y el subtotal, y cero sin cupón); el importe de productos cobrado es subtotal − descuento y no se guarda aparte. **INC-08.1:** `porcentaje_sena`, `sena_centavos` (`CHECK` ≤ total) y `pedido_origen_id` (único). |
+| **ItemPedido** | pedido_id, variante_id, descripcion_snapshot, precio_unitario_snapshot, cantidad, especificacion_personalizada (medida, material, notas) | Los precios no cambian si cambia el catálogo. **Implementado en INC-05.2** (descripción y precio congelados; la especificación personalizada llega en INC-08.1). En personalizados, el ítem se crea al aceptar la cotización y la especificación queda en `SolicitudPersonalizacion` (INC-08.1). |
 | **RetencionStock** | pedido_id, variante_id, cantidad (`CHECK` > 0), estado (`ACTIVA`/`CONSUMIDA`/`LIBERADA`), motivo_liberacion (`CANCELACION`/`VENCIMIENTO_PAGO_ONLINE`/`VENCIMIENTO_RESERVA`), cerrada_en | Las transiciones desde `ACTIVA` son condicionales (idempotencia). **Implementado en INC-04** solo para variantes; `pedido_id` recibe su clave foránea en INC-05, cuando exista `Pedido`; la retención de materiales espera D-14. |
-| **Cotizacion** | pedido_id, precio_centavos, fecha_entrega_propuesta, detalle, estado (`PROPUESTA`/`ACEPTADA`/`RECHAZADA`/`REEMPLAZADA`), aceptada_por, aceptada_en | [PENDIENTE D-10] |
-| **Diseno** | item_pedido_id (único), estado, **version_vigente_id** | — |
-| **VersionDiseno** | diseno_id, numero (único por diseño), nota, creada_por, creada_en, huella (hash de los archivos) | **Inmutable** tras crearse (RN-P-05). |
-| **AprobacionDiseno** | version_id (único), aprobada_por (usuario), aprobada_en, huella_aprobada, origen (`CLIENTE`/`ADMIN_EN_NOMBRE` si D-19 lo permite), comentario | Vinculada a una versión, nunca al diseño en general. |
-| **SolicitudCambio** | version_id, autor, comentario, fecha | — |
-| **Archivo** | clave_objeto (S3), nombre_original, tipo_mime_detectado, tamaño, hash_sha256, subido_por, propietario_cliente_id, contexto (`REFERENCIA`, `VERSION_DISENO`, `CHAT`, `PRODUCTO`, `COMPROBANTE`), estado (`ACTIVO`/`ELIMINADO`) | Los binarios **no** se guardan en la base. |
-| **Pago** | pedido_id, concepto (`TOTAL`/`SENA`/`SALDO`), medio, proveedor, simulado, estado, importe_centavos, referencia_externa, registrado_por | `simulado = true` obligatorio en v1 para medio `ONLINE`. **Implementado en INC-05.2:** cada intento queda registrado (`APROBADO`, `RECHAZADO`, `ERROR`); `CHECK`: todo pago online es simulado. |
-| **Reembolso** | pago_id, importe_centavos, incluye_envio (bool), estado (`PENDIENTE`/`REALIZADO_SIMULADO` si fue online; `PENDIENTE_ARREGLO`/`DEVUELTO` si fue en efectivo; `ANULADO`), simulado, motivo, nota_cierre, autor | Las devoluciones en efectivo las arregla el admin con el cliente (RN-18). |
-| **Cancelacion** | pedido_id (único), solicitada_por, rol, fecha, motivo, estado_previo, dentro_ventana_48h, **regla_aplicada** (`RN-19`/`RN-21`/`RN-15`/`SIN_CARGO`), **desglose**: subtotal_productos, descuento_cupon, productos_cobrados, envio, sena_pagada, saldo_pagado, total_pagado, porcentaje_aplicado, cargo, a_reembolsar, incluye_envio; consecuencias (texto) | RN-08, RN-24. Los importes se copian al cancelar y no se recalculan, para que el cálculo sea trazable y auditable (D-36, RF-55). |
-| **AjusteEconomico** | pedido_id, tipo (`CARGO_SERVICIO_CANCELACION`, `RETENCION_SENA`, `COMPENSACION_DEMORA`), base_centavos, porcentaje (snapshot), importe_centavos (nulo mientras está pendiente), estado (`PENDIENTE_IMPORTE`/`REGISTRADO`/`PENDIENTE_ARREGLO`/`COBRADO`/`CONDONADO`/`INCOBRABLE`/`ANULADO`), justificación, nota_cierre, costo_real_estimado_centavos (opcional, precargado con el 20 %, RF-53), autorizado_por, reembolso_id, autor, cerrado_por | El cargo de cancelación (RN-15) y la retención de la seña (RN-21) los calcula el sistema. Índice único parcial `(pedido_id) WHERE tipo IN ('CARGO_SERVICIO_CANCELACION', 'RETENCION_SENA')` (RN-24): un solo cargo por cancelación. La compensación por demora exige motivo, importe y quién la autorizó, y genera su `Reembolso` (D-05). La compensación por cancelación de la tienda es un `Cupon` (RN-20). Un cargo sin pago se cierra con resultado y nota (RN-18). |
+| **Cotizacion** | pedido_id, precio_unitario_centavos, precio_productos_centavos (× cantidad), costo_envio_centavos (solo con envío, D-48), fecha_entrega_propuesta, detalle, estado (`PROPUESTA`/`ACEPTADA`/`RECHAZADA`/`REEMPLAZADA`), autor, respondida_por, respondida_en | D-10, D-53, D-54. Una sola `PROPUESTA` por pedido (índice único parcial). **Implementado en INC-08.1.** |
+| **SolicitudPersonalizacion** | pedido_id (único), variante_id (producto base, medida y material), cantidad, descripcion, fecha_deseada | RF-22. Se copia en la reemisión (D-42). **Implementado en INC-08.1.** |
+| **ReferenciaPedido** | pedido_id, archivo_id | Archivos `REFERENCIA` (16.1) de la solicitud; extienden el acceso a quienes ven el pedido. Una referencia en uso no se puede dar de baja. **Implementado en INC-08.1.** |
+| **Diseno** | item_pedido_id (único), estado, **version_vigente_id** | — **Implementado en INC-09**; el estado es informativo (15.4). |
+| **VersionDiseno** | diseno_id, numero (único por diseño), nota, creada_por, creada_en, huella (hash de los archivos) | **Inmutable** tras crearse (RN-P-05). **Implementado en INC-09**: la base rechaza modificarla o borrarla. Sus archivos, en orden, en **ArchivoVersionDiseno** (version_id, archivo_id, orden), también inmutable. |
+| **AprobacionDiseno** | version_id (único), aprobada_por (usuario), aprobada_en, huella_aprobada | Vinculada a una versión, nunca al diseño en general. Solo el cliente aprueba (D-19), así que no lleva origen. **Implementado en INC-09** (inmutable). |
+| **SolicitudCambio** | version_id, autor, comentario, fecha | — **Implementado en INC-09.** Sin límite de rondas (D-29). |
+| **Archivo** | clave_objeto (S3), nombre_original, tipo_mime_detectado, tamaño, hash_sha256, subido_por, propietario_cliente_id, contexto (`REFERENCIA`, `VERSION_DISENO`, `CHAT`, `PRODUCTO`, `COMPROBANTE`), estado (`ACTIVO`/`ELIMINADO`) | Los binarios **no** se guardan en la base. **Implementado en INC-07**, con `subido_por`, `eliminado_en` y `eliminado_por` para la baja lógica. `CHECK`: tipo entre los cuatro admitidos, tamaño positivo, hash hexadecimal de 64 caracteres y fecha de baja solo en `ELIMINADO`. **ImagenProducto** (producto, archivo único, orden) asocia las imágenes de RF-07. |
+| **Pago** | pedido_id, concepto (`TOTAL`/`SENA`/`SALDO`), medio, proveedor, simulado, estado, importe_centavos, referencia_externa, registrado_por | `simulado = true` obligatorio en v1 para medio `ONLINE`. **Implementado en INC-05.2:** cada intento queda registrado (`APROBADO`, `RECHAZADO`, `ERROR`); `CHECK`: todo pago online es simulado. **INC-08.2:** índice único parcial `(pedido_id, concepto) WHERE estado = 'APROBADO'`: a lo sumo un pago aprobado por concepto; los rechazados y los que tienen error no cuentan, y un reembolso no cambia el pago. |
+| **Reembolso** | pago_id, importe_centavos, incluye_envio (bool), estado (`PENDIENTE`/`REALIZADO_SIMULADO` si fue online; `PENDIENTE_ARREGLO`/`DEVUELTO` si fue en efectivo; `ANULADO`), simulado, motivo, nota_cierre, autor | Las devoluciones en efectivo las arregla el admin con el cliente (RN-18). **Implementado en INC-10.1a**, con `pedido_id` y `referencia_externa`; uno por pago, empezando por el último pagado. Sin `ANULADO` hasta que haga falta. |
+| **Cancelacion** | pedido_id (único), solicitada_por, rol, fecha, motivo, estado_previo, dentro_ventana_48h, **regla_aplicada** (`RN-19`/`RN-21`/`RN-15`/`SIN_CARGO`), **desglose**: subtotal_productos, descuento_cupon, productos_cobrados, envio, sena_pagada, saldo_pagado, total_pagado, porcentaje_aplicado, cargo, a_reembolsar, incluye_envio; consecuencias (texto) | RN-08, RN-24. Los importes se copian al cancelar y no se recalculan, para que el cálculo sea trazable y auditable (D-36, RF-55). **Implementado en INC-10.1a** (sin la tabla de cupones todavía). Con `CHECK` de importes no negativos y `a_reembolsar <= total_pagado`. **INC-10.2:** `inicio_ventana_cargo`, el inicio que regía al cancelar (T-135). |
+| **AjusteEconomico** | pedido_id, tipo (`CARGO_SERVICIO_CANCELACION`, `RETENCION_SENA`, `COMPENSACION_DEMORA`), base_centavos, porcentaje (snapshot), importe_centavos (nulo mientras está pendiente), estado (`PENDIENTE_IMPORTE`/`REGISTRADO`/`PENDIENTE_ARREGLO`/`COBRADO`/`CONDONADO`/`INCOBRABLE`/`ANULADO`), justificación, nota_cierre, costo_real_estimado_centavos (opcional, precargado con el 20 %, RF-53), autorizado_por, reembolso_id, autor, cerrado_por | El cargo de cancelación (RN-15) y la retención de la seña (RN-21) los calcula el sistema. Índice único parcial `(pedido_id) WHERE tipo IN ('CARGO_SERVICIO_CANCELACION', 'RETENCION_SENA')` (RN-24): un solo cargo por cancelación. La compensación por demora exige motivo, importe y quién la autorizó, y genera su `Reembolso` (D-05). La compensación por cancelación de la tienda es un `Cupon` (RN-20). Un cargo sin pago se cierra con resultado y nota (RN-18). **Implementado en INC-10.1a** con los tipos `CARGO_SERVICIO_CANCELACION` y `RETENCION_SENA` y los estados `REGISTRADO` (cubierto por lo pagado), `PENDIENTE_ARREGLO`, `COBRADO`, `CONDONADO` e `INCOBRABLE`; la compensación por demora y sus estados se agregan en INC-12. |
 | **Entrega** | pedido_id, modalidad, estado, transportista, código_seguimiento, despachado_en, entregado_en, entregado_por | [PENDIENTE D-06] estados de envío. |
 | **HistorialEstadoPedido** | pedido_id, estado_anterior, estado_nuevo, actor, motivo, fecha | Solo inserción. **Implementado en INC-05.2.** |
-| **CambioFechaDespacho** | pedido_id, fecha_anterior, fecha_nueva, confirmada_con_48h_o_menos (bool), autor, fecha | Solo inserción. Permite reconstruir la ventana de RN-14. |
-| **ConfiguracionTienda** | email_contacto, telefono_contacto, zona_horaria | Una sola fila, editable por el admin (RF-49). Los valores comerciales (cargo del 15 %, seña del 20 %, cupón del 10 %, vigencia de un mes, 30 min de pago online) son constantes en sus `*.policy.ts`, no datos editables [PROPUESTA]; el porcentaje aplicado se guarda en cada pedido o cupón. |
-| **Cupon** | codigo (único, aleatorio, no secuencial), cliente_id, pedido_origen_id (único), monto_centavos, porcentaje (snapshot), emitido_en, vence_en, estado (`ACTIVO`/`USADO`/`VENCIDO`/`ANULADO`), usado_en_pedido_id, restaurado_en, anulado_por, motivo_anulacion | Un cupón por pedido cancelado por la tienda (único `pedido_origen_id`). El uso es un `UPDATE` condicional sobre `ACTIVO` y `vence_en > now()` (RN-20). La restauración es un `UPDATE` condicional sobre `estado='USADO' AND usado_en_pedido_id=:pedido` que no modifica `vence_en`. |
+| **CambioFechaDespacho** | pedido_id, fecha_anterior, fecha_nueva, confirmada_con_48h_o_menos (bool), autor, fecha | Solo inserción. Permite reconstruir la ventana de RN-14. **Implementado en INC-05.3**, con el inicio de ventana anterior y el nuevo, motivo y autor. `CambioVentanaCargo` (cambios por fechas excluidas) llega en INC-10.2. |
+| **ConfiguracionTienda** | email_contacto, telefono_contacto, zona_horaria | Una sola fila, editable por el admin (RF-49). Los valores comerciales (cargo del 15 %, seña del 20 %, cupón del 10 %, vigencia de un mes, 30 min de pago online) son constantes en sus `*.policy.ts`, no datos editables [PROPUESTA]; el porcentaje aplicado se guarda en cada pedido o cupón. **Implementado en INC-05.3** (`CHECK id = 1`; la zona horaria tiene valor por defecto y todavía no se edita). |
+| **Cupon** | codigo (único, aleatorio, no secuencial), cliente_id, pedido_origen_id (único), monto_centavos, porcentaje (snapshot), emitido_en, vence_en, estado (`ACTIVO`/`USADO`/`VENCIDO`/`ANULADO`), usado_en_pedido_id, restaurado_en, anulado_por, motivo_anulacion | Un cupón por pedido cancelado por la tienda (único `pedido_origen_id`). El uso es un `UPDATE` condicional sobre `ACTIVO` y `vence_en > now()` (RN-20). La restauración es un `UPDATE` condicional sobre `estado='USADO' AND usado_en_pedido_id=:pedido` que no modifica `vence_en`. **Implementado en INC-11.** Código de 10 símbolos sin caracteres ambiguos (`XXXXX-XXXXX`). `CHECK`: monto positivo y `usado_en_pedido_id` presente solo en `USADO`. Un cupón `ACTIVO` con el plazo cumplido se muestra como vencido, sin un proceso que lo cambie. |
 | **ComprobanteExterno** | pedido_id, tipo (`FACTURA`/`NOTA_CREDITO`), letra (p. ej. `C`), punto_venta, numero, fecha_emision, importe_centavos, archivo_id (opcional), registrado_por | Único `(tipo, letra, punto_venta, numero)`. Lo emite la tienda fuera del sistema; aquí solo se registra (RN-26). |
-| **ExtensionReserva** | pedido_id, tipo (`EXTENSION`/`REACTIVACION`), vence_en_anterior, vence_en_nuevo, motivo, autor, fecha | Solo inserción (RN-28). |
-| **Feriado** | fecha (única), descripcion, creado_por | Lo carga el admin (RN-29). |
-| **DiaExcluidoVentana** | fecha (única), motivo, creado_por | Lo carga el admin; solo afecta la ventana de 48 h (RN-30). |
-| **CambioVentanaCargo** | pedido_id, causa (`CAMBIO_FECHA_DESPACHO`/`FECHA_EXCLUIDA_AGREGADA`/`FECHA_EXCLUIDA_QUITADA`), inicio_anterior, inicio_nuevo, autor, fecha, notificacion_id | Solo inserción. Permite reconstruir qué ventana regía al cancelar (RN-30). |
+| **ExtensionReserva** | pedido_id, tipo (`EXTENSION`/`REACTIVACION`), vence_en_anterior, vence_en_nuevo, motivo, autor, fecha | Solo inserción (RN-28). **Implementado en INC-06.3.** |
+| **CotizacionEnvio** | pedido_id, importe_centavos (nulo = no se puede enviar), nota, estado (`PROPUESTA`/`ACEPTADA`/`RECHAZADA`/`REEMPLAZADA`), autor, fecha, respondida_en | F-10, D-49. Una sola `PROPUESTA` vigente por pedido. **Implementado en INC-05.2.** La copia de la dirección del pedido se guarda en `Pedido.direccion_envio` (JSON). |
+| **Feriado** | fecha (única), descripcion, creado_por | Lo carga el admin (RN-29). **Implementado en INC-06.2** (fecha única, tipo `DATE`). |
+| **DiaExcluidoVentana** | fecha (única), motivo, creado_por | Lo carga el admin; solo afecta la ventana de 48 h (RN-30). **Implementado en INC-10.2** (fecha única, tipo `DATE`). |
+| **CambioVentanaCargo** | pedido_id, causa (`FECHA_EXCLUIDA_AGREGADA`/`FECHA_EXCLUIDA_QUITADA`), fecha_excluida, inicio_anterior, inicio_nuevo, autor, fecha, notificacion_id | Solo inserción. Permite reconstruir qué ventana regía al cancelar (RN-30). **Implementado en INC-10.2**; los cambios por la fecha comprometida quedan en `CambioFechaDespacho` (INC-05.3), que ya guarda el inicio anterior y el nuevo. |
 | **Conversacion / Mensaje** | cliente_id (único); conversacion_id, autor_id, texto, pedido_id (opcional), leido_en | Pedido asociado debe pertenecer al mismo cliente. |
 | **Notificacion** | usuario_id, tipo, datos, leida_en | In-app. **Tabla implementada en INC-05.2**; la vista para el usuario llega con las notificaciones (INC-10.1). |
-| **SalidaNotificacion** (outbox) | tipo, destinatario, payload, estado (`PENDIENTE`/`ENVIADA`/`FALLIDA`), intentos, proximo_intento_en, error | Ver 16.3. **Tabla implementada en INC-05.2**: los flujos ya encolan; el envío y los reintentos son de INC-10.1. |
+| **SalidaNotificacion** (outbox) | tipo, destinatario, payload, estado (`PENDIENTE`/`ENVIADA`/`FALLIDA`), intentos, proximo_intento_en, error | Ver 16.3. **Tabla implementada en INC-05.2**: los flujos ya encolan. **Envío y reintentos implementados en INC-10.1b.** |
 | **EventoAuditoria** | actor_id, accion, entidad, entidad_id, datos (sin secretos), ip, fecha | Solo inserción. |
 | **Sesion** | usuario_id, hash_token (único), expira_en, creado_en | Se guarda el SHA-256 del token, nunca el token. Se borra al cerrar sesión, al bloquear la cuenta y al restablecer la contraseña. |
 | **TokenUsuario** | usuario_id, tipo (`VERIFICACION_EMAIL`/`RESTABLECER_CONTRASENA`), hash_token (único), expira_en, usado_en | Un solo uso (`UPDATE` condicional sobre `usado_en IS NULL`); emitir uno nuevo invalida los anteriores del mismo tipo. |
@@ -927,28 +980,30 @@ Convenciones: route handlers de Next.js bajo el prefijo `/api` (en la tabla se o
 | Autenticación | `POST /auth/register`, `POST /auth/login`, `POST /auth/logout`, `POST /auth/verify-email`, `POST /auth/forgot-password`, `POST /auth/reset-password`, `POST /auth/resend-verification`, `GET /auth/me`. **Implementados en INC-02.** | Público / autenticado |
 | Catálogo | `GET /catalog/products?q=&categoria=&tipo=&material=&medida=&precioMin=&precioMax=&pagina=` (precios en pesos), `GET /catalog/products/:slug`, `GET /catalog/filters`. **Implementados en INC-03**; la disponibilidad por variante se agrega en INC-04. Páginas públicas: `/productos`, `/productos/:slug`, `/sitemap.xml`, `/robots.txt`. | Público |
 | Carrito | `GET /cart`, `POST /cart/items`, `PATCH /cart/items/:id`, `DELETE /cart/items/:id`, `POST /cart/merge` (carrito local → servidor al registrarse o iniciar sesión), `POST /cart/prices/accept`, `POST /cart/preview` (vista del carrito de un visitante, sin sesión y sin guardar). **Implementados en INC-05.1.** Códigos: `STOCK_INSUFICIENTE` (409, con `disponible`), `PRODUCTO_NO_DISPONIBLE` (409), `PRODUCTO_PERSONALIZABLE` (422), `ITEM_NO_ENCONTRADO` (404). | Cliente; `preview` es público |
-| Checkout | `POST /checkout` (header `Idempotency-Key`; body: modalidad de cierre, entrega, dirección, precios aceptados, código de cupón opcional) | Cliente **INC-05.2:** implementado para retiro (`ENVIO` responde `422 ENVIO_NO_DISPONIBLE` hasta resolver F-10); sin cupón hasta INC-11. Códigos: `CARRITO_VACIO`, `PRECIO_CAMBIADO`, `STOCK_INSUFICIENTE`, `PRODUCTO_NO_DISPONIBLE`, `TELEFONO_REQUERIDO`, `CLAVE_IDEMPOTENCIA_REQUERIDA`. Repetir la clave devuelve `200` con el mismo pedido. |
-| Cupones | `GET /coupons` (mis cupones), `POST /coupons/validate` (vista previa del descuento) | Cliente |
-| Pedidos (cliente) | `GET /orders`, `GET /orders/:id`, `POST /orders/:id/cancel`, `GET /orders/:id/cancellation-preview` (regla que aplicaría según RN-24 y su desglose) | Cliente (solo propios) **INC-05.2:** `GET /orders` y `GET /orders/:id`; la cancelación llega en INC-10.1. |
-| Personalización | `POST /custom-orders`, `POST /custom-orders/:id/quote/accept`, `POST /custom-orders/:id/quote/reject` | Cliente |
-| Diseños (cliente) | `GET /orders/:id/designs`, `POST /design-versions/:id/approve` (body: `versionId`, `huella`), `POST /design-versions/:id/request-changes` | Cliente |
-| Pagos simulados | `POST /payments/simulated/:orderId` (body: concepto `TOTAL`/`SENA`/`SALDO`, resultado forzado) | Cliente; **deshabilitado si el modo simulado no está activo** **Implementado en INC-05.2** (concepto `TOTAL`). Códigos: `PEDIDO_NO_PAGABLE`, `PAGO_VENCIDO`. |
-| Archivos | `POST /files` (multipart, con contexto), `GET /files/:id/url` (devuelve URL firmada temporal tras autorizar) | Cliente/Admin |
+| Checkout | `POST /checkout` (header `Idempotency-Key`; body: modalidad de cierre, entrega, dirección, precios aceptados, código de cupón opcional) | Cliente **INC-05.2:** implementado para retiro y, con envío, para crear el pedido a cotizar (F-10); con cupón desde INC-11 (`codigoCupon`). Códigos: `CUPON_INVALIDO`, `EFECTIVO_SOLO_RETIRO`, `DIRECCION_NO_ENCONTRADA`, `CARRITO_VACIO`, `PRECIO_CAMBIADO`, `STOCK_INSUFICIENTE`, `PRODUCTO_NO_DISPONIBLE`, `TELEFONO_REQUERIDO`, `CLAVE_IDEMPOTENCIA_REQUERIDA`. Repetir la clave devuelve `200` con el mismo pedido. |
+| Cupones | `GET /coupons` (mis cupones), `POST /coupons/validate` (vista previa del descuento) | Cliente **Implementados en INC-11** (`CUPON_INVALIDO`). |
+| Pedidos (cliente) | `GET /orders`, `GET /orders/:id`, `POST /orders/:id/cancel`, `GET /orders/:id/cancellation-preview` (regla que aplicaría según RN-24 y su desglose) | Cliente (solo propios) **INC-05.2:** `GET /orders` y `GET /orders/:id`; la cancelación llega en INC-10.1. Envío (F-10): `GET /orders/:id/shipping` (cotización vigente y total a precios de hoy), `POST /orders/:id/shipping/accept` (cotización y total vistos), `POST /orders/:id/shipping/pickup` (modalidad de pago y total vistos), `POST /orders/:id/shipping/decline`. Códigos: `COTIZACION_DESACTUALIZADA`, `ENVIO_NO_POSIBLE`, `PRECIO_CAMBIADO`, `STOCK_INSUFICIENTE`, `PRODUCTO_NO_DISPONIBLE`, `TELEFONO_REQUERIDO`, `PLAZO_VENCIDO`, `ESTADO_INVALIDO`. **INC-10.1a:** `GET /orders/:id/cancellation-preview` y `POST /orders/:id/cancel` (body: motivo y el cargo y la devolución vistos en la vista previa). Códigos: `CANCELACION_NO_PERMITIDA` (con el contacto de la tienda), `CONDICIONES_CAMBIARON` (con la evaluación nueva), `ESTADO_INVALIDO`. |
+| Admin — envíos | `POST /admin/orders/:id/shipping-quote` (body: `envioPosible`, importe o motivo) | Admin **Implementado en INC-05.2** (`PLAZO_VENCIDO`, `ESTADO_INVALIDO`). |
+| Personalización | `POST /custom-orders`, `POST /custom-orders/:id/quote/accept`, `POST /custom-orders/:id/quote/reject` | Cliente **Implementados en INC-08.1**, más `GET /custom-orders/:id/quote/preview?cupon=` (total y seña antes de aceptar). Códigos: `PRODUCTO_NO_DISPONIBLE`, `ARCHIVO_NO_ENCONTRADO`, `COTIZACION_DESACTUALIZADA`, `SIN_COTIZACION`, `PRECIO_CAMBIADO`, `EFECTIVO_SOLO_RETIRO`, `TELEFONO_REQUERIDO`, `CUPON_INVALIDO`, `ESTADO_INVALIDO`, `CLAVE_IDEMPOTENCIA_REQUERIDA`. |
+| Diseños (cliente) | `GET /orders/:id/designs`, `POST /design-versions/:id/approve` (body: `versionId`, `huella`), `POST /design-versions/:id/request-changes` | Cliente **Implementados en INC-09**; el id de la ruta es la versión y el cuerpo lleva la `huella` (y `comentario` al pedir cambios). Códigos: `VERSION_NO_ENCONTRADA` (404, también para pedidos ajenos), `VERSION_NO_VIGENTE`, `HUELLA_DISTINTA`, `VERSION_YA_APROBADA`, `ESTADO_INVALIDO`. |
+| Pagos simulados | `POST /payments/simulated/:orderId` (body: concepto `TOTAL`/`SENA`/`SALDO`, resultado forzado) | Cliente; **deshabilitado si el modo simulado no está activo** **Implementado en INC-05.2** (concepto `TOTAL`). Códigos: `PEDIDO_NO_PAGABLE`, `PAGO_VENCIDO`. **INC-08.2:** el servidor decide el concepto y el importe (total, seña o saldo); si se envía un concepto, tiene que coincidir (`CONCEPTO_INVALIDO`). `SALDO_YA_PAGADO`. `POST /admin/orders/:id/cash-payment` acepta un concepto opcional con la misma regla. |
+| Archivos | `POST /files` (multipart, con contexto), `GET /files/:id/url` (devuelve URL firmada temporal tras autorizar) | Cliente/Admin **Implementados en INC-07**, más `DELETE /files/:id` (baja lógica). Códigos: `ARCHIVO_REQUERIDO`, `ARCHIVO_DEMASIADO_GRANDE` (413), `TIPO_NO_PERMITIDO` (415), `CONTEXTO_NO_PERMITIDO` (403), `ARCHIVO_NO_ENCONTRADO` (404, también para archivos ajenos), `ALMACENAMIENTO_NO_DISPONIBLE` (503), `FORMULARIO_INVALIDO`. |
 | Chat | `GET /conversation/messages?after=`, `POST /conversation/messages`, `POST /conversation/read` | Cliente |
 | Notificaciones | `GET /notifications`, `POST /notifications/:id/read` | Autenticado |
-| Admin — catálogo | `GET/POST /admin/categories`, `PATCH /admin/categories/:id`, `GET/POST /admin/products`, `GET/PATCH /admin/products/:id`, `POST /admin/products/:id/variants`, `PATCH /admin/variants/:id`. Sin borrado: se desactiva. **Implementados en INC-03.** Códigos: `PRECIO_REQUERIDO`, `PRECIO_NO_PERMITIDO`, `SKU_EN_USO` (409), `CATEGORIA_NO_ENCONTRADA`, `PRODUCTO_NO_ENCONTRADO`, `VARIANTE_NO_ENCONTRADA`. | Admin |
+| Admin — catálogo | `GET/POST /admin/categories`, `PATCH /admin/categories/:id`, `GET/POST /admin/products`, `GET/PATCH /admin/products/:id`, `POST /admin/products/:id/variants`, `PATCH /admin/variants/:id`. Sin borrado: se desactiva. **Implementados en INC-03.** Códigos: `PRECIO_REQUERIDO`, `PRECIO_NO_PERMITIDO`, `SKU_EN_USO` (409), `CATEGORIA_NO_ENCONTRADA`, `PRODUCTO_NO_ENCONTRADO`, `VARIANTE_NO_ENCONTRADA`. | Admin **INC-07:** `POST /admin/products/:id/images` (archivo ya subido con contexto `PRODUCTO`) y `DELETE /admin/products/:id/images/:archivoId` (`IMAGEN_YA_ASOCIADA`, `IMAGEN_NO_ENCONTRADA`). |
 | Admin — inventario | `POST /admin/variants/:id/stock-movements`, `GET/POST /admin/materials`, `PATCH /admin/materials/:id`, `POST /admin/materials/:id/stock-movements`, `GET /admin/stock-movements?varianteId=|materialId=`, `GET /admin/inventory?bajo=1` (stock y conciliación). **Implementados en INC-04.** Códigos: `STOCK_INSUFICIENTE` (409), `AJUSTE_INVALIDO` (409), `MATERIAL_NO_ENCONTRADO`. | Admin |
-| Admin — pedidos | `GET /admin/orders`, `GET /admin/orders/:id`, `POST /admin/orders/:id/transitions` (body: estado destino, motivo), `POST /admin/orders/:id/cash-payment` (con concepto), `POST /admin/orders/:id/cancel`, `PUT /admin/orders/:id/dispatch-date` (confirma o cambia la fecha comprometida, RN-14) | Admin **INC-05.2:** `GET /admin/orders?estado=`, `GET /admin/orders/:id` y `POST /admin/orders/:id/cash-payment` (código `RESERVA_VENCIDA`); las demás, en sus etapas. |
-| Admin — personalización | `POST /admin/custom-orders/:id/quote`, `POST /admin/custom-orders/:id/reissue-quote` (pedido vencido → pedido nuevo vinculado, D-42), `POST /admin/order-items/:id/design-versions` | Admin |
-| Admin — ajustes | `POST /admin/orders/:id/adjustments` (incluye la compensación por demora con su devolución, D-05), `PATCH /admin/adjustments/:id`, `POST /admin/payments/:id/refunds` (simulado), `POST /admin/adjustments/:id/close` (cobrado/condonado/incobrable + nota, RN-18), `POST /admin/refunds/:id/close` (devolución en efectivo arreglada + nota, RN-18) | Admin |
+| Admin — pedidos | `GET /admin/orders`, `GET /admin/orders/:id`, `POST /admin/orders/:id/transitions` (body: estado destino, motivo), `POST /admin/orders/:id/cash-payment` (con concepto), `POST /admin/orders/:id/cancel`, `PUT /admin/orders/:id/dispatch-date` (confirma o cambia la fecha comprometida, RN-14) | Admin **INC-05.2:** `GET /admin/orders?estado=`, `GET /admin/orders/:id` y `POST /admin/orders/:id/cash-payment` (código `RESERVA_VENCIDA`); las demás, en sus etapas. **INC-05.3:** `PUT /admin/orders/:id/dispatch-date` (`FECHA_INVALIDA`, `ESTADO_INVALIDO`). **INC-10.1a:** `POST /admin/orders/:id/cancel` (motivo obligatorio). **INC-09:** `POST /admin/orders/:id/transitions` solo con `estado: EN_PRODUCCION` (`DISENO_NO_APROBADO`, `ESTADO_INVALIDO`); los demás destinos, en INC-12. |
+| Admin — personalización | `POST /admin/custom-orders/:id/quote`, `POST /admin/custom-orders/:id/reissue-quote` (pedido vencido → pedido nuevo vinculado, D-42), `POST /admin/order-items/:id/design-versions` | Admin **INC-08.1:** `quote` y `reissue-quote` (con la cotización nueva en el cuerpo) implementados (`REEMISION_NO_PERMITIDA`, `YA_REEMITIDO`); las versiones de diseño, en INC-09. **INC-09:** `POST /admin/order-items/:id/design-versions` (body: `archivoIds` en orden, `nota`) implementado (`ARCHIVO_NO_ENCONTRADO`, `ARCHIVO_REPETIDO`, `ESTADO_INVALIDO`). |
+| Admin — ajustes | `POST /admin/orders/:id/adjustments` (incluye la compensación por demora con su devolución, D-05), `PATCH /admin/adjustments/:id`, `POST /admin/payments/:id/refunds` (simulado), `POST /admin/adjustments/:id/close` (cobrado/condonado/incobrable + nota, RN-18), `POST /admin/refunds/:id/close` (devolución en efectivo arreglada + nota, RN-18) | Admin **INC-10.1a:** `POST /admin/refunds/:id/execute` (ejecuta el reembolso simulado ya calculado; reemplaza a `POST /admin/payments/:id/refunds`), `POST /admin/refunds/:id/close`, `POST /admin/adjustments/:id/close` y `PATCH /admin/adjustments/:id` (costo real estimado). Códigos: `REEMBOLSO_NO_PENDIENTE`, `AJUSTE_NO_PENDIENTE`. La compensación por demora, en INC-12. |
 | Admin — entregas | `PATCH /admin/orders/:id/delivery` | Admin |
 | Admin — clientes y chat | `GET /admin/customers?q=&pagina=` y `POST /admin/customers/:id/block` / `unblock` (**implementados en INC-02**), `GET /admin/customers/:id`, `GET/POST /admin/conversations/:id/messages` | Admin |
 | Admin — auditoría y panel | `GET /admin/audit-events`, `GET /admin/dashboard` | Admin |
-| Admin — configuración | `GET/PUT /admin/store-settings` (datos de contacto, zona horaria) | Admin |
-| Admin — cupones | `GET /admin/coupons`, `POST /admin/coupons/:id/void` (con motivo) | Admin |
-| Admin — reservas y feriados | `POST /admin/orders/:id/extend-reservation` (nuevo vencimiento, motivo), `POST /admin/orders/:id/reactivate` (motivo; devuelve el total a precios vigentes en una vista previa), `GET/POST/DELETE /admin/holidays`, `GET /admin/cancellation-window-exclusions`, `POST /admin/cancellation-window-exclusions/preview` (pedidos afectados), `POST /admin/cancellation-window-exclusions`, `DELETE /admin/cancellation-window-exclusions/:fecha` | Admin |
+| Admin — configuración | `GET/PUT /admin/store-settings` (datos de contacto, zona horaria) | Admin **INC-05.3:** implementado (`GET/PUT`, email y teléfono). |
+| Cuenta del cliente | `GET/PATCH /account/profile` (nombre, teléfono), `GET/POST /account/addresses`, `PATCH/DELETE /account/addresses/:id` (`DIRECCION_NO_ENCONTRADA`, `LIMITE_DIRECCIONES`). **Implementados en INC-05.3.** | Cliente (solo propios) |
+| Admin — cupones | `GET /admin/coupons`, `POST /admin/coupons/:id/void` (con motivo) | Admin **Implementados en INC-11** (`?estado=`; `CUPON_NO_ACTIVO`, `CUPON_NO_ENCONTRADO`). |
+| Admin — reservas y feriados | `POST /admin/orders/:id/extend-reservation` (nuevo vencimiento, motivo), `POST /admin/orders/:id/reactivate` (motivo; devuelve el total a precios vigentes en una vista previa), `GET/POST/DELETE /admin/holidays`, `GET /admin/cancellation-window-exclusions`, `POST /admin/cancellation-window-exclusions/preview` (pedidos afectados), `POST /admin/cancellation-window-exclusions`, `DELETE /admin/cancellation-window-exclusions/:fecha` | Admin **INC-06.2:** `GET/POST /admin/holidays` y `DELETE /admin/holidays/:id` implementados (`FERIADO_EXISTENTE`, `FERIADO_NO_ENCONTRADO`); **INC-06.3:** `POST /admin/orders/:id/extend-reservation` y `GET` (vista previa) / `POST /admin/orders/:id/reactivate` implementados (`RESERVA_VENCIDA`, `FECHA_INVALIDA`, `ESTADO_INVALIDO`, `REACTIVACION_NO_PERMITIDA`, `PRODUCTO_NO_DISPONIBLE`, `PRECIO_CAMBIADO`, `STOCK_INSUFICIENTE`). **INC-10.2:** fechas excluidas implementadas: `GET` y `POST /admin/cancellation-window-exclusions` (body: `fecha`, `motivo`), `POST .../preview` (body: `fecha`, `accion` `AGREGAR`/`QUITAR`) y `DELETE .../:fecha`. El listado incluye quién registró cada fecha; la vista previa marca con `desdeAhora` los pedidos cuya ventana se abre en el momento del aviso; alta y baja devuelven `recalculados` (pedidos efectivamente actualizados) y `clientesNotificados` (clientes distintos avisados). Códigos: `FECHA_YA_EXCLUIDA` (409), `FECHA_NO_EXCLUIDA` (404). |
 | Admin — comprobantes | `POST /admin/orders/:id/receipts` (factura o nota de crédito, con PDF opcional), `GET /orders/:id/receipts` para el cliente | Admin / Cliente (solo propios) |
-| Interno | `POST /internal/jobs/expire-online-payments`, `POST /internal/jobs/expire-reservations`, `POST /internal/jobs/dispatch-notifications` (protegidos con secreto; los invoca el cron externo) | Sistema |
+| Interno | `POST /internal/jobs/expire-online-payments` (cada 1 min), `POST /internal/jobs/expire-reservations` (cada 5 min), `POST /internal/jobs/expire-shipping-quotes` (cada 15 min, D-46; implementado en INC-05.2), `POST /internal/jobs/reconcile-stock` (diaria), `POST /internal/jobs/cleanup` (diaria), `POST /internal/jobs/dispatch-notifications` (cada 1 min; implementado en INC-10.1b). Protegidos con `Authorization: Bearer <CRON_SECRET>`; sin `CRON_SECRET` configurado responden `404`. **Los cuatro primeros, implementados en INC-06.1.** | Sistema |
 | Salud | `GET /health` (proceso vivo, sin consultar dependencias), `GET /health/ready` (base de datos alcanzable; si no, `503` con `BASE_DE_DATOS_NO_DISPONIBLE`). **Implementados en INC-01.** | Público mínimo |
 | Futuro | `POST /webhooks/payments/:provider` (RF-F03) | — |
 
@@ -1057,9 +1112,11 @@ Para cada pedido, en su propia transacción corta:
 | Cliente llega con el efectivo después del vencimiento | El admin no puede registrar el pago de una reserva vencida, pero puede reactivarla si hay stock (RN-28) y después registrar el pago. |
 | Personalizado cuya seña no se pagó a tiempo | Pasa a `VENCIDO` (estado final). El admin puede reemitir la cotización en un pedido nuevo vinculado (D-42); el stock se retiene recién cuando el cliente acepta la nueva cotización. |
 
-**Dónde corren [PROPUESTA]:** un **cron externo** llama a ambos endpoints con un secreto. Funciona igual si el servidor está siempre encendido o si el hosting lo duerme. Los endpoints son idempotentes, así que reintentos y llamadas duplicadas no causan daño.
+**Dónde corren [PROPUESTA, implementado en INC-06.1]:** un **cron externo** llama a ambos endpoints con `CRON_SECRET`. Funciona igual si el servidor está siempre encendido o si el hosting lo duerme. Los endpoints son idempotentes, así que reintentos y llamadas duplicadas no causan daño.
 
 **Cálculo del vencimiento de 24 h hábiles (RN-29):** una función pura `calcularVencimientoReserva(inicio, feriados, zonaHoraria)` en `reservation.policy.ts`. Recorre el tiempo desde `inicio` en la zona horaria de la tienda, sumando solo las horas de días que no son sábado, domingo ni feriado, hasta completar 24 h; devuelve el instante en UTC. Se calcula al crear o reactivar la reserva y se guarda en `vence_en`; el proceso de vencimiento no cambia porque solo compara `vence_en <= now()`. Al agregar un feriado, se recalcula `vence_en` de las reservas vigentes afectadas, solo si el nuevo valor es posterior.
+
+**Implementación (INC-06.2):** `reservationExpiry` (`orders/reservation.policy.ts`) es la función pura; usa `addCountedHours` (`shared/business-hours.ts`), que suma horas saltando días excluidos en la zona horaria de `ConfiguracionTienda` y reutiliza los formateadores de fecha. La utilidad suma hacia adelante y, desde INC-10.2, también resta hacia atrás para la ventana de 48 h (RN-30). `cashReservationExpiry` carga los feriados y se usa en el checkout. El recálculo al agregar un feriado bloquea las reservas vigentes (`FOR UPDATE`) y parte del instante en que cada pedido pasó a `RESERVADO`, que el historial guarda igual al usado para calcular `vence_en`. Las reservas ya vencidas no se recalculan.
 
 **Utilidad compartida de plazos (RN-29, RN-30):** una función genérica `moverHoras(inicio, horas, sentido, esDiaExcluido, zonaHoraria)` suma o resta horas saltando los días para los que `esDiaExcluido` devuelve verdadero. Cada regla solo define su criterio:
 
@@ -1069,6 +1126,8 @@ Para cada pedido, en su propia transacción corta:
 | Ventana de 48 h (RN-30) | Hacia atrás desde la fecha comprometida de despacho | Solo `DiaExcluidoVentana` |
 
 Si la tienda decidiera que la ventana también saltee fines de semana, se cambia únicamente el criterio de RN-30 en `cancellation.policy.ts`; la utilidad, los datos y los flujos no cambian.
+
+**Implementación (INC-06.1):** `expiration.service.ts` toma un lote de candidatos y vence cada pedido en su propia transacción con `SELECT … FOR UPDATE SKIP LOCKED` sobre el pedido, que vuelve a comprobar estado y fecha con la fila bloqueada. Después usa `transitionOrder` (historial) y `releaseOrderRetentions` (INC-04, idempotente), registra `PEDIDO_VENCIDO` en la auditoría y encola el aviso al cliente (el de reserva incluye el contacto de la tienda). El vencimiento oportunista actúa al confirmar el checkout y también al agregar al carrito, porque una retención vencida sin procesar también bloquea RN-01. Se reintenta una sola vez y solo si se venció algún pedido.
 
 ### 14.6 Liberación y consumo en otras transiciones
 
@@ -1102,7 +1161,7 @@ Proceso diario [PROPUESTA] que compara `stock_reservado` con `SUM(retenciones AC
 | Liberación y consumo | `releaseRetention`, `consumeRetention` y `releaseOrderRetentions`: `UPDATE` condicional sobre `estado = 'ACTIVA'`; solo si cambia una fila se tocan las columnas de stock y se inserta el movimiento. Llamarlas dos veces (o en paralelo) no tiene efecto adicional. |
 | Ingresos y ajustes | Ingreso con unidades positivas; ajuste con diferencia con signo y motivo obligatorio. El `UPDATE` exige que el físico resultante no quede por debajo de lo reservado; si no, `409 AJUSTE_INVALIDO` con lo reservado. Registran autor y motivo en el movimiento. |
 | Barrera en la base | `CHECK (stock_reservado >= 0 AND stock_reservado <= stock_fisico)` en variantes y materiales; cantidad positiva en retenciones; un único destino por movimiento. |
-| Conciliación | `reconcileStock()` compara el stock guardado con la suma de los deltas y de las retenciones activas, y registra las diferencias en el log. Se ve en `/admin/inventario`; su ejecución periódica se agrega con los procesos de INC-06.1. |
+| Conciliación | `reconcileStock()` compara el stock guardado con la suma de los deltas y de las retenciones activas, y registra las diferencias en el log. Se ve en `/admin/inventario`; su ejecución periódica es `POST /api/internal/jobs/reconcile-stock` (INC-06.1). |
 | Catálogo | Los estándar publican sus unidades disponibles por variante y si el producto tiene stock («Sin stock» en el listado y el detalle; `availability` en los datos estructurados). Los personalizables no publican disponibilidad hasta resolver D-18. El catálogo no oculta productos sin stock: RN-01 impide agregarlos al carrito (INC-05). |
 | Panel | `/admin/inventario` (variantes y materiales, filtro de stock bajo, conciliación, alta de materiales) y una página por variante o material con su historial, ingresos, ajustes y umbral de alerta. |
 
@@ -1140,9 +1199,11 @@ habilitado(item) = item no es personalizado
 
 Se evalúa **en el servidor y dentro de la misma transacción** que la transición a `EN_PRODUCCION` (y a `LISTO_PARA_RETIRO`/`DESPACHADO` para personalizados), con el pedido bloqueado. No depende del campo `estado` del diseño, que es solo informativo: la fuente de verdad es la existencia de una aprobación para la versión vigente.
 
+**Implementación (INC-09):** `designs/design.service.ts`. La regla vive en `transitionOrder` (guarda `DISENO_NO_APROBADO` para `EN_PRODUCCION`, `LISTO_PARA_RETIRO` y `DESPACHADO` de personalizados), igual que la del saldo (INC-08.2), así que las operaciones de INC-12 la heredan. Cada operación de diseño bloquea el pedido; la base hace inmutables las versiones, sus archivos y las aprobaciones (triggers), y garantiza un número por diseño y una aprobación por versión. Los archivos se suben con el contexto `VERSION_DISENO` (solo el admin) y el cliente accede a los de sus pedidos. Las versiones se cargan con el pedido en `PENDIENTE_PAGO`, `RESERVADO`, `CONFIRMADO` o `EN_PRODUCCION` (el diseño avanza antes o después del pago); pasar a producción exige además el pedido `CONFIRMADO`. Pedir cambios no tiene límite de rondas (D-29).
+
 ### 15.5 Cambio de diseño con el pedido en producción
 
-**[PROPUESTA]** Si se carga una versión nueva con el pedido en `EN_PRODUCCION`, el sistema lo permite, notifica al cliente, marca el pedido con una alerta "requiere nueva aprobación" e impide pasar a `LISTO_PARA_RETIRO`/`DESPACHADO` hasta que se apruebe. El costo de material ya usado se registra como ajuste si corresponde. **Pendiente de validar con la tienda (D-26).**
+**Acordado (D-26, v1.31):** si se carga una versión nueva con el pedido en `EN_PRODUCCION`, el sistema lo permite, notifica al cliente, muestra la alerta "requiere nueva aprobación" (derivada de que la versión vigente no tiene aprobación, sin un campo aparte) e impide pasar a `LISTO_PARA_RETIRO`/`DESPACHADO` hasta que se apruebe. El costo del material ya usado lo registra el administrador a mano, si corresponde, sin cálculo automático; la carga de ajustes manuales llega con INC-12.
 
 ---
 
@@ -1153,13 +1214,16 @@ Se evalúa **en el servidor y dentro de la misma transacción** que la transici�
 | Aspecto | Propuesta |
 |---|---|
 | Almacenamiento | Objetos en almacenamiento compatible con S3, **bucket privado**. Metadatos en `Archivo`. Sin binarios en la base de datos. |
-| Subida | **[PROPUESTA v1]** A través del backend (multipart con límite de tamaño), que valida y luego guarda en S3. Es más simple de asegurar que URLs de subida directa. Si el volumen crece, migrar a URLs prefirmadas de subida con validación posterior. |
+| Subida | A través del backend (multipart con límite de tamaño), que valida y luego guarda en S3. **Implementado en INC-07** (`POST /files`); un cuerpo declarado más grande que el máximo se rechaza sin leerlo. Si el volumen crece, migrar a URLs prefirmadas de subida con validación posterior. |
 | Validación | Lista blanca de tipos según **contenido real** (magic bytes), no solo extensión; límite de tamaño por archivo y por mensaje; nombre de objeto generado por el servidor (UUID), el nombre original solo como metadato; rechazo de SVG/HTML ejecutables salvo que se sirvan como descarga y nunca en línea. |
-| Formatos y límites | **[PENDIENTE D-08]** Propuesta inicial a validar: JPG, PNG, WEBP, PDF; archivos de diseño (AI, PSD, CDR) solo si la tienda los necesita. Límite inicial propuesto a validar por la tienda según el tamaño de sus archivos de impresión (los de 90 × 90 cm en alta resolución pueden ser grandes). |
+| Formatos y límites | **RESUELTO D-08 (v1.28):** solo **JPG/JPEG, PNG, WEBP y PDF**, detectados por la firma del contenido; se rechazan SVG, HTML, ejecutables y cualquier otro formato (también AI, PSD y CDR). Tamaño máximo por archivo configurable con `FILES_MAX_BYTES`: **20 MB** como valor inicial, elegido sin datos reales; **revisar con archivos de impresión reales antes del uso en producción**. |
 | Descarga | El backend verifica el permiso y devuelve una **URL firmada de corta duración** (p. ej. minutos). Las imágenes públicas del catálogo pueden ir en un bucket/prefijo público separado. |
 | Control de acceso | Un cliente solo accede a archivos donde `propietario_cliente_id` es él o que pertenecen a sus pedidos/conversación. Admin accede a todos. |
 | Retención y eliminación | **[PENDIENTE D-27]** Propuesta: eliminación lógica inmediata; borrado físico de archivos de pedidos cerrados tras un plazo definido por la tienda; archivos de versiones aprobadas se conservan mientras haya posibilidad de reclamo. Regla de ciclo de vida del bucket para objetos huérfanos (subidos y nunca asociados) a las 24–48 h. |
-| Miniaturas | **[DEBERÍA]** Generar una miniatura al subir para no descargar archivos grandes en listados. |
+| Miniaturas | **[DEBERÍA] Pendiente.** Generarlas exige una biblioteca de procesamiento de imágenes con binarios nativos (p. ej. `sharp`) y validar su seguridad; no se incorporó en INC-07. Mientras tanto, los listados muestran la imagen original con tamaño fijo. |
+
+**Implementación (INC-07):** `files/` (`file.policy.ts`, `file.service.ts`, `storage.ts`). El almacenamiento es un puerto con dos implementaciones: S3 (MinIO en local, el proveedor de producción después) y memoria (solo pruebas). Orden de la subida: validación completa → objeto en S3 → metadatos y auditoría en una transacción; si los metadatos fallan, se borra el objeto (compensación) y, si ese borrado también falla, queda un objeto huérfano sin registro, inaccesible porque no hay URL sin registro, que limpiará la regla de ciclo de vida de D-27. Las URLs firmadas fijan el tipo de la respuesta con el tipo detectado y se sirven desde el origen del almacenamiento, no desde el sitio. Contextos habilitados hoy: el cliente sube `REFERENCIA` y `CHAT`; el admin, `PRODUCTO`. `VERSION_DISENO` y `COMPROBANTE` se habilitan con la etapa que los asocia a un pedido (INC-09, INC-12), y el acceso a archivos de pedidos o conversaciones ajenos al dueño, con INC-08.1 e INC-13; hasta entonces, el cliente accede solo a los archivos que subió. **Almacenamiento de producción:** se elige junto con el hosting (bucket privado, credenciales propias, regla de ciclo de vida para huérfanos).
+
 
 ### 16.2 Chat
 
@@ -1174,6 +1238,8 @@ Reglas: los mensajes no se editan ni se borran por el cliente (trazabilidad de l
 1. La operación comercial (p. ej. confirmar pago) inserta un registro en `SalidaNotificacion` **dentro de la misma transacción**.
 2. Un proceso aparte toma los pendientes (`FOR UPDATE SKIP LOCKED`), envía y marca `ENVIADA`; ante error, incrementa `intentos` y programa `proximo_intento_en` con espera creciente; tras N intentos queda `FALLIDA` y visible en el panel.
 3. La notificación in-app se crea en la misma transacción (no depende de servicios externos).
+
+**Implementación (INC-10.1b):** `notifications/outbox.service.ts`, endpoint `POST /internal/jobs/dispatch-notifications` cada 1 min. Reintentos tras 1 min, 5 min, 30 min y 2 h; al quinto intento fallido queda `FALLIDA`, visible en `/admin/correos`, donde el admin puede volver a encolarlo. Entrega «al menos una vez»: si el envío funciona pero la marca falla, el correo se reenvía. Los correos de verificación y recuperación de cuenta (INC-02) se siguen enviando en el momento, porque el usuario los espera. El proveedor real depende de D-44; hasta entonces se usa el de consola.
 
 Resultado: **una falla del correo nunca revierte ni bloquea una operación ya registrada**, y ninguna notificación se pierde silenciosamente. Canales: in-app y correo en v1; WhatsApp/SMS según D-07.
 
@@ -1471,7 +1537,142 @@ Cubren T-07, T-08, T-09, T-13, T-40 (pedidos), T-48, T-79, T-118 y el rechazo de
 | T-180 | Reserva en efectivo sin teléfono y con teléfono. | `422 TELEFONO_REQUERIDO`; con teléfono, `RESERVADO` que vence a las 24 h. | RN-13, RN-18 |
 | T-181 | Pago simulado rechazado y luego aprobado; tercer intento. | El rechazo queda registrado; la aprobación confirma, guarda el 15 % y avisa; el tercer intento recibe `409`. | RN-16, RF-48 |
 | T-182 | Tres aprobaciones simultáneas del mismo pedido. | Un solo pago aprobado. | RN-16 |
-| T-183 | Checkout con envío. | `422 ENVIO_NO_DISPONIBLE` hasta resolver F-10. | D-06 |
+| T-183 | Checkout con envío. | Pedido `ENVIO_A_COTIZAR` sin retención de stock, con la dirección copiada y 48 h para cotizar; efectivo, sin dirección, dirección ajena o sin stock: rechazado sin crear pedido. | D-06, D-45, RN-13 |
+
+**Datos operativos (INC-05.3)**
+
+Cubren T-70, T-71, T-113 (dentro del checkout) y CA-18, además de:
+
+| ID | Caso | Resultado esperado | Referencia |
+|---|---|---|---|
+| T-184 | Cliente sin teléfono que lo agrega en su perfil. | Antes `TELEFONO_REQUERIDO`; después puede reservar en efectivo. Un teléfono inválido se rechaza. | RF-03, RN-18 |
+| T-185 | Direcciones de otro cliente. | Editar o borrar responde `404`. | RF-03, 17 |
+| T-186 | Contacto de la tienda. | Solo el admin lo configura; aparece en el aviso de una reserva en efectivo. | RF-49, RN-18 |
+| T-187 | Fecha comprometida. | Inicio de la ventana = fecha − 48 h corridas; cambio registrado; aviso al cliente; solo pedidos confirmados o en producción y fechas futuras. | RN-14, RN-30 |
+| T-188 | Registro dentro del checkout. | El carrito del visitante pasa a la cuenta y el pedido se confirma sin volver a empezar. | RN-25 |
+
+**Vencimientos (INC-06.1)**
+
+Cubren T-10, T-11, T-12, T-14, T-15, T-16, T-94, T-103 y T-104 con PostgreSQL real (las concurrentes, repetidas tres veces), además de:
+
+| ID | Caso | Resultado esperado | Referencia |
+|---|---|---|---|
+| T-189 | La última unidad la retiene un pedido vencido que el proceso todavía no venció. | Agregar al carrito y confirmar la compra la obtienen: el pedido viejo vence en ese momento. Sin pedidos vencidos, se responde `STOCK_INSUFICIENTE` como siempre. | 14.5, RN-01 |
+| T-190 | Endpoints del cron sin secreto, con uno incorrecto y sin `CRON_SECRET` configurado. | `401`, `401` y `404`. | 14.5, 17 |
+| T-191 | Limpieza y conciliación periódicas. | Borra solo sesiones y contadores vencidos; la conciliación informa cero diferencias. | R-22, 14.8 |
+
+**Plazo hábil y feriados (INC-06.2)**
+
+Cubren T-125 a T-129 (pruebas unitarias con los ejemplos de RN-29 en hora de Argentina) y T-127 con PostgreSQL real, además de:
+
+| ID | Caso | Resultado esperado | Referencia |
+|---|---|---|---|
+| T-192 | Feriados repetidos, inválidos o cargados por un cliente. | `409 FERIADO_EXISTENTE`, `422` y `403`. | RF-58 |
+| T-193 | Feriado fuera del plazo de una reserva vigente; feriado agregado cuando una reserva ya venció; reserva creada con feriados ya cargados. | La primera no cambia, la vencida no revive y la nueva ya los descuenta. Los pagos online pendientes no cambian. | RN-29, RN-22 |
+
+**Extensión y reactivación (INC-06.3)**
+
+Cubren T-120 a T-124, además de:
+
+| ID | Caso | Resultado esperado | Referencia |
+|---|---|---|---|
+| T-194 | Dos reactivaciones simultáneas del mismo pedido. | Una se acepta y la otra recibe `409`; el stock se retiene una sola vez. | RN-28, RN-05 |
+| T-195 | Reactivación con un total desactualizado; extensión de una reserva ya vencida o de un pago online; reserva extendida al pasar el proceso de vencimiento. | `PRECIO_CAMBIADO` con el total nuevo; `RESERVA_VENCIDA` y `ESTADO_INVALIDO`; la extendida sigue `RESERVADO`. | RN-28, RN-27 |
+
+**Envío cotizado (INC-05.2)**
+
+Cubren T-183, además de:
+
+| ID | Caso | Resultado esperado | Referencia |
+|---|---|---|---|
+| T-196 | El admin cotiza, y después corrige la cotización; un cliente intenta cotizar. | `ENVIO_COTIZADO` con 48 h para responder y aviso; la anterior queda `REEMPLAZADA` y aceptarla da `COTIZACION_DESACTUALIZADA`; el cliente recibe `403`. | F-10, D-46 |
+| T-197 | El cliente acepta la cotización y paga; otro cliente intenta aceptarla. | Stock retenido, envío sumado al total, `PENDIENTE_PAGO`; el pago simulado confirma por el total; el otro cliente recibe `404`. | F-10, D-45 |
+| T-198 | El precio cambia entre la cotización y la aceptación. | Con el total viejo, `PRECIO_CAMBIADO` sin retener nada; con el nuevo, se cobra el precio vigente. | RN-27, D-45 |
+| T-199 | Aceptación compitiendo con otra compra por la última unidad. | Solo una operación obtiene la unidad; si pierde la aceptación, el pedido sigue `ENVIO_COTIZADO`. | RN-05, D-45 |
+| T-200 | El cliente pasa a retiro con efectivo, y otro sin teléfono. | `RESERVADO` con 24 h hábiles y envío en cero; sin teléfono, `TELEFONO_REQUERIDO`, y con pago online pasa a `PENDIENTE_PAGO`. | D-47, RN-13, RN-29 |
+| T-201 | El cliente rechaza el costo; la tienda no puede enviar y el cliente cancela; la tienda no puede enviar y el cliente pasa a retiro. | Cancelado sin cargo como cancelación del cliente; cancelado como cancelación de la tienda con cupón pendiente de INC-11; el pedido sigue sin cupón. | D-47, D-49 |
+| T-202 | Pedidos sin cotización y sin respuesta después de 48 h; acción tardía; cron sin secreto. | El proceso los cancela sin cupón, una sola vez, y los otros procesos no los tocan; la acción tardía da `PLAZO_VENCIDO`; el cron responde `401`. | D-46 |
+
+**Cancelaciones (INC-10.1a)**
+
+Cubren T-16, T-17, T-31 a T-33, T-35, T-70, T-72, T-73, T-76, T-95 a T-99, T-108 y la parte de vista previa de T-111. T-74, T-99 (con seña) y T-111 (con seña) se prueban sobre la política, en forma unitaria, hasta que existan los pagos parciales (INC-08.2). T-75 supone un cargo sin pago que el flujo estándar no produce (sin pago no hay fecha comprometida, RN-23); el cierre del cargo se prueba igual. Además:
+
+| ID | Caso | Resultado esperado | Referencia |
+|---|---|---|---|
+| T-203 | La ventana empieza entre la vista previa y la confirmación. | `CONDICIONES_CAMBIARON` con la evaluación nueva; el pedido no cambia. | RN-24, RF-39 |
+| T-204 | El admin pide dos veces a la vez el mismo reembolso simulado. | Se ejecuta una sola vez, con referencia y un único evento de auditoría. | RF-42 |
+| T-205 | El cliente y la tienda cancelan a la vez el mismo pedido. | Una sola cancelación, un solo reembolso. | RN-24 |
+| T-206 | La tienda cancela un pedido listo para retirar y uno despachado. | El primero se cancela; el segundo, `ESTADO_INVALIDO`. | RN-19 |
+
+**Envío del outbox (INC-10.1b)**
+
+| ID | Caso | Resultado esperado | Referencia |
+|---|---|---|---|
+| T-207 | Dos ejecuciones simultáneas del envío con varios correos pendientes. | Cada correo se envía una sola vez y queda `ENVIADA`. | 16.3 |
+| T-208 | El proveedor falla en todos los intentos. | Reprogramado con espera creciente; no se toma antes de tiempo; al quinto intento, `FALLIDA` y fuera del proceso. | 16.3, T-83 |
+
+**Pedidos de $0 (RN-32)**
+
+| ID | Caso | Resultado esperado | Referencia |
+|---|---|---|---|
+| T-209 | Checkout con retiro cuyo cupón cubre todos los productos. | `CONFIRMADO` sin `Pago`, sin plazo, con stock retenido y motivo `SIN_PAGO_REQUERIDO`; el pago simulado y el registro de efectivo responden `409`. | RN-32 |
+| T-210 | Checkout con cupón parcial. | Flujo normal: `PENDIENTE_PAGO` con su plazo. | RN-32 |
+| T-211 | La misma solicitud de un pedido de $0, dos veces a la vez. | Un solo pedido, una sola confirmación y una sola retención. | RN-32, RF-21 |
+| T-212 | Pedido con envío y productos en $0: envío cotizado en $30 y, otro, en $0. | El primero no se confirma al crearse y pasa a `PENDIENTE_PAGO`; el segundo se confirma sin pago al aceptar. | RN-32, F-10 |
+
+**Archivos (INC-07)**
+
+Cubren T-41, T-44, T-45 y CA-14, además de:
+
+| ID | Caso | Resultado esperado | Referencia |
+|---|---|---|---|
+| T-213 | Subida de un JPG, un PNG, un WEBP y un PDF declarando un tipo falso. | Aceptados por su contenido; metadatos con el tipo detectado, tamaño, hash SHA-256 y una clave generada por el servidor, que no se devuelve. | D-08, 16.1 |
+| T-214 | Un cliente sube en contexto `PRODUCTO`; el admin, también; un contexto inexistente. | `403`, `201` y `422`. | 16.1 |
+| T-215 | Otro cliente intenta dar de baja un archivo; el dueño lo da de baja. | `404`; después, `ELIMINADO`, sin URL y con el objeto conservado. | 16.1, D-27 |
+| T-216 | Falla el almacenamiento; fallan los metadatos después de guardar el objeto. | Sin registro; el objeto se borra (compensación). | 16.1 |
+
+**Personalizados: solicitud y cotización (INC-08.1)**
+
+Cubren T-78, T-110, CA-17 y CA-27, además de:
+
+| ID | Caso | Resultado esperado | Referencia |
+|---|---|---|---|
+| T-217 | Solicitud con referencia propia; con referencia ajena; con un producto estándar. | `EN_DEFINICION` sin stock, plazo ni ítems; `404`; `PRODUCTO_NO_DISPONIBLE`. | RF-22 |
+| T-218 | La referencia de un pedido: el cliente, el admin, otro cliente; el cliente intenta darla de baja. | URL para los dos primeros; `404` para el tercero; `ARCHIVO_EN_USO`. | 16.1 |
+| T-219 | Dos cotizaciones seguidas; se acepta la primera; se rechaza la segunda; se cotiza otra vez. | `REEMPLAZADA` y `COTIZACION_DESACTUALIZADA`; `RECHAZADA` con el pedido en definición y sin plazo; la nueva se emite. | D-53, D-54 |
+| T-220 | Aceptación online. | `PENDIENTE_PAGO` a 30 min, ítem con el precio cotizado, seña del 20 % y el pago del total rechazado (`SENA_NO_DISPONIBLE`). | RN-17, RN-21 |
+| T-221 | Con envío: cotización sin costo de envío; aceptación en efectivo; aceptación online. Dos aceptaciones simultáneas. | `422`; `EFECTIVO_SOLO_RETIRO`; total con envío y seña sin envío. Una sola aceptación tiene efecto. | D-48, RN-13 |
+| T-222 | Reemitir dos veces; reemitir un pedido que no venció por falta de pago. | `YA_REEMITIDO`; `REEMISION_NO_PERMITIDA`. | D-42 |
+
+**Seña y saldo (INC-08.2)**
+
+Cubren T-89, T-90 (por la transición), T-91 a T-93, T-99, T-100, T-105, T-106 (por la transición), T-109 y T-111 con pagos reales, además de:
+
+| ID | Caso | Resultado esperado | Referencia |
+|---|---|---|---|
+| T-223 | Saldo con envío: en efectivo y online. | `PEDIDO_NO_PAGABLE`; el saldo online incluye el envío. | D-48, D-56 |
+| T-224 | Un intento rechazado y uno aprobado del saldo; un segundo pago aprobado del mismo concepto insertado en la base. | El aprobado se registra; la base rechaza el segundo. | 16, RN-21 |
+| T-225 | Personalizado con envío cuyo cupón cubre los productos. | `CONFIRMADO` sin pagos ni plazo, motivo `SIN_SENA_REQUERIDA`; el despacho se rechaza hasta pagar el envío como saldo. | D-55 |
+
+**Diseños (INC-09)**
+
+Cubren T-20 a T-27, CA-08 y CA-09, además de:
+
+| ID | Caso | Resultado esperado | Referencia |
+|---|---|---|---|
+| T-226 | Un cliente intenta cargar una versión; el admin usa un archivo que no es de diseño; se intenta dar de baja un archivo de una versión. | `403`; `ARCHIVO_NO_ENCONTRADO`; `ARCHIVO_EN_USO`. | RF-24, 16.1 |
+| T-227 | Dos aprobaciones simultáneas de la misma versión. | Una sola se registra; la otra recibe `409`. | RN-07 |
+| T-228 | El cliente pide cambios en dos versiones seguidas. | Cada pedido queda registrado y el admin carga la versión siguiente, sin límite. | RF-26, D-29 |
+| T-229 | Versión nueva con el pedido en producción. | Se permite y se avisa; el paso a listo para retirar se rechaza hasta aprobarla. | D-26 |
+
+**Fechas excluidas (INC-10.2)**
+
+Cubren T-130 a T-136, además de:
+
+| ID | Caso | Resultado esperado | Referencia |
+|---|---|---|---|
+| T-230 | Se agrega dos veces la misma fecha. | La segunda responde `FECHA_YA_EXCLUIDA`; ningún pedido se recalcula ni se avisa otra vez. | RN-30, F-09 |
+| T-231 | Se agregan dos fechas a la vez que afectan al mismo pedido; se confirma una fecha comprometida con una fecha ya excluida. | El inicio considera las dos fechas, con un registro por cambio; la fecha comprometida nueva ya descuenta la exclusión. | RN-30 |
 
 Además, T-42 (cliente en `/admin/*` → `403`) y T-46 (intentos de login repetidos → `429`) quedan cubiertas por la suite de integración de INC-02.
 
@@ -1600,7 +1801,7 @@ Además, T-42 (cliente en `/admin/*` → `403`) y T-46 (intentos de login repeti
 | R-19 | `npm audit` informa vulnerabilidades altas en herramientas de desarrollo: el CLI de Prisma (`deepmerge-ts`, `mysql2`) y `eslint-config-next` (`braces`). | Baja | Bajo | No forman parte del código que ejecuta la aplicación y requieren entradas que el sistema no recibe; la única corrección de npm es bajar a versiones mayores anteriores. Revisar en cada actualización de Prisma y de Next.js. |
 | R-20 | El registro informa `EMAIL_EN_USO`, lo que permite saber si un email tiene cuenta. | Media | Bajo | Necesario para registrarse dentro del checkout e iniciar sesión en el mismo paso (RN-25). Mitigado con el límite de 10 registros por IP por hora. Login y recuperación no lo revelan. |
 | R-21 | La IP para limitar solicitudes sale de `X-Forwarded-For`, que un cliente puede falsificar si el hosting no lo sobrescribe. | Media | Bajo | El límite por email no depende de la IP. Al elegir el hosting, verificar que su proxy sobrescriba ese encabezado (11.5). |
-| R-22 | Las tablas `limite_solicitud`, `token_usuario` y `sesion` acumulan filas vencidas. | Alta | Bajo | No afectan la lógica (todo filtra por fecha). Agregar su limpieza a los procesos periódicos de INC-06.1. |
+| R-22 | Las tablas `limite_solicitud`, `token_usuario` y `sesion` acumulan filas vencidas. | Baja | Bajo | **Mitigado en INC-06.1:** `POST /api/internal/jobs/cleanup` (diaria) borra sesiones vencidas, tokens usados o vencidos y contadores de más de un día. |
 
 ---
 
@@ -1617,15 +1818,15 @@ Cada decisión indica por qué importa, qué bloquea y cuándo debe resolverse. 
 | **D-03** | ¿Cómo se calcula el costo de trabajo realizado y materiales usados en cancelaciones dentro de las 48 h? | — | **RESUELTO v1.1 → RN-15:** cargo por servicio del 15 % del valor de los productos. | — |
 | **D-04** | ¿Qué compensación corresponde cuando la tienda cancela? | — | **RESUELTO v1.2 → RN-19, RN-20:** devolución total incluido el envío y cupón del 10 % válido por un mes. | — |
 | **D-05** | ¿Qué umbral y fórmula se usan para compensar demoras en envíos? | — | **PILOTO (v1.3) → RN-04:** el admin carga la compensación manualmente (motivo, importe, quién la autorizó y devolución). **Sigue abierto** para después del piloto: umbral, porcentaje y condiciones. | Después del piloto |
-| **D-06** | ¿Cómo se gestionan los envíos y qué estados necesitan? ¿Quién transporta? ¿Costo de envío? ¿Zonas? | Define `Entrega`, el cálculo del total y RN-04. | **Costo: RESUELTO v1.12 → opción B**, el admin cotiza el envío después del pedido (flujo propuesto F-10, decisiones D-45 a D-49). **Siguen abiertos:** quién transporta y los estados de la entrega. | Costo: INC-05.2; transporte y estados: INC-12 |
+| **D-06** | ¿Cómo se gestionan los envíos y qué estados necesitan? ¿Quién transporta? ¿Costo de envío? ¿Zonas? | Define `Entrega`, el cálculo del total y RN-04. | **Costo: RESUELTO v1.12 → opción B**, el admin cotiza el envío después del pedido (flujo F-10, acordado en v1.19 con D-45, D-46, D-47 y D-49). **Siguen abiertos:** quién transporta y los estados de la entrega. | Costo: INC-05.2; transporte y estados: INC-12 |
 | **D-07** | ¿Qué canales de notificación se usarán? | Afecta proveedores, costos y datos requeridos (teléfono). | In-app + correo en v1. | INC-10.1 |
-| **D-08** | ¿Qué formatos de archivo y límites de tamaño se aceptan? | Seguridad, costos de almacenamiento, utilidad para producción. | JPG/PNG/WEBP/PDF; otros solo si la tienda los necesita; límite según archivos reales de impresión. | INC-07 |
+| **D-08** | ¿Qué formatos de archivo y límites de tamaño se aceptan? | **RESUELTO v1.28 → 16.1:** JPG/JPEG, PNG, WEBP y PDF, detectados por contenido; el resto se rechaza. Tamaño máximo configurable (`FILES_MAX_BYTES`), 20 MB inicial a revisar con archivos reales antes de producción. | — |
 | **D-09** | ¿Cómo se descuenta el consumo de materiales en personalizaciones? | Precisión del stock de materiales. | Consumo manual en v1; recetas cuando haya datos. | INC-08.1/INC-09 |
-| **D-10** | ¿Cómo se determina el precio de un producto personalizado? | Sin precio no se puede pagar ni reservar. Mientras tanto, el catálogo muestra «Consultá el precio» (RN-31). | Cotización manual por pedido; tabla de precios base opcional. | INC-08.1 |
+| **D-10** | ¿Cómo se determina el precio de un producto personalizado? | **RESUELTO v1.29 → F-03:** cotización manual por pedido; el admin fija el precio de los productos, el detalle y la fecha estimada. Sin tabla de precios base en esta etapa. | — |
 | **D-11** | ¿Es obligatorio registrarse para comprar? | — | **RESUELTO v1.5 → RN-25:** sí (opción A); catálogo público y registro dentro del checkout. | — |
 | **D-12** | ¿Qué pasarela de pagos podría integrarse en el futuro? | Define webhooks, reembolsos y conciliación futuros. | Mantener la interfaz genérica; evaluar proveedores locales al planificar RF-F03. | Antes de RF-F03 (no bloquea v1) |
 | **D-13** | ¿La galería pública es necesaria para el lanzamiento? | Agrega moderación y riesgos legales. | No en v1; opcional "Trabajos realizados" cargado por admin. | Antes del piloto |
-| **D-14** | ¿Se pueden reservar materiales antes de aprobar el diseño final? | Riesgo de quedarse sin material vs. bloquear material de pedidos que no se concretan. | No reservar en v1; consumir al producir. | INC-08.1 |
+| **D-14** | ¿Se pueden reservar materiales antes de aprobar el diseño final? | **RESUELTO v1.29 → F-03:** no se reservan ni se descuentan al solicitar ni al aceptar la cotización; el consumo se resuelve con el flujo de producción. | — |
 
 ### 22.2 Decisiones adicionales detectadas
 
@@ -1634,18 +1835,18 @@ Cada decisión indica por qué importa, qué bloquea y cuándo debe resolverse. 
 | **D-15** | ¿Dónde y cómo se paga en efectivo? | **RESUELTO v1.1 → RN-13:** solo con retiro en el local, pagando dentro de las 24 h. Los envíos se pagan online. | — |
 | **D-16** | ¿Cuánto tiempo se retiene el stock durante un pago online? | **RESUELTO v1.2 → RN-22:** 30 minutos. | — |
 | **D-17** | ¿En qué estados puede cancelar el cliente? | **RESUELTO v1.2 → RN-23.** | — |
-| **D-18** | ¿Cómo aplica RN-01 a productos personalizables? ¿Se valida stock de la base en blanco/material, o no se valida? | Un producto a pedido podría no tener "stock" de producto terminado. | INC-08.1 |
-| **D-19** | ¿Puede la administración registrar una aprobación de diseño recibida por otro canal (en persona, WhatsApp)? | RN-07 exige aprobación del cliente; registrarla por admin requiere reglas explícitas. | INC-09 |
-| **D-20** | ¿Se puede extender una reserva o reactivar una vencida? | **RESUELTO v1.6 → RN-28:** solo el admin, con motivo. | — |
+| **D-18** | ¿Cómo aplica RN-01 a productos personalizables? ¿Se valida stock de la base en blanco/material, o no se valida? | **RESUELTO v1.29 → F-03:** no se exige disponibilidad de materiales para solicitar ni cotizar; mientras no haya una validación fiable del consumo, la disponibilidad se confirma a mano antes de comprometer la producción. Las reglas de stock de los estándar no cambian. | — |
+| **D-19** | ¿Puede la administración registrar una aprobación de diseño recibida por otro canal (en persona, WhatsApp)? | **RESUELTO v1.31 → RN-07:** no; solo el cliente aprueba desde el sitio. | — |
+| **D-20** | ¿Se puede extender una reserva o reactivar una vencida? | **RESUELTO v1.6 → RN-28:** solo el admin, con motivo. Precios vigentes y vencimiento desde la reactivación, confirmados en v1.18. | — |
 | **D-21** | ¿Cómo se define la fecha acordada de entrega/prestación? | **RESUELTO v1.1 → RN-14:** fecha comprometida de despacho confirmada por el administrador; marca fija si se confirma con 48 h o menos de anticipación. | — |
 | **D-22** | ¿Cómo se cobra el cargo de RN-03 si el cliente no pagó? | **RESUELTO v1.1 → RN-18:** cargo pendiente de arreglo; la administración contacta al cliente por email o teléfono. Las señas pasan a D-33. | — |
 | **D-23** | ¿Hay reembolsos para pagos en efectivo? | **RESUELTO v1.2 → RN-18:** los arregla la administración con el cliente y se registra el resultado. | — |
 | **D-24** | ¿Moneda, impuestos y facturación? | **RESUELTO v1.5 → RN-26:** ARS; precios finales con impuestos incluidos; facturación fuera del sistema con registro del comprobante; tienda monotributista en Argentina. | — |
 | **D-25** | Stack definitivo. | **RESUELTO v1.1:** Next.js + TypeScript (R-08), con PostgreSQL. | — |
-| **D-26** | ¿Qué ocurre si un diseño cambia con el pedido ya en producción? ¿Quién asume el costo? | Riesgo de pérdidas y disputas. | INC-09 |
+| **D-26** | ¿Qué ocurre si un diseño cambia con el pedido ya en producción? ¿Quién asume el costo? | **RESUELTO v1.31 → 15.5:** se permite la versión nueva, se avisa al cliente y el pedido no pasa a listo ni se despacha hasta aprobarla; el costo del material usado lo registra el admin a mano si corresponde. | — |
 | **D-27** | ¿Cuánto tiempo se conservan archivos y conversaciones? ¿Qué datos personales se recolectan? | Costos de almacenamiento y cumplimiento legal. | INC-14 |
 | **D-28** | ¿Precio del carrito? | **RESUELTO v1.6 → RN-27:** el vigente al confirmar. | — |
-| **D-29** | ¿Hay límite de rondas de revisión de diseño o costo por revisiones extra? | Control de costos de diseño. | INC-09 |
+| **D-29** | ¿Hay límite de rondas de revisión de diseño o costo por revisiones extra? | **RESUELTO v1.31 → RF-26:** sin límite en la v1; si la tienda quiere cobrar revisiones extra, lo acuerda con el cliente en una cotización nueva. | — |
 | **D-30** | ¿Los fines de semana y feriados afectan el plazo de 24 h? | **RESUELTO v1.6 → RN-29:** no corre fines de semana ni feriados; los feriados los carga el admin. | — |
 | **D-31** | ¿El cargo del 15 % aplica cuando cancela la tienda? | **RESUELTO v1.2 → RN-19:** no; se compensa al cliente con un cupón. | — |
 | **D-32** | En pedidos con retiro, ¿cuál es la fecha comprometida? | **RESUELTO v1.2 → RN-14:** la fecha en que el pedido queda disponible en el local. | — |
@@ -1661,11 +1862,19 @@ Cada decisión indica por qué importa, qué bloquea y cuándo debe resolverse. 
 | **D-42** | ¿Qué pasa con la cotización si la seña no se paga a tiempo? | **RESUELTO v1.4 → RN-21, RF-23:** el pedido queda `VENCIDO` y el admin puede reemitir la cotización en un pedido nuevo vinculado. | — |
 | **D-43** | ¿La ventana de 48 h excluye fines de semana y feriados? | **RESUELTO v1.7 → RN-30:** no, son 48 h corridas; el admin puede excluir fechas puntuales y se avisa a los afectados; el código queda preparado para excluir fines de semana si se decide. | — |
 | **D-44** | ¿Qué proveedor de correo transaccional se usa? (decisión técnica, no comercial) | Sin él, staging y producción no arrancan: la configuración lo exige para no escribir enlaces con tokens en los logs. Verificar envíos gratuitos, dominio propio y SPF/DKIM (11.5, R-14). | Antes de desplegar staging |
-| **D-45** | ¿Se retiene el stock mientras el pedido espera la cotización del envío? | Retenerlo sin un plazo puede bloquear stock indefinidamente; no retenerlo permite que se agote antes de pagar. **[PROPUESTA]** No retener: el stock se retiene al aceptar la cotización e iniciar el pago (RN-22), y el cliente ve que la disponibilidad se confirma en ese momento. | INC-05.2 |
-| **D-46** | ¿Hay un plazo para que la tienda cotice y para que el cliente acepte? ¿Qué pasa si nadie actúa? | Sin plazo, los pedidos pueden quedar abiertos indefinidamente. No hay una propuesta de plazo: es una decisión comercial. Alternativa sin plazo: el admin cancela manualmente los pedidos sin respuesta. | INC-05.2 |
-| **D-47** | Si el cliente no acepta el costo del envío, ¿qué opciones tiene? | **[PROPUESTA]** Cancelar sin cargo (todavía no pagó) o pasar a retiro en el local, que habilita también el efectivo (RN-13). | INC-05.2 |
-| **D-48** | En personalizados con envío, ¿el envío se cotiza junto con el producto y se paga con la seña o con el saldo? | Afecta la cotización de INC-08.1 y la seña (RN-21). **[PROPUESTA]** Cotizar ambos en la misma cotización y cobrar el envío con el saldo, antes del despacho. | INC-08.1 |
-| **D-49** | Si la tienda no puede enviar a esa dirección, ¿la cancelación cuenta como "cancelación por la tienda" con cupón (RN-19, RN-20)? | Hoy toda cancelación de la tienda genera un cupón del 10 %. | INC-05.2 |
+| **D-45** | ¿Se retiene el stock mientras el pedido espera la cotización del envío? | **RESUELTO v1.19 → F-10:** no se retiene; se retiene al aceptar la cotización e iniciar el pago, revalidando stock y precios. | — |
+| **D-46** | ¿Hay un plazo para que la tienda cotice y para que el cliente acepte? ¿Qué pasa si nadie actúa? | **RESUELTO v1.19 → F-10:** 48 h corridas para cotizar y otras 48 h corridas para aceptar; si vence cualquiera, el pedido se cancela con su causa, sin cupón automático. | — |
+| **D-47** | Si el cliente no acepta el costo del envío, ¿qué opciones tiene? | **RESUELTO v1.19 → F-10:** cancelar sin cargo o pasar a retiro en el local, si el pedido sigue siendo válido y con las modalidades de pago disponibles (RN-13). | — |
+| **D-48** | En personalizados con envío, ¿el envío se cotiza junto con el producto y se paga con la seña o con el saldo? | **RESUELTO v1.21 → RN-21:** se cotizan ambos en la misma cotización y el envío se cobra con el saldo, antes del despacho; la seña se calcula sin el envío. | — |
+| **D-49** | Si la tienda no puede enviar a esa dirección, ¿la cancelación cuenta como "cancelación por la tienda" con cupón (RN-19, RN-20)? | **RESUELTO v1.19 → F-10:** sí, genera el cupón del 10 %; si el cliente pasa a retiro y el pedido continúa, no hay cupón. **v1.20:** si el cliente no responde en 48 h, se cancela por vencimiento, sin cupón (D-46). La emisión depende de INC-11. | — |
+| **D-50** | ¿Se muestran la dirección y el horario del local para retirar? ¿Dónde? | RF-49 solo define email y teléfono; para retirar, el cliente necesita saber dónde y cuándo. Mientras tanto, la reserva muestra el email y el teléfono. | Antes del piloto |
+| **D-51** | ¿Puede el cliente cancelar un pedido con envío mientras espera la cotización (`ENVIO_A_COTIZAR`)? | **RESUELTO v1.23 → RN-23:** sí, sin cargo, como cualquier pedido sin pago. Con la cotización ya enviada (`ENVIO_COTIZADO`), se cancela desde la respuesta a la cotización (D-47, D-49). | — |
+| **D-52** | Si el cupón cubre todo el valor de los productos de un pedido con retiro, el total es $0: ¿el pedido se confirma solo o pasa igual por el pago? | **RESUELTO v1.25 → RN-32:** se confirma automáticamente, sin pasarela ni pago ficticio. Implementado en v1.27. | — |
+| **D-53** | ¿Qué pasa si el cliente rechaza la cotización? | **RESUELTO v1.29 → F-03:** la cotización queda `RECHAZADA` y el pedido sigue en `EN_DEFINICION`, sin reserva ni plazo; la tienda puede emitir otra. | — |
+| **D-54** | ¿Vence una cotización pendiente? | **RESUELTO v1.29 → F-03:** no vence en esta versión; sigue abierta hasta que se acepta, se rechaza o se reemplaza (la anterior queda `REEMPLAZADA`). | — |
+| **D-55** | Si el cupón cubre todos los productos de un personalizado con envío, la seña es $0 y queda solo el envío: ¿cómo se confirma? | **RESUELTO v1.30 → RN-21:** se confirma al aceptar, sin registrar un pago de $0, con el motivo `SIN_SENA_REQUERIDA`; el envío queda como saldo, online antes del despacho, sin plazo ni retención nueva. | — |
+| **D-56** | ¿Cuándo se registra el saldo en efectivo? | **RESUELTO v1.30 → RN-21:** solo con el pedido `LISTO_PARA_RETIRO` (al retirar). | — |
+| **D-57** | ¿Cuándo se habilita el pago online del saldo? | **RESUELTO v1.30 → RN-21:** con el pedido confirmado y saldo pendiente, sin plazo adicional; con envío, solo antes del despacho. | — |
 
 ---
 
@@ -1680,18 +1889,18 @@ Cada incremento termina con pruebas en verde y una versión desplegable en stagi
 | | INC-03 | Catálogo: productos, variantes, precios finales en ARS (RN-26), búsqueda; páginas públicas renderizadas en servidor (SEO, sitemap, metadatos); panel admin de catálogo. Imágenes en INC-07. **Estado: completado en local; ver 23.1.** | Bajo | No | — |
 | | INC-04 | **Inventario:** stock físico/reservado, materiales, movimientos, retención/liberación atómica e idempotente, `CHECK`, conciliación. **Pruebas de concurrencia T-01 a T-05.** Sin UI de compra todavía. **Estado: completado en local; ver 23.1.** | **Alto** | **Sí** | — |
 | **2. Carrito, pedidos y reservas** | INC-05.1 | **Carrito:** agregar, modificar y quitar con validación de stock (RN-01), advertencias de stock y precio (RF-13, RN-27), carrito de visitante e integración al ingresar o registrarse (RN-25). **Estado: completado en local; ver 23.1.** | Medio | **Sí** | — |
-| | INC-05.2 | **Checkout y pedidos:** confirmación con retención de stock e idempotencia (RN-02, RN-05, RN-27), pedidos, tabla de transiciones e historial, pago online **simulado** con plazo de 30 min (RN-22), reserva en efectivo solo con retiro (RN-13), registro del pago en efectivo, confirmación = pago registrado (RN-16), envío cotizado por el admin (D-06, F-10). **Estado: parcial; retiro completado en local, envío pendiente; ver 23.1.** | **Alto** | **Sí** | D-45, D-46, D-47 y D-49 (solo la parte de envío) |
-| | INC-05.3 | **Datos operativos del pedido:** direcciones (RF-03), fecha comprometida de despacho con `inicio_ventana_cargo` de 48 h corridas (RN-14, RN-30), datos de contacto de la tienda (RF-49), registro dentro del checkout (RN-25). | Medio | No | — |
-| | INC-06.1 | **Vencimientos como dos mecanismos independientes:** pagos online pendientes (30 min, RN-22) y reservas impagas (RN-06), cada uno con su proceso, su endpoint de cron y su motivo de liberación; liberación idempotente compartida; vencimiento oportunista. Pruebas T-10 a T-17, T-94, T-103 y T-104. | **Alto** | **Sí** | — |
-| | INC-06.2 | **Plazo de 24 h hábiles y feriados** (RN-29): función de cálculo en la zona horaria de la tienda, gestión de feriados y recálculo al agregar uno. Reemplaza el cálculo simple de 24 h que usa INC-05 sin tocar otros módulos. Pruebas T-125 a T-129. | Medio | **Sí** | — |
-| | INC-06.3 | **Extensión y reactivación de reservas por el admin** (RN-28), con nueva retención atómica de stock. Pruebas T-120 a T-124. | **Alto** | **Sí** | — |
-| **3. Personalización** | INC-07 | Archivos: subida validada, S3, URLs firmadas, autorización, miniaturas. | Medio | **Sí** | D-08 |
-| | INC-08.1 | Solicitud de personalización, cotización y aceptación (inicio del plazo, RN-17); reemisión de una cotización vencida en un pedido nuevo (D-42). Pruebas T-110. | Medio | No | D-10, D-14, D-18 |
-| | INC-08.2 | **Seña del 20 % y saldo** (pagos parciales, RN-21): la seña confirma el pedido; saldo online antes del despacho u online/efectivo al retirar; bloqueo en backend de despacho y entrega con saldo pendiente. Pruebas T-89, T-90, T-105 y T-106. | **Alto** | **Sí** | — |
-| | INC-09 | **Diseños:** versiones inmutables, huella, aprobación, solicitud de cambios, bloqueo de producción (T-20 a T-27). | **Alto** | **Sí** | D-19, D-26, D-29 |
-| **4. Comunicación y administración** | INC-10.1 | **Cancelaciones** (cliente/admin) con política aislada: precedencia RN-24 (un solo cargo: retención de la seña completa, RN-21, o 15 %, RN-15), estados cancelables (RN-23), ventana de 48 h (RN-14), desglose auditable (RF-55), devolución total con envío cuando cancela la tienda (RN-19), reembolsos simulados, arreglos en efectivo (RN-18), costo real estimado precargado al 20 % (RF-53). Envío real de notificaciones desde el outbox. | **Alto** | **Sí** | D-07 |
-| | INC-10.2 | **Fechas excluidas de la ventana de 48 h** (RN-30): gestión por el admin, vista previa de afectados, recálculo de `inicio_ventana_cargo` y aviso por outbox. Pruebas T-130 a T-136. | Medio | **Sí** | — |
-| | INC-11 | **Cupones:** emisión automática dentro de la cancelación por la tienda (10 % del subtotal sin envío), envío por email, "Mis cupones", consumo atómico en el checkout, restauración única con vencimiento original al cancelar o vencer, anulación por admin. Pruebas T-81 a T-88, T-101 y T-102. | **Alto** | **Sí** | — |
+| | INC-05.2 | **Checkout y pedidos:** confirmación con retención de stock e idempotencia (RN-02, RN-05, RN-27), pedidos, tabla de transiciones e historial, pago online **simulado** con plazo de 30 min (RN-22), reserva en efectivo solo con retiro (RN-13), registro del pago en efectivo, confirmación = pago registrado (RN-16), envío cotizado por el admin (D-06, F-10). **Estado: completado en local; ver 23.1.** | **Alto** | **Sí** | — |
+| | INC-05.3 | **Datos operativos del pedido:** direcciones (RF-03), fecha comprometida de despacho con `inicio_ventana_cargo` de 48 h corridas (RN-14, RN-30), datos de contacto de la tienda (RF-49), registro dentro del checkout (RN-25). **Estado: completado en local; ver 23.1.** | Medio | No | — |
+| | INC-06.1 | **Vencimientos como dos mecanismos independientes:** pagos online pendientes (30 min, RN-22) y reservas impagas (RN-06), cada uno con su proceso, su endpoint de cron y su motivo de liberación; liberación idempotente compartida; vencimiento oportunista. Pruebas T-10 a T-17, T-94, T-103 y T-104. **Estado: completado en local; ver 23.1.** | **Alto** | **Sí** | — |
+| | INC-06.2 | **Plazo de 24 h hábiles y feriados** (RN-29): función de cálculo en la zona horaria de la tienda, gestión de feriados y recálculo al agregar uno. Reemplaza el cálculo simple de 24 h que usa INC-05 sin tocar otros módulos. Pruebas T-125 a T-129. **Estado: completado en local; ver 23.1.** | Medio | **Sí** | — |
+| | INC-06.3 | **Extensión y reactivación de reservas por el admin** (RN-28), con nueva retención atómica de stock. Pruebas T-120 a T-124. **Estado: completado en local; ver 23.1.** | **Alto** | **Sí** | — |
+| **3. Personalización** | INC-07 | Archivos: subida validada, S3, URLs firmadas, autorización, miniaturas. **Estado: completado en local, salvo las miniaturas; ver 23.1.** | Medio | **Sí** | — |
+| | INC-08.1 | Solicitud de personalización, cotización y aceptación (inicio del plazo, RN-17); con envío, la cotización incluye el costo del envío (D-48); reemisión de una cotización vencida en un pedido nuevo (D-42). Pruebas T-110. **Estado: completado en local; ver 23.1.** | Medio | No | — |
+| | INC-08.2 | **Seña del 20 % y saldo** (pagos parciales, RN-21): la seña confirma el pedido; saldo online antes del despacho (con el envío incluido, D-48) u online/efectivo al retirar; bloqueo en backend de despacho y entrega con saldo pendiente. Pruebas T-89, T-90, T-105 y T-106. **Estado: completado en local; ver 23.1.** | **Alto** | **Sí** | — |
+| | INC-09 | **Diseños:** versiones inmutables, huella, aprobación, solicitud de cambios, bloqueo de producción (T-20 a T-27). **Estado: completado en local; ver 23.1.** | **Alto** | **Sí** | — |
+| **4. Comunicación y administración** | INC-10.1 | **Dividido en INC-10.1a (completado en local, ver 23.1) e INC-10.1b.** INC-10.1a: **Cancelaciones** (cliente/admin) con política aislada: precedencia RN-24 (un solo cargo: retención de la seña completa, RN-21, o 15 %, RN-15), estados cancelables (RN-23), ventana de 48 h (RN-14), desglose auditable (RF-55), devolución total con envío cuando cancela la tienda (RN-19), reembolsos simulados, arreglos en efectivo (RN-18), costo real estimado precargado al 20 % (RF-53). La retención de la seña queda en la política, probada en forma unitaria, y se conecta con los pagos en INC-08.2. INC-10.1b: envío real de notificaciones desde el outbox (depende de D-44 para producción). **Estado: INC-10.1b completado en local; ver 23.1.** | **Alto** | **Sí** | D-07 |
+| | INC-10.2 | **Fechas excluidas de la ventana de 48 h** (RN-30): gestión por el admin, vista previa de afectados, recálculo de `inicio_ventana_cargo` y aviso por outbox. Pruebas T-130 a T-136. **Estado: completado en local; ver 23.1.** | Medio | **Sí** | — |
+| | INC-11 | **Cupones:** emisión automática dentro de la cancelación por la tienda (10 % del subtotal sin envío), envío por email, "Mis cupones", consumo atómico en el checkout, restauración única con vencimiento original al cancelar o vencer, anulación por admin. Pruebas T-81 a T-88, T-101 y T-102. **Estado: completado en local; ver 23.1.** | **Alto** | **Sí** | — |
 | | INC-12 | Entregas (retiro/envío), detección de demoras y compensación por demora cargada manualmente con su devolución (D-05); registro de comprobantes externos (RN-26). | Medio | No | D-06 |
 | | INC-13 | Chat con adjuntos y polling; panel administrativo inicial (RF-45). | Medio | No | — |
 | **5. Validación y piloto** | INC-14 | Pruebas de seguridad (T-40 a T-48), carga (T-60), backups y restauración (T-50), métricas, revisión de privacidad. | Medio | No | D-27 |
@@ -1716,7 +1925,19 @@ Cada incremento termina con pruebas en verde y una versión desplegable en stagi
 | INC-03 | **Completado en local.** Las imágenes se agregan en INC-07 y la disponibilidad por variante en INC-04, por decisión. | 2026-10-14 | Ver tabla de INC-03. |
 | INC-04 | **Completado en local.** La conciliación periódica se programa en INC-06.1; la retención de materiales espera D-14 y la disponibilidad de personalizables, D-18. | 2026-10-14 | Ver tabla de INC-04. |
 | INC-05.1 | **Completado en local.** | 2026-10-14 | Ver tabla de INC-05.1. |
-| INC-05.2 | **Parcial.** Retiro en el local completado en local; el checkout con envío espera D-45, D-46, D-47 y D-49. | 2026-10-14 | Ver tabla de INC-05.2. |
+| INC-05.2 | **Completado en local.** Retiro (2026-10-14) y envío cotizado (2026-10-15). El cupón de D-49 se emite desde INC-11. | 2026-10-15 | Ver tabla de INC-05.2. |
+| INC-05.3 | **Completado en local.** | 2026-10-15 | Ver tabla de INC-05.3. |
+| INC-06.1 | **Completado en local.** Falta programar el cron externo al desplegar (depende del hosting). | 2026-10-15 | Ver tabla de INC-06.1. |
+| INC-06.2 | **Completado en local.** Con la parte [PROPUESTA] de RN-29 pendiente de confirmación. | 2026-10-15 | Ver tabla de INC-06.2. |
+| INC-06.3 | **Completado en local.** Reglas de RN-28 confirmadas en v1.18, salvo la condición del cupón (INC-11). | 2026-10-15 | Ver tabla de INC-06.3. |
+| INC-10.1a | **Completado en local.** Sin la seña real (llega con los pagos parciales de INC-08.2); el cupón de RN-19, desde INC-11. El envío de correos queda en INC-10.1b. | 2026-10-16 | Ver tabla de INC-10.1a. |
+| INC-10.1b | **Completado en local.** El proveedor de correo real espera D-44 (antes de staging). | 2026-10-16 | Ver tabla de INC-10.1b. |
+| INC-11 | **Completado en local.** Reglas de RN-20 y RN-28 confirmadas en v1.25. RN-32 (total $0, D-52) implementado en v1.27. | 2026-10-16 | Ver tabla de INC-11. |
+| INC-07 | **Completado en local.** Miniaturas pendientes; el almacenamiento de producción se elige con el hosting y el límite de tamaño se revisa antes de producción. | 2026-10-16 | Ver tabla de INC-07. |
+| INC-08.1 | **Completado en local.** El cobro de la seña, desde INC-08.2. | 2026-10-20 | Ver tabla de INC-08.1. |
+| INC-08.2 | **Completado en local.** La parte de T-90 y T-106 por la interfaz de despacho y entrega espera las operaciones de INC-12, que heredan la guarda. | 2026-10-20 | Ver tabla de INC-08.2. |
+| INC-09 | **Completado en local.** Las transiciones a listo, despacho y entrega (INC-12) heredan la guarda de RN-07. | 2026-10-20 | Ver tabla de INC-09. |
+| INC-10.2 | **Completado en local.** Backend (2026-10-20) e interfaz (2026-10-21). | 2026-10-21 | Ver tabla de INC-10.2. |
 
 **INC-01: alcance y verificación**
 
@@ -1798,21 +2019,173 @@ Nota: la migración `20261014145820_catalogo` quedó ordenada antes que las de a
 | Checkout con retiro (RF-14, RF-15, RF-17) | Hecho | Carrito vacío, precio cambiado y falta de stock no crean pedido ni retienen nada (T-08, T-118, T-07); la retención usa `reserveStock` de INC-04 en la misma transacción. |
 | Idempotencia (RF-21) | Hecho | La misma clave, también en paralelo, crea un solo pedido (T-09). |
 | Pago online simulado (RF-16, RF-46 a RF-48) | Hecho | Rechazos registrados, aprobación que confirma, plazo de 30 min controlado al pagar, aprobaciones simultáneas sin duplicar (T-181, T-182, T-104). Rotulado «SIMULADO» en la interfaz. |
-| Reserva en efectivo (RF-18, RF-19) | Hecho, con 24 h corridas | Exige teléfono; el admin registra el efectivo de una reserva vigente; una vencida se rechaza (T-180, T-13). |
+| Reserva en efectivo (RF-18, RF-19) | Hecho (24 h hábiles desde INC-06.2) | Exige teléfono; el admin registra el efectivo de una reserva vigente; una vencida se rechaza (T-180, T-13). |
 | Confirmación y aviso (RN-16, RN-12) | Hecho | Confirmado = pago registrado; aviso dentro del sitio y correo en la cola (outbox). |
 | Pedidos y transiciones | Hecho | Tabla única de transiciones, historial y auditoría; el cliente solo ve sus pedidos (T-40); panel de pedidos del admin. |
 | Verificación | Hecho | Lint, tipos y `npm run build` sin errores; 15 pruebas de integración del checkout (las concurrentes, repetidas tres veces) y las 17 de inventario, adaptadas a la clave foránea del pedido; recorrido completo con el build de producción (alta de producto, compra, pago simulado, vista del admin) sin errores del servidor. |
-| Checkout con envío | **Pendiente** | D-45, D-46, D-47 y D-49 (F-10). |
+| Checkout con envío (F-10, D-45) | Hecho | Pedido a cotizar sin retención de stock, con dirección copiada; efectivo, dirección ajena o sin stock: rechazado (T-183). |
+| Cotización por la tienda (D-46, D-49) | Hecho | Importe o "no se puede enviar"; corrección que reemplaza y da un nuevo plazo; solo admin (T-196). |
+| Respuesta del cliente (D-45, D-47) | Hecho | Aceptar con retención atómica y precios vigentes; pasar a retiro (online o efectivo); cancelar sin cargo. Reutiliza `reserveStock`, la tabla de transiciones, el cálculo de precios vigentes de la reactivación y el vencimiento oportunista (T-197 a T-201). |
+| Plazos de 48 h (D-46) | Hecho | Tercer proceso de vencimiento, independiente, con su endpoint de cron; cancela sin cupón (T-202). |
+| Cupón por envío imposible (D-49) | Hecho en INC-11 | La cancelación de la tienda emite el cupón en la misma transacción. |
+| Verificación del envío | Hecho | 13 pruebas de integración nuevas (la de concurrencia, repetida tres veces) y las suites afectadas de checkout, vencimiento y reactivación. Sin verificación de tipos ni suites completas, por indicación. |
 
-Dependencias que no bloquean el retiro: los pedidos vencidos siguen en `PENDIENTE_PAGO` o `RESERVADO` con el stock retenido hasta que exista el proceso de vencimiento (INC-06.1), aunque el pago ya se rechaza al vencer; las 24 h hábiles llegan en INC-06.2; agregar el teléfono después del registro, la dirección del local y los datos de contacto llegan en INC-05.3; la cancelación por el cliente, en INC-10.1; el envío de los correos encolados, en INC-10.1; los cupones, en INC-11.
+Dependencias que no bloquean el retiro ni el envío: el vencimiento automático de pedidos impagos se resolvió en INC-06.1; las 24 h hábiles llegan en INC-06.2; el teléfono y los datos de contacto se resolvieron en INC-05.3 y la dirección del local queda como D-50; la cancelación por el cliente, en INC-10.1; el envío de los correos encolados, en INC-10.1; los cupones, en INC-11.
 
+**INC-05.3: alcance y verificación**
+
+| Elemento | Estado | Cómo se verificó |
+|---|---|---|
+| Perfil y direcciones (RF-03) | Hecho | Nombre y teléfono editables; con teléfono se habilita la reserva en efectivo; direcciones propias con código postal validado (T-184, T-185). |
+| Contacto de la tienda (RF-49) | Hecho | Configuración solo del admin; `/contacto`; aviso de reserva en efectivo y detalle del pedido reservado (T-186). La dirección y el horario del local quedan como D-50. |
+| Fecha comprometida (RN-14, RN-30) | Hecho | El admin la confirma o cambia en pedidos confirmados o en producción; inicio de la ventana = fecha − 48 h corridas, marca fija si se confirma con 48 h o menos, cambio registrado y aviso al cliente; el cliente ve desde cuándo cancelar tiene cargo (T-70, T-71, T-187). Las fechas excluidas llegan en INC-10.2. |
+| Registro dentro del checkout (RN-25) | Hecho | `/checkout` ofrece el registro a los visitantes con el mismo formulario de `/registrarse` (componente compartido) y sigue con la compra (T-188). |
+| Verificación | Hecho | Lint y tipos sin errores; 9 pruebas de integración nuevas; `npm run build` sin errores. |
+
+**INC-06.1: alcance y verificación**
+
+| Elemento | Estado | Cómo se verificó |
+|---|---|---|
+| Dos procesos independientes (RF-20, RN-06, RN-22) | Hecho | Cada uno vence solo su estado, con su motivo de liberación y su aviso (T-10, T-94, T-103). |
+| Idempotencia y concurrencia | Hecho | Ejecuciones repetidas y en paralelo liberan el stock una sola vez; un pedido bloqueado se saltea y se vence en la siguiente ejecución; pago y vencimiento simultáneos terminan en un estado coherente (T-11, T-15, T-16). |
+| Pedido vencido no confirmable | Hecho | El pago controla el plazo con la fila bloqueada; después de vencer responde `409` sin registrar pago (T-104). Lo pagado o en plazo no vence (T-12, T-14). |
+| Vencimiento oportunista | Hecho | En el checkout y al agregar al carrito (T-189). |
+| Endpoints del cron | Hecho | `CRON_SECRET` con comparación de tiempo constante (T-190). Programar el cron queda para el despliegue. |
+| Conciliación y limpieza periódicas | Hecho | T-191. |
+| Verificación | Hecho | 12 pruebas de integración nuevas; las 25 de checkout y carrito, que cambiaron, siguen pasando. Sin verificación de tipos ni suites completas, por indicación. |
+
+**INC-06.2: alcance y verificación**
+
+| Elemento | Estado | Cómo se verificó |
+|---|---|---|
+| Vencimiento en 24 h hábiles (RN-29) | Hecho | Pruebas unitarias con los ejemplos de RN-29: viernes 18:00 → lunes 18:00; sábado 10:00 → martes 00:00; lunes feriado → martes 18:00; medianoche evaluada en hora local; inicio en feriado (T-125, T-126, T-128). El pago online sigue en 30 min corridos (T-129). |
+| Feriados (RF-58) | Hecho | Alta, baja y listado por año, solo admin, sin repetidos (T-192). Página `/admin/feriados`. |
+| Recálculo al agregar un feriado | Hecho | Extiende solo reservas vigentes que lo incluyen; quitarlo no acorta; fuera de plazo o ya vencidas no cambian (T-127, T-193). Se reutilizan los procesos de INC-06.1 sin cambios: siguen comparando `vence_en`. |
+| Verificación | Hecho | 7 pruebas unitarias, 4 de integración nuevas y las 15 del checkout (adaptada la que esperaba 24 h corridas). Sin verificación de tipos ni suites completas, por indicación. |
+| Pendiente de confirmar | — | La parte [PROPUESTA] de RN-29: contar las horas completas de cada día hábil (no el horario de atención) y que agregar un feriado solo extienda. Cambiarla afecta solo a `reservationExpiry` y al recálculo. |
+
+**INC-06.3: alcance y verificación**
+
+| Elemento | Estado | Cómo se verificó |
+|---|---|---|
+| Extensión de una reserva vigente | Hecho | Solo admin, con motivo; el nuevo vencimiento debe ser posterior al actual; bloquea el pedido (`FOR UPDATE`) y registra `ExtensionReserva`, auditoría y notificación con los datos de contacto. Una extendida no vence con el plazo original (T-120, T-121, T-195). |
+| Reactivación de una reserva vencida | Hecho | Solo reservas estándar en efectivo vencidas por falta de pago (no canceladas ni pagos online). Vista previa a precios vigentes; el admin confirma con el total visto. Reutiliza `reserveStock` (14.3): sin stock no cambia nada. Nuevo vencimiento con RN-29 desde la reactivación; transición `VENCIDO → RESERVADO` con historial. Después se registra el efectivo como siempre (T-122, T-124). |
+| Concurrencia y sobreventa | Hecho | Reactivación contra una compra de la última unidad y doble reactivación simultánea: una sola retiene el stock (T-123, T-194). |
+| Panel | Hecho | En el detalle del pedido: formulario de extensión y reactivación con vista previa. |
+| Verificación | Hecho | 9 pruebas de integración nuevas, más las suites afectadas de vencimiento, feriados y operaciones de pedidos. Sin verificación de tipos ni suites completas, por indicación. |
+| Reglas confirmadas | Hecho | Precios vigentes al reactivar con confirmación del total, y vencimiento nuevo desde la reactivación: confirmados en v1.18; lo implementado ya los cumple. Sigue como [PROPUESTA] la condición del cupón, que se aplica cuando existan cupones (INC-11). |
+
+
+**INC-10.1a: alcance y verificación**
+
+| Elemento | Estado | Cómo se verificó |
+|---|---|---|
+| Política única (RN-23, RN-24) | Hecho | `cancellations/cancellation.policy.ts`, función pura: estados, ventana (marca fija incluida), RN-19, RN-21, RN-15, redondeo, porcentaje guardado, base con cupón. 13 pruebas unitarias, incluida la seña. |
+| Cancelación por el cliente (RF-39) | Hecho | Vista previa con el desglose y el contacto; la confirmación exige las mismas condiciones; antes de pagar, sin cargo; en ventana, 15 %; fuera, devolución total; listo para retirar, despachado o entregado: rechazo con contacto (T-31, T-32, T-35, T-95, T-203). |
+| Cancelación por la tienda (RF-40, RN-19) | Hecho | Motivo obligatorio, sin cargo, devolución total, autor y estado previo registrados; cupón marcado para INC-11 (T-33, T-76, T-206). |
+| Un solo cargo (RN-24) | Hecho | Índice único parcial en la base (T-99) y cancelaciones simultáneas (T-205). |
+| Reembolsos y arreglos (RF-42, RN-18) | Hecho | Reembolso online simulado calculado al cancelar y ejecutado por el admin una sola vez; devolución en efectivo cerrada como `DEVUELTO` con nota; cargo pendiente cerrado con resultado y nota (T-97, T-204, T-75). |
+| Costo real estimado (RF-53) | Hecho | Precargado con el 20 % y editable sin cambiar el cargo (T-108). |
+| Concurrencia | Hecho | Cancelación contra pago simultáneo (T-16); reserva cancelada y vencimiento posterior sin doble liberación (T-17). |
+| Rechazo del envío cotizado | Hecho | Usa la misma cancelación: queda la `Cancelacion` con su regla (D-47, D-49). |
+| Panel | Hecho | El cliente cancela con vista previa y ve el desglose; el admin cancela, ve el desglose, ejecuta y cierra reembolsos y cargos. |
+| Verificación | Hecho | 13 pruebas unitarias y 15 de integración nuevas (repetidas tres veces por la concurrencia), más las suites de envío y de operaciones de pedidos. Sin verificación de tipos ni suites completas, por indicación. |
+| Pendiente | — | Seña real en INC-08.2; envío de correos en INC-10.1b. El cupón de RN-19 se emite desde INC-11. |
+
+**INC-11: alcance y verificación**
+
+| Elemento | Estado | Cómo se verificó |
+|---|---|---|
+| Emisión (RF-50, RN-19, D-34) | Hecho | En la misma transacción que toda cancelación de la tienda (también D-49): 10 % del subtotal original sin envío, un mes, código aleatorio, aviso en la cola; único por pedido de origen (T-81, T-82 por índice único). |
+| Uso en el checkout (RF-51, F-08) | Hecho | `UPDATE` condicional en la transacción del pedido: solo el dueño, activo y vigente; tope en los productos, sin saldo; dos compras simultáneas, una sola lo usa y la otra no retiene stock (T-84 a T-86, T-88). También en pedidos con envío: el descuento se recalcula al aceptar la cotización o pasar a retiro. |
+| Restauración (RN-20, D-41) | Hecho | Al cancelar o vencer, una sola vez y con el vencimiento original; si ya venció, queda vencido (T-87, T-101). La tienda cancela un pedido con cupón: se restaura el usado y se emite uno nuevo sobre el subtotal original (T-102). |
+| Reactivación (RN-28) | Hecho | Vuelve a usar el cupón; si ya no está disponible, la vista previa lo indica y la reactivación se rechaza. |
+| Cancelaciones | Hecho | El desglose usa el descuento real del pedido (D-36). |
+| Panel | Hecho | Cupón en el checkout, "Mis cupones", descuento en el pedido; `/admin/cupones` con filtro y anulación. |
+| Verificación | Hecho | 5 pruebas de integración nuevas y las suites de cancelación y envío, una sola corrida. T-83 (falla del correo) depende del envío del outbox, INC-10.1b. |
+| RN-32 (total $0) | Hecho | Confirmación sin pago en el checkout, el envío cotizado y la reactivación (T-209 a T-212). |
+
+**INC-10.1b: alcance y verificación**
+
+| Elemento | Estado | Cómo se verificó |
+|---|---|---|
+| Envío del outbox (16.3) | Hecho | Toma los pendientes con `FOR UPDATE SKIP LOCKED`, envía y marca `ENVIADA`; dos ejecuciones simultáneas envían cada correo una sola vez (T-207). |
+| Reintentos y fallidos | Hecho | Espera creciente; al quinto intento, `FALLIDA`, y el proceso ya no lo toma (T-83, T-208). Página `/admin/correos` para ver y volver a encolar. |
+| Cron | Hecho | `POST /internal/jobs/dispatch-notifications`, con el mismo secreto que los demás procesos. |
+| Verificación | Hecho | 3 pruebas de integración nuevas, una corrida. No cambió el comportamiento de otras partes. |
+| Pendiente | — | Proveedor real (D-44), antes de staging. |
+
+**INC-07: alcance y verificación**
+
+| Elemento | Estado | Cómo se verificó |
+|---|---|---|
+| MinIO local | Hecho | Servicio `storage` en `docker-compose.yml` (fijado por digest) y `storage-init`, que crea los buckets privados de desarrollo y pruebas. Comprobado a mano: el acceso anónimo al objeto y al listado responde `403`; la URL firmada, `200`. |
+| Subida (D-08) | Hecho | Los cuatro formatos por su contenido, con un tipo declarado falso; metadatos, hash y clave generada por el servidor (T-213). HTML, SVG y ejecutables con extensión permitida, rechazados sin guardar nada (T-44). Archivo grande rechazado sin tocar el almacenamiento, también por el `Content-Length` (T-45). Contextos por rol (T-214). |
+| Descarga y acceso | Hecho | Otro cliente recibe `404` y no se firma ninguna URL; el dueño y el admin la obtienen (T-41, CA-14). Baja lógica: deja de ser accesible y el objeto se conserva (T-215). |
+| Consistencia | Hecho | Falla del almacenamiento: sin registro. Falla de los metadatos: el objeto se borra (T-216). |
+| Imágenes de productos (RF-07) | Hecho | Subida y asociación por el admin; un PDF no se asocia; el catálogo y el panel las muestran con URL firmada. |
+| Verificación | Hecho | 9 pruebas de integración nuevas, una corrida; suites del catálogo y de la configuración, una corrida (la de configuración, adaptada a las variables nuevas). |
+| Pendiente | — | Miniaturas; almacenamiento S3 de producción (con el hosting); revisar `FILES_MAX_BYTES` con archivos reales; borrado físico y huérfanos (D-27, INC-14). |
+
+**INC-08.1: alcance y verificación**
+
+| Elemento | Estado | Cómo se verificó |
+|---|---|---|
+| Solicitud (RF-22) | Hecho | Pedido en `EN_DEFINICION` sin stock, plazo ni ítems, con la solicitud y sus referencias; referencias ajenas y productos estándar rechazados; idempotente (T-217). Página `/personalizados/nuevo` desde el producto. |
+| Referencias (16.1) | Hecho | Las ven el cliente y el admin, no otro cliente; una referencia en uso no se da de baja (T-218). |
+| Cotización (D-10, D-54) | Hecho | Solo el admin; una nueva reemplaza la vigente; aceptar la reemplazada da `COTIZACION_DESACTUALIZADA`; con envío exige el costo (T-219). |
+| Rechazo (D-53) | Hecho | `RECHAZADA`, el pedido sigue en definición sin plazo y se puede volver a cotizar (T-219). |
+| Aceptación (RN-17, RN-21) | Hecho | Online: `PENDIENTE_PAGO` a 30 min; efectivo con retiro: `RESERVADO` a 24 h hábiles (T-78); seña del 20 % sin envío; efectivo con envío rechazado; dos aceptaciones simultáneas, una sola tiene efecto (T-220, T-221). Vista previa con cupón. |
+| Reemisión (D-42) | Hecho | Original `VENCIDO`; pedido nuevo vinculado con la solicitud, las referencias y la cotización nueva, sin plazo hasta aceptar; una sola vez; no se reemite lo que no venció por falta de pago (T-110, T-222). |
+| Cancelación por la tienda en definición | Hecho | Sin cargo y sin cupón de $0 (el 10 % de un pedido sin cotizar es $0). |
+| Verificación | Hecho | 11 pruebas de integración nuevas, una corrida; suites de archivos, pagos, cancelación y cupones, una corrida. |
+| Pendiente | — | Cobro de la seña y del saldo (INC-08.2); chat de aclaración (INC-13); diseños (INC-09); consumo de materiales (D-09). |
+
+**INC-08.2: alcance y verificación**
+
+| Elemento | Estado | Cómo se verificó |
+|---|---|---|
+| Seña (RN-16, RN-21) | Hecho | Online y en efectivo, por el importe fijado al aceptar (con cupón, después del descuento); confirma el pedido; fuera de plazo se rechaza; un concepto que no corresponde también (T-89). |
+| Saldo (D-38, D-56, D-57) | Hecho | Total − lo cobrado, con el envío; sin cambio de estado, plazo ni retención; un segundo pago o dos simultáneos, uno solo se aprueba; en efectivo solo al retirar; con envío, no en efectivo (T-105, T-106, T-223). |
+| Un pago aprobado por concepto | Hecho | Índice único parcial; los intentos rechazados no lo bloquean (T-224). |
+| Guarda del saldo pendiente | Hecho | En `transitionOrder` para `DESPACHADO` y `ENTREGADO`; probada llamando a la transición, porque las operaciones de despacho y entrega son de INC-12 (T-90). |
+| Seña de $0 con envío (D-55) | Hecho | Confirmado sin pago con `SIN_SENA_REQUERIDA`; el envío queda como saldo y bloquea el despacho hasta pagarse (T-225). |
+| Cancelación con pagos reales | Hecho | Dentro de la ventana se retiene la seña (con o sin saldo pagado, que se devuelve); fuera, se devuelve todo; la tienda devuelve la seña y emite el cupón; la vista previa coincide con lo guardado (T-91 a T-93, T-99, T-100, T-109, T-111). Sin cambios en la política. |
+| Verificación | Hecho | 15 pruebas de integración nuevas, una corrida; suites de personalizados, pagos, pedidos de $0 y cancelación, una corrida. |
+| Pendiente | — | Operaciones de despacho y entrega (INC-12), que usan la guarda ya implementada. |
+
+**INC-09: alcance y verificación**
+
+| Elemento | Estado | Cómo se verificó |
+|---|---|---|
+| Versiones (RF-24, 15.3) | Hecho | Solo el admin, con archivos `VERSION_DISENO` activos; numeradas; la nueva es la vigente y vuelve a pedir aprobación; inmutables en la base (T-24, T-226). |
+| Aprobación (RF-25, 15.2) | Hecho | Solo el dueño, solo la vigente y con su huella; única por versión, también con dos aprobaciones simultáneas; aviso a la administración (T-22, T-23, T-25, T-227). |
+| Pedido de cambios (RF-26, D-29) | Hecho | Sobre la vigente sin aprobar; sin límite de rondas (T-228). |
+| Paso a producción (RF-27, RN-07) | Hecho | Solo desde `CONFIRMADO` y con todos los diseños vigentes aprobados; sin versiones, con una versión nueva sin aprobar o con un ítem sin aprobar, se rechaza; una reserva no alcanza (T-20, T-21, T-26, T-27, CA-08, CA-09). |
+| Cambio en producción (D-26) | Hecho | Se permite la versión nueva, se avisa y el paso a listo se rechaza hasta aprobarla (T-229). |
+| Archivos y permisos | Hecho | El cliente ve los archivos de sus diseños y otro cliente recibe `404`; un archivo de una versión no se da de baja. |
+| Historial (RF-28) | Hecho | Cliente y admin ven las versiones, sus archivos, la aprobación y los pedidos de cambio. |
+| Verificación | Hecho | 13 pruebas de integración nuevas, una corrida; suites de pagos de personalizados (adaptadas: el despacho exige el diseño aprobado) y de archivos, una corrida. |
+| Pendiente | — | Transiciones a listo, despacho y entrega, y registro de ajustes manuales (INC-12); consumo de materiales al producir (D-09). |
+
+**INC-10.2: alcance y verificación**
+
+| Elemento | Estado | Cómo se verificó |
+|---|---|---|
+| Cálculo de la ventana (RN-30) | Hecho | Pruebas unitarias: fines de semana que cuentan, domingo excluido, exclusión fuera de la ventana, cálculo hacia atrás con un criterio que excluye fines de semana (T-130, T-131, T-136). |
+| Sin cargos retroactivos (T-133) | Hecho | Unitarias de `recalculatedWindowStart` e integración: el inicio queda en el momento del aviso y la cancelación ya cae dentro de la ventana. |
+| Vista previa, alta y baja | Hecho | Solo los pedidos afectados (no los despachados, con marca fija o con la ventana sin cambios); la vista previa no modifica nada; cada cambio queda en `CambioVentanaCargo` con su aviso (T-132, T-134). |
+| Idempotencia y concurrencia | Hecho | Reintento de la misma fecha: `409`, sin recalcular ni avisar otra vez; dos fechas agregadas a la vez: el resultado considera las dos (T-230, T-231). |
+| Cancelación y fecha comprometida | Hecho | La cancelación usa el inicio guardado y lo registra (T-135); una fecha comprometida nueva ya descuenta las exclusiones. |
+| Verificación | Hecho | 8 pruebas unitarias y 8 de integración nuevas, una corrida; suites de operaciones de pedidos, cancelación y plazo hábil, una corrida. |
+| Interfaz | Hecho | `/admin/fechas-excluidas`: lista, alta con vista previa en un modal superpuesto, confirmación y baja directa, con avisos del resultado real; recorrida con Chrome sin interfaz en móvil, tablet, escritorio y TV, sin desplazamiento horizontal y con el foco devuelto al cerrar los modales. |
 ---
 
 ## 24. Criterios para considerar la v1 lista para piloto
 
 1. Todas las pruebas T-01 a T-48, T-50 y T-70 a T-136 pasan en CI y contra la base de staging.
 2. CA-01 a CA-34 verificados manualmente en staging.
-3. Resueltas las decisiones de la sección 22 que bloquean algún incremento del piloto (columna "Resolver antes de"). Hoy siguen abiertas D-06 a D-10, D-13, D-14, D-18, D-19, D-26, D-27 y D-29; D-12 no bloquea la v1.
+3. Resueltas las decisiones de la sección 22 que bloquean algún incremento del piloto (columna "Resolver antes de"). Hoy siguen abiertas D-06 (transporte y estados de la entrega), D-07, D-09, D-13 y D-27; D-12 no bloquea la v1.
 4. Compensación por demora operando en modo manual (D-05), con motivo, importe, autorización y devolución registrados.
 5. Restauración de backup ejecutada y documentada (T-50) con tiempo medido.
 6. Límites del plan de hosting/base/almacenamiento/correo verificados y documentados (11.5); alertas configuradas para uso cercano al límite.

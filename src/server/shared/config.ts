@@ -11,6 +11,32 @@ const configSchema = z
     EMAIL_PROVIDER: z.enum(["consola", "memoria"]).default("consola"),
     /** v1: solo pagos simulados (RN-09). `desactivado` apaga el endpoint de pago simulado (T-48). */
     PAYMENTS_MODE: z.enum(["simulado", "desactivado"]).default("simulado"),
+    /** Secreto del cron externo para los procesos periódicos (14.5). Sin él, esos endpoints no existen. */
+    CRON_SECRET: z.string().min(32, "Debe tener al menos 32 caracteres.").optional(),
+    /** Archivos (16.1): `s3` (MinIO en local, el proveedor de producción después) o `memoria` (solo pruebas). */
+    STORAGE_PROVIDER: z.enum(["s3", "memoria"]).default("s3"),
+    /** Vacío usa AWS; en local, el MinIO de docker-compose.yml. */
+    S3_ENDPOINT: z.url({ protocol: /^https?$/, error: "Debe ser una URL http(s)." }).optional(),
+    S3_REGION: z.string().min(1).default("us-east-1"),
+    S3_BUCKET: z.string().min(3).default("sublimaciones"),
+    S3_ACCESS_KEY_ID: z.string().min(1).optional(),
+    S3_SECRET_ACCESS_KEY: z.string().min(1).optional(),
+    /** D-08: tamaño máximo por archivo. 20 MB en local; revisar con archivos de impresión reales antes de producción. */
+    FILES_MAX_BYTES: z.coerce
+      .number()
+      .int()
+      .positive()
+      .default(20 * 1024 * 1024),
+    /** Vigencia de las URLs firmadas de descarga, en segundos (16.1: «minutos»). */
+    FILES_URL_TTL_SECONDS: z.coerce.number().int().min(30).max(3600).default(300),
+  })
+  .refine((config) => config.STORAGE_PROVIDER === "memoria" || (config.S3_ACCESS_KEY_ID && config.S3_SECRET_ACCESS_KEY), {
+    path: ["S3_ACCESS_KEY_ID"],
+    message: "Faltan las credenciales del almacenamiento S3.",
+  })
+  .refine((config) => config.STORAGE_PROVIDER === "s3" || config.APP_ENV === "local", {
+    path: ["STORAGE_PROVIDER"],
+    message: "El almacenamiento en memoria solo vale en local.",
   })
   .refine((config) => config.APP_ENV === "local", {
     path: ["EMAIL_PROVIDER"],

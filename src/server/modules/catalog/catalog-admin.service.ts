@@ -49,9 +49,7 @@ export async function updateCategory(actor: Actor, id: string, input: unknown, d
 
 export async function listAdminProducts(input: unknown, db: Db = getDb()) {
   const { q, pagina } = adminListSchema.parse(input);
-  const where: Prisma.ProductoWhereInput = q
-    ? { OR: [{ nombre: { contains: q, mode: "insensitive" } }, { slug: { contains: slugify(q) } }] }
-    : {};
+  const where: Prisma.ProductoWhereInput = q ? { OR: [{ nombre: { contains: q, mode: "insensitive" } }, { slug: { contains: slugify(q) } }] } : {};
   const [productos, total] = await Promise.all([
     db.producto.findMany({
       where,
@@ -70,7 +68,15 @@ export async function getAdminProduct(id: string, db: Db = getDb()) {
     () =>
       db.producto.findUnique({
         where: { id },
-        include: { categoria: true, variantes: { orderBy: { creadoEn: "asc" } } },
+        include: {
+          categoria: true,
+          variantes: { orderBy: { creadoEn: "asc" } },
+          imagenes: {
+            where: { archivo: { estado: "ACTIVO" } },
+            orderBy: { orden: "asc" },
+            include: { archivo: { select: { nombreOriginal: true } } },
+          },
+        },
       }),
     id,
     "PRODUCTO_NO_ENCONTRADO",
@@ -193,13 +199,6 @@ async function findOrThrow<T>(find: () => Promise<T | null>, id: string, code: s
   return record;
 }
 
-function audit(
-  db: DbClient,
-  actor: Actor,
-  accion: string,
-  entidad: string,
-  entidadId: string,
-  datos: Prisma.InputJsonValue,
-): Promise<void> {
+function audit(db: DbClient, actor: Actor, accion: string, entidad: string, entidadId: string, datos: Prisma.InputJsonValue): Promise<void> {
   return recordAudit(db, { actorId: actor.id, accion, entidad, entidadId, datos, ip: actor.ip });
 }

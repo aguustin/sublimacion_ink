@@ -1,5 +1,7 @@
 export const ORDER_STATUS_LABELS: Record<string, string> = {
   EN_DEFINICION: "En definición",
+  ENVIO_A_COTIZAR: "Esperando el costo del envío",
+  ENVIO_COTIZADO: "Envío cotizado: falta tu respuesta",
   PENDIENTE_PAGO: "Pendiente de pago",
   RESERVADO: "Reservado (pago en el local)",
   CONFIRMADO: "Confirmado",

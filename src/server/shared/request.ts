@@ -41,3 +41,14 @@ export function getClientIp(request: Request): string {
   const forwarded = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim();
   return forwarded || request.headers.get("x-real-ip") || "desconocida";
 }
+
+/** Cuerpo JSON opcional: vacío equivale a `{}`; si viene, tiene que ser JSON válido. */
+export async function readOptionalJsonBody(request: Request): Promise<unknown> {
+  const text = await request.text();
+  if (!text.trim()) return {};
+  try {
+    return JSON.parse(text);
+  } catch {
+    throw new AppError("JSON_INVALIDO", "El cuerpo de la solicitud no es un JSON válido.", 400);
+  }
+}

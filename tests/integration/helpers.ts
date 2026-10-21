@@ -6,7 +6,7 @@ export const APP_URL = "http://localhost:3000";
 /** Deja la base de pruebas vacía entre casos. */
 export async function resetDatabase(): Promise<void> {
   await getDb().$executeRawUnsafe(
-    "TRUNCATE pago, historial_estado_pedido, item_pedido, notificacion, salida_notificacion, item_carrito, carrito, retencion_stock, pedido, usuario, sesion, token_usuario, evento_auditoria, limite_solicitud, movimiento_stock, material, variante, producto, categoria CASCADE",
+    "TRUNCATE cambio_ventana_cargo, dia_excluido_ventana, solicitud_cambio, aprobacion_diseno, archivo_version_diseno, version_diseno, diseno, referencia_pedido, cotizacion, solicitud_personalizacion, imagen_producto, archivo, cupon, reembolso, ajuste_economico, cancelacion, cotizacion_envio, extension_reserva, feriado, cambio_fecha_despacho, direccion, configuracion_tienda, pago, historial_estado_pedido, item_pedido, notificacion, salida_notificacion, item_carrito, carrito, retencion_stock, pedido, usuario, sesion, token_usuario, evento_auditoria, limite_solicitud, movimiento_stock, material, variante, producto, categoria CASCADE",
   );
   clearSentEmails();
 }

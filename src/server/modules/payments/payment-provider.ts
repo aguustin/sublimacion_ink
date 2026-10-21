@@ -16,6 +16,8 @@ export type PaymentProvider = {
   name: string;
   simulated: boolean;
   charge(request: ChargeRequest): Promise<{ estado: ChargeResult; referencia: string }>;
+  /** Devuelve parte o todo de un pago aprobado (RF-42). */
+  refund(request: { pagoId: string; importeCentavos: number }): Promise<{ referencia: string }>;
 };
 
 export const simulatedPaymentProvider: PaymentProvider = {
@@ -23,5 +25,8 @@ export const simulatedPaymentProvider: PaymentProvider = {
   simulated: true,
   async charge({ resultadoForzado }) {
     return { estado: resultadoForzado, referencia: `SIM-${randomUUID()}` };
+  },
+  async refund() {
+    return { referencia: `SIM-REEMBOLSO-${randomUUID()}` };
   },
 };
