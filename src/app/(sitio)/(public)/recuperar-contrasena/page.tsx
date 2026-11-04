@@ -22,7 +22,7 @@ export default function ForgotPasswordPage() {
 
   const errors = fieldErrors(error);
   return (
-    <main>
+    <main className="ink-auth">
       <h1>Recuperar la contraseña</h1>
       {message ? (
         <p>{message}</p>

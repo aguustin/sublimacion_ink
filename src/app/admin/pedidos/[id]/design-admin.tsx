@@ -70,7 +70,7 @@ export function StartProductionButton({ orderId }: { orderId: string }) {
 
   return (
     <>
-      <button type="button" onClick={start}>
+      <button type="button" className="ink-btn-primary" onClick={start}>
         Pasar a producción
       </button>
       {error && <p role="alert">{error}</p>}

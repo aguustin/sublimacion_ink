@@ -7,6 +7,13 @@ export type GuestCartItem = { varianteId: string; cantidad: number };
 
 const STORAGE_KEY = "carrito";
 
+/** Evento del navegador que avisa que cambió el carrito (lo escucha el contador del encabezado). */
+export const CART_CHANGED_EVENT = "ink-cart-changed";
+
+export function notifyCartChanged(): void {
+  window.dispatchEvent(new Event(CART_CHANGED_EVENT));
+}
+
 export function readGuestCart(): GuestCartItem[] {
   try {
     const parsed: unknown = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? "[]");
@@ -27,6 +34,7 @@ function writeGuestCart(items: GuestCartItem[]): void {
   } catch {
     // Sin almacenamiento disponible (modo privado): el carrito de visitante no se conserva.
   }
+  notifyCartChanged();
 }
 
 export function setGuestQuantity(varianteId: string, cantidad: number): GuestCartItem[] {

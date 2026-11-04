@@ -1,0 +1,278 @@
+/* Estructura de la tienda: barra negra, contenido sobre #E3E8EF y pie mínimo (Documento Maestro, sección 5). */
+
+.body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  margin: 0;
+}
+
+.main {
+  flex: 1;
+  width: 100%;
+  max-width: var(--content-max);
+  margin: 0 auto;
+  padding: 1.5rem 1rem 4rem;
+}
+
+@media (min-width: 640px) {
+  .main {
+    padding: 2rem 1.5rem 5rem;
+  }
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* ---------- Barra superior ---------- */
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  background: var(--ink-black);
+  color: #fff;
+}
+
+.headerInner {
+  display: grid;
+  grid-template-columns: auto auto 1fr;
+  grid-template-areas:
+    "menu brand actions"
+    "search search search"
+    "links links links";
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+  max-width: var(--content-max);
+  margin: 0 auto;
+  padding: 0.5rem 1rem 0.75rem;
+}
+
+.brand {
+  grid-area: brand;
+  display: inline-flex;
+  align-items: center;
+}
+
+/* El logo se dimensiona por alto: acompaña la altura de los controles de la barra (sección 2). */
+.logo {
+  display: block;
+  flex: none;
+  width: auto;
+  height: 48px;
+}
+
+.menuButton {
+  grid-area: menu;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-height: var(--control-height);
+  padding: 0.4rem 0.9rem;
+  border: 1.5px solid rgb(255 255 255 / 35%);
+  border-radius: 999px;
+  background: transparent;
+  color: #fff;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.links {
+  grid-area: links;
+  display: none;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.5rem 0 0.25rem;
+  border-top: 1px solid rgb(255 255 255 / 12%);
+}
+
+.linksOpen {
+  display: flex;
+}
+
+.link,
+.action {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-height: var(--control-height);
+  padding: 0.4rem 0.8rem;
+  border-radius: 10px;
+  color: #fff;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.link:hover,
+.action:hover {
+  background: rgb(255 255 255 / 8%);
+}
+
+/* Opción activa: acento amarillo y subrayado, no solo color. */
+.link[aria-current="page"],
+.action[aria-current="page"] {
+  color: var(--ink-yellow);
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 0.35em;
+}
+
+.search {
+  grid-area: search;
+  position: relative;
+}
+
+.searchIcon {
+  position: absolute;
+  top: 50%;
+  left: 0.9rem;
+  transform: translateY(-50%);
+  color: rgb(255 255 255 / 75%);
+  pointer-events: none;
+}
+
+.searchInput {
+  width: 100%;
+  min-height: var(--control-height);
+  padding: 0.5rem 1rem 0.5rem 2.5rem;
+  border: 1.5px solid rgb(255 255 255 / 30%);
+  border-radius: 999px;
+  background: rgb(255 255 255 / 10%);
+  color: #fff;
+  font: inherit;
+}
+
+.searchInput::placeholder {
+  color: rgb(255 255 255 / 70%);
+}
+
+.searchInput:focus-visible {
+  outline: 3px solid var(--ink-yellow);
+  outline-offset: 2px;
+}
+
+.actions {
+  grid-area: actions;
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.25rem;
+}
+
+/* En móvil, cuenta y carrito solo con icono: la etiqueta queda para los lectores de pantalla. */
+@media (max-width: 479px) {
+  .actionLabel {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+}
+
+.cart {
+  border: 1.5px solid var(--ink-yellow);
+  border-radius: 999px;
+}
+
+.header :focus-visible {
+  outline: 3px solid var(--ink-yellow);
+  outline-offset: 2px;
+}
+
+/* Escritorio: todo en una fila (logo, enlaces, buscador, cuenta y carrito). */
+@media (min-width: 900px) {
+  .headerInner {
+    grid-template-columns: auto auto minmax(200px, 1fr) auto;
+    grid-template-areas: "brand links search actions";
+    gap: 1.5rem;
+    padding: 0.6rem 1.5rem;
+  }
+
+  .menuButton {
+    display: none;
+  }
+
+  .links,
+  .linksOpen {
+    display: flex;
+    flex-direction: row;
+    padding: 0;
+    border: none;
+  }
+
+  .logo {
+    height: 56px;
+  }
+}
+
+/* ---------- Pie ---------- */
+.footer {
+  background: var(--ink-black);
+  color: #fff;
+}
+
+.footerInner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  max-width: var(--content-max);
+  margin: 0 auto;
+  padding: 1.5rem 1rem;
+}
+
+.footerLogo {
+  display: block;
+  flex: none;
+  width: auto;
+  height: 56px;
+}
+
+.footerLinks {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.footerLinks a {
+  color: #fff;
+  font-weight: 700;
+  text-underline-offset: 0.25em;
+}
+
+.footer :focus-visible {
+  outline: 3px solid var(--ink-yellow);
+  outline-offset: 2px;
+}
+
+/* Pantallas grandes y TV */
+@media (min-width: 1800px) {
+  .main,
+  .headerInner,
+  .footerInner {
+    max-width: 1500px;
+  }
+}
+
+/* Contador del carrito: amarillo, solo cuando hay artículos (5.1). */
+.cartCount {
+  display: inline-grid;
+  place-items: center;
+  min-width: 1.5rem;
+  height: 1.5rem;
+  padding: 0 0.4rem;
+  border-radius: 999px;
+  background: var(--ink-yellow);
+  color: var(--ink-black);
+  font-size: 0.8rem;
+  font-weight: 900;
+  line-height: 1;
+}

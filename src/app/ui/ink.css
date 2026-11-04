@@ -1,0 +1,766 @@
+/*
+ * Sistema visual de INK (Documento Maestro v1.4). Dos temas con los mismos nombres de variables:
+ * `.ink-admin` (panel, oscuro, sección 6) e `.ink-public` (tienda, claro, sección 5). Los
+ * componentes usan solo las variables semánticas, así sirven en los dos.
+ *
+ * Los estilos base van enteros dentro de :where() (selector completo, incluidos :not(), :has() y
+ * atributos) para tener especificidad cero: cualquier clase de un CSS Module los reemplaza.
+ */
+
+.ink-admin,
+.ink-public {
+  --ink-yellow: #f5d627;
+  --ink-black: #1c1b1b;
+
+  --radius-sm: 10px;
+  --radius: 14px;
+  --radius-lg: 20px;
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 3rem;
+  /*
+   * Criterio dimensional compartido. Las medidas van en rem para que escalen junto con la
+   * tipografía (en pantallas grandes y TV la base sube a 1.15rem y todo crece en proporción).
+   */
+  --control-height: 2.75rem; /* inputs, selects y botones: 44 px con la base de 16 px (área táctil mínima) */
+  --field-min: 16rem; /* ancho por debajo del cual un campo pasa a la línea siguiente */
+  --field-max: 24rem; /* tope para que un campo no se estire de lado a lado en escritorio */
+  --field-wide-max: 48rem; /* textos largos (textarea) */
+  --form-gap-y: var(--space-4);
+  --form-gap-x: var(--space-3);
+  --card-padding: var(--space-5);
+  --dialog-width: 34rem; /* diálogos de un paso */
+  --dialog-wide: 48rem; /* diálogos con resumen o listas */
+  --content-max: 1200px;
+
+  font-family: var(--font-ink), "Nunito Sans", system-ui, sans-serif;
+  font-size: 1rem;
+  line-height: 1.5;
+  background: var(--c-bg);
+  color: var(--c-text);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Panel: tema oscuro (Documento Maestro, sección 6). */
+.ink-admin {
+  --c-bg: #343331;
+  --c-surface: #42413e;
+  --c-surface-raised: #4a4945;
+  --c-sidebar: #1c1b1b;
+  color-scheme: dark;
+  --c-border: #5b5954;
+  /* F11 (pendiente en el Documento Maestro): valores provisorios que cumplen el contraste. */
+  --c-text: #f3f2ee;
+  --c-text-muted: #bab7b0;
+  --c-field-border: #938f88;
+  --c-accent: #f5d627;
+  --c-on-accent: #1c1b1b;
+  --c-link: #f5d627;
+  --c-focus: #f5d627;
+  --c-field-bg: #3b3a37;
+  --c-field-bg-focus: #4a4945;
+  --c-backdrop: rgb(0 0 0 / 60%);
+  --c-shadow: 0 1px 2px rgb(0 0 0 / 25%), 0 6px 18px rgb(0 0 0 / 20%);
+  --c-shadow-deep: 0 24px 60px rgb(0 0 0 / 50%), 0 6px 18px rgb(0 0 0 / 30%);
+
+  --st-wait-bg: #594719;
+  --st-wait-fg: #f5d987;
+  --st-active-bg: #244b60;
+  --st-active-fg: #a8ddf5;
+  --st-done-bg: #28543a;
+  --st-done-fg: #a8e0b8;
+  --st-error-bg: #642f2b;
+  --st-error-fg: #f2b2aa;
+  --st-neutral-bg: #4a4945;
+  --st-neutral-fg: #d0cec8;
+}
+
+/* Tienda: tema claro (Documento Maestro, sección 5). */
+.ink-public {
+  --c-bg: #e3e8ef;
+  --c-surface: #ffffff;
+  --c-surface-raised: #f4f6f9;
+  color-scheme: light;
+  --c-border: #d3dae3;
+  --c-text: #1c1b1b;
+  --c-text-muted: #4b5563;
+  --c-field-border: #7b8594;
+  --c-accent: #f5d627;
+  --c-on-accent: #1c1b1b;
+  --c-link: #1c1b1b;
+  --c-focus: #1c1b1b;
+  --c-field-bg: #ffffff;
+  --c-field-bg-focus: #fffbe6;
+  --c-backdrop: rgb(28 27 27 / 55%);
+  --c-shadow: 0 1px 2px rgb(28 27 27 / 6%), 0 6px 18px rgb(28 27 27 / 8%);
+  --c-shadow-deep: 0 24px 60px rgb(28 27 27 / 28%), 0 6px 18px rgb(28 27 27 / 14%);
+
+  --st-wait-bg: #fff1c2;
+  --st-wait-fg: #704f00;
+  --st-active-bg: #dceffa;
+  --st-active-fg: #174c68;
+  --st-done-bg: #ddf3e3;
+  --st-done-fg: #205c35;
+  --st-error-bg: #fbe4e1;
+  --st-error-fg: #8b2922;
+  --st-neutral-bg: #e9e9e6;
+  --st-neutral-fg: #55554f;
+}
+
+/* En móvil, tarjetas y grupos con menos relleno: el contenido gana ancho sin achicar los controles. */
+@media (max-width: 639px) {
+  .ink-admin,
+  .ink-public {
+    --card-padding: var(--space-4);
+  }
+}
+
+:where(.ink-admin, .ink-public),
+:where(.ink-admin, .ink-public) *,
+:where(.ink-admin, .ink-public) *::before,
+:where(.ink-admin, .ink-public) *::after {
+  box-sizing: border-box;
+}
+
+/* Foco visible y consistente (sección 8). */
+:where(.ink-admin, .ink-public) :focus-visible {
+  outline: 3px solid var(--c-focus);
+  outline-offset: 2px;
+}
+
+/* ---------- Estilos base del contenido (pantallas que todavía no tienen estilos propios) ---------- */
+
+:where(.ink-base) {
+  overflow-wrap: break-word;
+}
+
+:where(.ink-base :is(img, video)) {
+  max-width: 100%;
+  height: auto;
+}
+
+:where(.ink-base h1) {
+  margin: 0 0 var(--space-4);
+  font-size: clamp(1.75rem, 1.35rem + 1.4vw, 2.5rem);
+  font-weight: 800;
+  line-height: 1.15;
+}
+
+:where(.ink-base h2) {
+  margin: var(--space-6) 0 var(--space-3);
+  font-size: 1.35rem;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+:where(.ink-base h3) {
+  margin: var(--space-5) 0 var(--space-2);
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+:where(.ink-base p) {
+  margin: 0 0 var(--space-3);
+}
+
+:where(.ink-base a) {
+  color: var(--c-link);
+  text-underline-offset: 0.2em;
+}
+
+:where(.ink-base ul),
+:where(.ink-base ol) {
+  margin: 0 0 var(--space-4);
+  padding-left: 1.25rem;
+}
+
+:where(.ink-base li + li) {
+  margin-top: var(--space-1);
+}
+
+/* Tablas: densidad equilibrada; en pantallas chicas se desplazan dentro de su propio contenedor. */
+:where(.ink-base table) {
+  display: block;
+  max-width: 100%;
+  overflow-x: auto;
+  width: max-content;
+  margin: 0 0 var(--space-5);
+  border-collapse: collapse;
+  border-radius: var(--radius);
+  background: var(--c-surface);
+  box-shadow: var(--c-shadow);
+}
+
+@media (min-width: 768px) {
+  :where(.ink-base table) {
+    display: table;
+    width: 100%;
+  }
+}
+
+/*
+ * Tablas con acciones en sus filas (carrito, variantes, categorías): en móvil cada fila pasa a ser un
+ * bloque y la columna de acciones queda en su propia línea, siempre a la vista en lugar de quedar
+ * fuera de pantalla. Los encabezados siguen disponibles para los lectores de pantalla.
+ */
+@media (max-width: 639px) {
+  .ink-table-stack thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  .ink-table-stack,
+  .ink-table-stack tbody {
+    display: block;
+    width: 100%;
+  }
+
+  .ink-table-stack tr {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2) var(--space-4);
+    padding: var(--space-3) var(--space-4);
+    border-bottom: 1px solid var(--c-border);
+  }
+
+  .ink-table-stack tbody tr:last-child {
+    border-bottom: none;
+  }
+
+  .ink-table-stack td {
+    padding: 0;
+    border: none;
+    white-space: normal;
+  }
+
+  .ink-table-stack td:first-child {
+    flex-basis: 100%;
+    font-weight: 700;
+  }
+
+  .ink-table-stack td:last-child {
+    flex-basis: 100%;
+  }
+}
+
+/*
+ * Listados del panel (Documento Maestro, 8: las tablas pueden transformarse en tarjetas en móvil).
+ * En móvil cada fila es una tarjeta: la primera celda es el título y las demás muestran su columna
+ * con `data-label`. Las celdas vacías no ocupan lugar.
+ */
+@media (max-width: 639px) {
+  .ink-table-cards thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  .ink-table-cards,
+  .ink-table-cards tbody {
+    display: grid;
+    gap: var(--space-3);
+    width: 100%;
+    background: none;
+    box-shadow: none;
+  }
+
+  .ink-table-cards tr {
+    display: grid;
+    gap: var(--space-2);
+    padding: var(--space-4);
+    border-radius: var(--radius);
+    background: var(--c-surface);
+    box-shadow: var(--c-shadow);
+  }
+
+  .ink-table-cards td {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: var(--space-1) var(--space-3);
+    padding: 0;
+    border: none;
+    white-space: normal;
+  }
+
+  .ink-table-cards td[data-label]::before {
+    content: attr(data-label);
+    color: var(--c-text-muted);
+    font-weight: 700;
+  }
+
+  .ink-table-cards td:first-child {
+    font-size: 1.05rem;
+    font-weight: 800;
+  }
+
+  .ink-table-cards td:empty {
+    display: none;
+  }
+}
+
+:where(.ink-base td > form) {
+  margin: 0;
+}
+
+:where(.ink-base th),
+:where(.ink-base td) {
+  padding: 0.7rem 0.9rem;
+  border-bottom: 1px solid var(--c-border);
+  text-align: left;
+  vertical-align: middle;
+}
+
+/* En pantallas chicas la tabla se desplaza dentro de su tarjeta: cada fila queda en una línea legible. */
+@media (max-width: 767px) {
+  :where(.ink-base td) {
+    white-space: nowrap;
+  }
+}
+
+:where(.ink-base th) {
+  color: var(--c-text-muted);
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+:where(.ink-base tbody tr:last-child td) {
+  border-bottom: none;
+}
+
+:where(.ink-base tbody tr:hover) {
+  background: var(--c-surface-raised);
+}
+
+/*
+ * Formularios: etiqueta sobre el control y filas que se reparten el ancho disponible. Cada campo
+ * crece entre --field-min y --field-max; cuando no entra, pasa a la línea siguiente en lugar de
+ * comprimirse. Los botones conservan su ancho natural y quedan alineados con la base de los campos.
+ * Solo aplica a formularios sin clase propia: los que tienen su CSS Module (filtros, modales)
+ * definen su propia distribución.
+ */
+:where(.ink-base form:not([class])) {
+  margin: 0 0 var(--space-5);
+}
+
+:where(.ink-base form:not([class])),
+:where(.ink-base fieldset:not([class])) {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--form-gap-y) var(--form-gap-x);
+  min-width: 0;
+}
+
+/* Lo que no es un campo ni una acción (textos, avisos, grupos, listas) ocupa su propia línea. */
+:where(.ink-base :is(form, fieldset):not([class]) > :not(label, button, input, select, a, legend)) {
+  flex-basis: 100%;
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+:where(.ink-base label:not([class])) {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+  max-width: var(--field-max);
+  margin: 0 0 var(--form-gap-y);
+  font-weight: 700;
+}
+
+:where(.ink-base :is(form, fieldset):not([class]) > label) {
+  flex: 1 1 var(--field-min);
+  margin: 0;
+}
+
+/* Textos largos: una línea propia (el control se limita a --field-wide-max). */
+:where(.ink-base label:has(> textarea)) {
+  flex-basis: 100%;
+  max-width: none;
+}
+
+/* Casillas y opciones: en línea con su texto y con su ancho natural. */
+:where(.ink-base label:has(> input[type="checkbox"], > input[type="radio"])) {
+  flex-direction: row;
+  align-items: center;
+  gap: var(--space-2);
+  max-width: none;
+  min-height: var(--control-height);
+  font-weight: 600;
+}
+
+:where(.ink-base :is(form, fieldset):not([class]) > label:has(> input[type="checkbox"], > input[type="radio"])) {
+  flex: 0 1 auto;
+}
+
+@media (max-width: 639px) {
+  :where(.ink-base :is(form, fieldset):not([class]) > label:not(:has(> input[type="checkbox"], > input[type="radio"]))) {
+    flex-basis: 100%;
+    max-width: none;
+  }
+}
+
+:where(.ink-base input:not([type="checkbox"], [type="radio"], [type="hidden"])),
+:where(.ink-base select),
+:where(.ink-base textarea) {
+  min-width: 0;
+  min-height: var(--control-height);
+  max-width: 100%;
+  padding: 0.55rem 0.8rem;
+  border: 1.5px solid var(--c-field-border);
+  border-radius: var(--radius-sm);
+  background: var(--c-field-bg);
+  color: var(--c-text);
+  font: inherit;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+/* Dentro de su etiqueta, el control ocupa todo el ancho del campo. */
+:where(.ink-base label > :is(input:not([type="checkbox"], [type="radio"]), select, textarea)) {
+  width: 100%;
+}
+
+/* Un número suelto (por ejemplo, la cantidad junto a «Agregar al carrito»). */
+:where(.ink-base :not(label) > input[type="number"]) {
+  width: 6rem;
+}
+
+:where(.ink-base input[type="file"]) {
+  padding: 0.45rem 0.6rem;
+}
+
+:where(.ink-base textarea) {
+  max-width: min(100%, var(--field-wide-max));
+  min-height: 7.5rem;
+  resize: vertical;
+}
+
+:where(.ink-base input:focus-visible),
+:where(.ink-base select:focus-visible),
+:where(.ink-base textarea:focus-visible) {
+  outline: none;
+  border-color: var(--c-focus);
+  background: var(--c-field-bg-focus);
+  box-shadow: 0 0 0 2px var(--c-focus);
+}
+
+:where(.ink-base input[aria-invalid="true"]),
+:where(.ink-base select[aria-invalid="true"]),
+:where(.ink-base textarea[aria-invalid="true"]) {
+  border-color: var(--st-error-fg);
+}
+
+:where(.ink-base input[type="checkbox"]),
+:where(.ink-base input[type="radio"]) {
+  width: 1.15rem;
+  height: 1.15rem;
+  accent-color: var(--c-accent);
+}
+
+:where(.ink-base fieldset) {
+  margin: 0 0 var(--space-5);
+  padding: var(--space-4) var(--card-padding) var(--card-padding);
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius);
+}
+
+:where(.ink-base :is(form, fieldset):not([class]) > fieldset) {
+  margin: 0;
+}
+
+:where(.ink-base legend) {
+  padding: 0 var(--space-2);
+  font-weight: 800;
+}
+
+:where(.ink-base dl) {
+  display: grid;
+  grid-template-columns: minmax(0, max-content) minmax(0, 1fr);
+  gap: var(--space-2) var(--space-5);
+  margin: 0 0 var(--space-5);
+}
+
+:where(.ink-base dt) {
+  color: var(--c-text-muted);
+  font-weight: 700;
+}
+
+:where(.ink-base dd) {
+  margin: 0;
+}
+
+/* Botones: secundario por defecto, primario el de envío del formulario (sección 7). */
+:where(.ink-base button),
+.ink-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: var(--control-height);
+  padding: 0.55rem 1.15rem;
+  border: 1.5px solid var(--c-field-border);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--c-text);
+  font: inherit;
+  font-weight: 700;
+  line-height: 1.2;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    background-color 120ms ease,
+    transform 120ms ease,
+    border-color 120ms ease;
+}
+
+:where(.ink-base button:hover:not(:disabled)),
+.ink-btn:hover:not(:disabled) {
+  background: var(--c-surface-raised);
+}
+
+:where(.ink-base button[type="submit"]),
+.ink-btn-primary {
+  border-color: var(--c-accent);
+  background: var(--c-accent);
+  color: var(--c-on-accent);
+}
+
+:where(.ink-base button[type="submit"]:hover:not(:disabled)),
+.ink-btn-primary:hover:not(:disabled) {
+  background: #f8e15a;
+}
+
+:where(.ink-base button:active:not(:disabled)),
+.ink-btn:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+:where(.ink-base button:disabled),
+.ink-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+/* Acción destructiva (cancelar, anular): tono de error, nunca el amarillo de la acción principal. */
+:where(.ink-base button.ink-btn-danger),
+.ink-btn.ink-btn-danger {
+  border-color: var(--st-error-fg);
+  background: var(--st-error-bg);
+  color: var(--st-error-fg);
+}
+
+:where(.ink-base button.ink-btn-danger:hover:not(:disabled)),
+.ink-btn.ink-btn-danger:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--st-error-bg) 82%, var(--st-error-fg));
+}
+
+:where(.ink-base :is(button, .ink-btn) + :is(button, .ink-btn)) {
+  margin-inline-start: var(--space-2);
+}
+
+:where(.ink-base :is(form, fieldset):not([class]) > :is(button, .ink-btn)) {
+  flex: none;
+  margin: 0;
+}
+
+/* Mensajes de error y de estado que ya usan las pantallas. */
+:where(.ink-base [role="alert"]) {
+  padding: var(--space-3) var(--space-4);
+  border-left: 4px solid var(--st-error-fg);
+  border-radius: var(--radius-sm);
+  background: var(--st-error-bg);
+  color: var(--st-error-fg);
+  font-weight: 700;
+}
+
+:where(.ink-base p[role="status"]) {
+  padding: var(--space-3) var(--space-4);
+  border-left: 4px solid var(--st-done-fg);
+  border-radius: var(--radius-sm);
+  background: var(--st-done-bg);
+  color: var(--st-done-fg);
+  font-weight: 700;
+}
+
+/* Secciones dentro de una página (por ejemplo, el detalle de un pedido). */
+:where(.ink-base section > :first-child) {
+  margin-top: 0;
+}
+
+:where(.ink-base section > :last-child) {
+  margin-bottom: 0;
+}
+
+:where(.ink-base section) {
+  margin: 0 0 var(--space-5);
+  padding: var(--card-padding);
+  border-radius: var(--radius);
+  background: var(--c-surface);
+}
+
+/* Panel: los formularios largos van en secciones con título y un divisor sutil, no una tarjeta por sección (6). */
+:where(.ink-admin .ink-base section) {
+  padding: var(--space-5) 0 0;
+  border-top: 1px solid var(--c-border);
+  border-radius: 0;
+  background: none;
+}
+
+/*
+ * Acceso (Documento Maestro, 5.6): tarjeta centrada de hasta 420 px (ingresar, registrarse, recuperar
+ * la contraseña). Dentro, un campo por línea y la acción principal a todo el ancho.
+ */
+.ink-auth {
+  width: 100%;
+  max-width: 420px;
+  margin: var(--space-4) auto;
+  padding: var(--card-padding);
+  border-radius: var(--radius-lg);
+  background: var(--c-surface);
+  box-shadow: var(--c-shadow);
+}
+
+.ink-auth > :last-child {
+  margin-bottom: 0;
+}
+
+.ink-auth form > label {
+  flex-basis: 100%;
+  max-width: none;
+}
+
+.ink-auth form > button[type="submit"] {
+  width: 100%;
+}
+
+/*
+ * Pasos numerados y opciones seleccionables (checkout y solicitud de personalizado). El título del
+ * paso es la leyenda de su fieldset; cada opción es una tarjeta con su radio, marcada con borde.
+ */
+.ink-step-title {
+  float: left;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  padding: 0;
+  font-size: 1.2rem;
+  font-weight: 800;
+}
+
+.ink-step-title + * {
+  clear: both;
+}
+
+.ink-step-number {
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 999px;
+  background: var(--ink-black);
+  color: var(--ink-yellow);
+  font-size: 0.95rem;
+  font-weight: 900;
+}
+
+.ink-option {
+  display: flex;
+  flex: 1 1 100%;
+  align-items: flex-start;
+  gap: var(--space-3);
+  min-height: var(--control-height);
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+  border: 1.5px solid var(--c-border);
+  border-radius: var(--radius);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.ink-option input {
+  flex: none;
+  margin-top: 0.2rem;
+}
+
+.ink-option:has(input:checked) {
+  border-color: var(--c-focus);
+  background: var(--c-surface-raised);
+}
+
+.ink-option:has(input:disabled) {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* ---------- Etiqueta de estado (sección 12) ---------- */
+.ink-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.15rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 800;
+  line-height: 1.5;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+.ink-badge[data-family="wait"] {
+  background: var(--st-wait-bg);
+  color: var(--st-wait-fg);
+}
+
+.ink-badge[data-family="active"] {
+  background: var(--st-active-bg);
+  color: var(--st-active-fg);
+}
+
+.ink-badge[data-family="done"] {
+  background: var(--st-done-bg);
+  color: var(--st-done-fg);
+}
+
+.ink-badge[data-family="error"] {
+  background: var(--st-error-bg);
+  color: var(--st-error-fg);
+}
+
+.ink-badge[data-family="neutral"] {
+  background: var(--st-neutral-bg);
+  color: var(--st-neutral-fg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :where(.ink-admin, .ink-public) * {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+/* Pantallas grandes y TV: más legible a distancia (F14 pendiente: valores provisorios). */
+@media (min-width: 1800px) {
+  .ink-admin,
+  .ink-public {
+    font-size: 1.15rem;
+  }
+}

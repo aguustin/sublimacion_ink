@@ -55,7 +55,7 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <main>
+    <main className="ink-auth">
       <h1>Ingresar</h1>
       <Suspense>
         <LoginForm />

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { requireAdminPage } from "@/app/session";
 import { getInventoryOverview, reconcileStock } from "@/server/modules/inventory/stock.service";
+import { PageHeader } from "../page-header";
 import { MaterialCreateForm } from "./material-forms";
 
 export const dynamic = "force-dynamic";
@@ -15,10 +16,17 @@ export default async function InventoryPage({ searchParams }: { searchParams: Pr
 
   return (
     <main>
-      <h1>Inventario</h1>
-      <p>
-        {onlyLow ? <Link href="/admin/inventario">Ver todo</Link> : <Link href="/admin/inventario?bajo=1">Ver solo stock bajo</Link>}
-      </p>
+      <PageHeader title="Inventario" href="/admin/inventario">
+        {onlyLow ? (
+          <Link href="/admin/inventario" className="ink-btn">
+            Ver todo
+          </Link>
+        ) : (
+          <Link href="/admin/inventario?bajo=1" className="ink-btn">
+            Ver solo stock bajo
+          </Link>
+        )}
+      </PageHeader>
       <p role="status">
         Conciliación:{" "}
         {diferencias.length === 0
@@ -28,7 +36,7 @@ export default async function InventoryPage({ searchParams }: { searchParams: Pr
 
       <h2>Variantes</h2>
       <p>Disponible = físico − reservado. Los personalizables muestran su stock acá, pero la tienda no lo publica todavía (D-18).</p>
-      <table>
+      <table className="ink-table-cards">
         <thead>
           <tr>
             <th>Producto</th>
@@ -46,45 +54,48 @@ export default async function InventoryPage({ searchParams }: { searchParams: Pr
                 {variant.producto.nombre}
                 {!variant.producto.activo && " (inactivo)"}
               </td>
-              <td>
+              <td data-label="Variante">
                 <Link href={`/admin/inventario/variantes/${variant.id}`}>{variantLabel(variant)}</Link>
                 {!variant.activa && " (inactiva)"}
               </td>
-              <td>{variant.stockFisico}</td>
-              <td>{variant.stockReservado}</td>
-              <td>{variant.disponible}</td>
-              <td>{variant.stockBajo ? "Stock bajo" : ""}</td>
+              <td data-label="Físico">{variant.stockFisico}</td>
+              <td data-label="Reservado">{variant.stockReservado}</td>
+              <td data-label="Disponible">{variant.disponible}</td>
+              <td data-label="Alerta">{variant.stockBajo ? "Stock bajo" : ""}</td>
             </tr>
           ))}
         </tbody>
       </table>
 
       <h2>Materiales</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>Material</th>
-            <th>Unidad</th>
-            <th>Físico</th>
-            <th>Disponible</th>
-            <th>Alerta</th>
-          </tr>
-        </thead>
-        <tbody>
-          {materiales.map((material) => (
-            <tr key={material.id}>
-              <td>
-                <Link href={`/admin/inventario/materiales/${material.id}`}>{material.nombre}</Link>
-                {!material.activo && " (inactivo)"}
-              </td>
-              <td>{material.unidad}</td>
-              <td>{material.stockFisico}</td>
-              <td>{material.disponible}</td>
-              <td>{material.stockBajo ? "Stock bajo" : ""}</td>
+      {materiales.length === 0 && <p>Todavía no hay materiales.</p>}
+      {materiales.length > 0 && (
+        <table className="ink-table-cards">
+          <thead>
+            <tr>
+              <th>Material</th>
+              <th>Unidad</th>
+              <th>Físico</th>
+              <th>Disponible</th>
+              <th>Alerta</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {materiales.map((material) => (
+              <tr key={material.id}>
+                <td>
+                  <Link href={`/admin/inventario/materiales/${material.id}`}>{material.nombre}</Link>
+                  {!material.activo && " (inactivo)"}
+                </td>
+                <td data-label="Unidad">{material.unidad}</td>
+                <td data-label="Físico">{material.stockFisico}</td>
+                <td data-label="Disponible">{material.disponible}</td>
+                <td data-label="Alerta">{material.stockBajo ? "Stock bajo" : ""}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
       <h3>Nuevo material</h3>
       <MaterialCreateForm />
     </main>

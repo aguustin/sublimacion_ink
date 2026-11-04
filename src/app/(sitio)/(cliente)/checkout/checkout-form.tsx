@@ -1,11 +1,13 @@
 "use client";
 
+import { ChevronDown } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { postJson } from "@/lib/api";
 import { formatPesos } from "@/lib/money";
 import type { CartView } from "@/server/modules/cart/cart.service";
+import styles from "./checkout.module.css";
 
 type Address = { id: string; calle: string; ciudad: string; provincia: string; codigoPostal: string };
 
@@ -56,97 +58,128 @@ export function CheckoutForm({ cart, hasPhone, addresses }: { cart: CartView; ha
   }
 
   return (
-    <>
-      <ul>
-        {cart.items.map((item) => (
-          <li key={item.varianteId}>
-            {item.producto.nombre} · {item.variante} × {item.cantidad} = {formatPesos((item.precioUnitarioCentavos ?? 0) * item.cantidad)}
-          </li>
-        ))}
-      </ul>
-      <fieldset>
-        <legend>Cupón</legend>
-        <label>
-          Código
-          <input value={couponInput} onChange={(event) => setCouponInput(event.target.value)} />
-        </label>
-        <button type="button" onClick={applyCoupon}>
-          Aplicar
-        </button>
-        {coupon && (
-          <>
-            {" "}
-            <button type="button" onClick={() => setCoupon(null)}>
-              Quitar
-            </button>
-            <p>
-              Cupón {coupon.codigo}: −{formatPesos(discount)} sobre los productos (sin vuelto ni saldo).
-            </p>
-          </>
-        )}
-        {couponError && <p role="alert">{couponError}</p>}
-      </fieldset>
-      <p>
-        {shipping ? "Productos" : "Total"}: <strong>{formatPesos(cart.subtotalCentavos - discount)}</strong> (precios finales con impuestos incluidos)
-        {shipping && "; el envío se suma cuando la tienda lo cotice"}.
-      </p>
-
-      <fieldset>
-        <legend>Entrega</legend>
-        <label>
-          <input type="radio" checked={!shipping} onChange={() => setModalidadEntrega("RETIRO")} /> Retiro en el local
-        </label>
-        <label>
-          <input type="radio" checked={shipping} onChange={() => setModalidadEntrega("ENVIO")} disabled={addresses.length === 0} /> Envío a domicilio
-        </label>
-        {addresses.length === 0 && (
-          <p>
-            Para pedir envío, agregá una dirección en <Link href="/cuenta">Mi cuenta</Link>.
-          </p>
-        )}
-        {shipping && (
-          <>
-            <label>
-              Dirección
-              <select value={direccionId} onChange={(event) => setDireccionId(event.target.value)}>
-                {addresses.map((address) => (
-                  <option key={address.id} value={address.id}>
-                    {address.calle}, {address.ciudad}, {address.provincia} ({address.codigoPostal})
-                  </option>
-                ))}
-              </select>
+    <div className={styles.layout}>
+      <div className={styles.steps}>
+        <fieldset className={styles.step}>
+          <legend className="ink-step-title">
+            <span className="ink-step-number" aria-hidden="true">
+              1
+            </span>
+            Entrega
+          </legend>
+          <div className={styles.options}>
+            <label className="ink-option">
+              <input type="radio" checked={!shipping} onChange={() => setModalidadEntrega("RETIRO")} />
+              <span>Retiro en el local</span>
             </label>
-            <p>
-              La tienda te envía el costo del envío dentro de las 48 horas. Después tenés 48 horas para aceptarlo y pagar online, pasar a retiro en el
-              local o cancelar sin cargo. El stock se reserva cuando aceptás.
-            </p>
-          </>
-        )}
-      </fieldset>
-
-      {!shipping && (
-        <fieldset>
-          <legend>Pago</legend>
-          <label>
-            <input type="radio" checked={modalidadCierre === "ONLINE"} onChange={() => setModalidadCierre("ONLINE")} /> Pago online (simulado: no se
-            cobra dinero real). Tenés 30 minutos para completarlo.
-          </label>
-          <label>
-            <input type="radio" checked={modalidadCierre === "EFECTIVO"} onChange={() => setModalidadCierre("EFECTIVO")} disabled={!hasPhone} />{" "}
-            Reserva para pagar en efectivo en el local, dentro de las 24 horas hábiles (no cuentan fines de semana ni feriados).
-          </label>
-          {!hasPhone && (
-            <p>
-              Para reservar con pago en efectivo necesitamos tu teléfono: agregalo en <Link href="/cuenta">Mi cuenta</Link>.
+            <label className="ink-option">
+              <input type="radio" checked={shipping} onChange={() => setModalidadEntrega("ENVIO")} disabled={addresses.length === 0} />
+              <span>Envío a domicilio</span>
+            </label>
+          </div>
+          {addresses.length === 0 && (
+            <p className={styles.hint}>
+              Para pedir envío, agregá una dirección en <Link href="/cuenta">Mi cuenta</Link>.
             </p>
           )}
+          {shipping && (
+            <>
+              <label>
+                Dirección
+                <select value={direccionId} onChange={(event) => setDireccionId(event.target.value)}>
+                  {addresses.map((address) => (
+                    <option key={address.id} value={address.id}>
+                      {address.calle}, {address.ciudad}, {address.provincia} ({address.codigoPostal})
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <p className={styles.hint}>
+                La tienda te envía el costo del envío dentro de las 48 horas. Después tenés 48 horas para aceptarlo y pagar online, pasar a retiro en
+                el local o cancelar sin cargo. El stock se reserva cuando aceptás.
+              </p>
+            </>
+          )}
         </fieldset>
-      )}
 
-      {error && <p role="alert">{error}</p>}
-      <button type="button" onClick={confirm} disabled={pending}>
-        {shipping ? "Pedir la cotización del envío" : "Confirmar pedido"}
-      </button>
-    </>
+        {!shipping && (
+          <fieldset className={styles.step}>
+            <legend className="ink-step-title">
+              <span className="ink-step-number" aria-hidden="true">
+                2
+              </span>
+              Pago
+            </legend>
+            <div className={styles.options}>
+              <label className="ink-option">
+                <input type="radio" checked={modalidadCierre === "ONLINE"} onChange={() => setModalidadCierre("ONLINE")} />
+                <span>Pago online (simulado: no se cobra dinero real). Tenés 30 minutos para completarlo.</span>
+              </label>
+              <label className="ink-option">
+                <input type="radio" checked={modalidadCierre === "EFECTIVO"} onChange={() => setModalidadCierre("EFECTIVO")} disabled={!hasPhone} />
+                <span>Reserva para pagar en efectivo en el local, dentro de las 24 horas hábiles (no cuentan fines de semana ni feriados).</span>
+              </label>
+            </div>
+            {!hasPhone && (
+              <p className={styles.hint}>
+                Para reservar con pago en efectivo necesitamos tu teléfono: agregalo en <Link href="/cuenta">Mi cuenta</Link>.
+              </p>
+            )}
+          </fieldset>
+        )}
+      </div>
+
+      <aside className={styles.summary} aria-labelledby="checkout-summary">
+        <h2 id="checkout-summary">Resumen</h2>
+        <ul className={styles.items}>
+          {cart.items.map((item) => (
+            <li key={item.varianteId}>
+              <span>
+                {item.producto.nombre} · {item.variante} × {item.cantidad}
+              </span>
+              <span>{formatPesos((item.precioUnitarioCentavos ?? 0) * item.cantidad)}</span>
+            </li>
+          ))}
+        </ul>
+
+        <details className={styles.coupon} open={coupon !== null || couponError !== null || undefined}>
+          <summary>
+            ¿Tenés un cupón?
+            <ChevronDown aria-hidden="true" size={18} className={styles.couponChevron} />
+          </summary>
+          <div className={styles.couponBody}>
+            <label>
+              Código
+              <input value={couponInput} onChange={(event) => setCouponInput(event.target.value)} />
+            </label>
+            <button type="button" onClick={applyCoupon}>
+              Aplicar
+            </button>
+            {coupon && (
+              <button type="button" onClick={() => setCoupon(null)}>
+                Quitar
+              </button>
+            )}
+          </div>
+          {coupon && (
+            <p className={styles.hint}>
+              Cupón {coupon.codigo}: −{formatPesos(discount)} sobre los productos (sin vuelto ni saldo).
+            </p>
+          )}
+          {couponError && <p role="alert">{couponError}</p>}
+        </details>
+
+        <p className={styles.total}>
+          <span>{shipping ? "Productos" : "Total"}</span>
+          <strong>{formatPesos(cart.subtotalCentavos - discount)}</strong>
+        </p>
+        <p className={styles.hint}>Precios finales con impuestos incluidos{shipping && "; el envío se suma cuando la tienda lo cotice"}.</p>
+
+        {error && <p role="alert">{error}</p>}
+        <button type="button" className={`ink-btn-primary ${styles.confirm}`} onClick={confirm} disabled={pending}>
+          {shipping ? "Pedir la cotización del envío" : "Confirmar pedido"}
+        </button>
+      </aside>
+    </div>
   );
 }

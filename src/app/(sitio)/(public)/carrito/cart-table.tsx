@@ -1,8 +1,11 @@
 "use client";
 
+import { ShoppingCart } from "lucide-react";
 import Link from "next/link";
+import type { ReactNode } from "react";
 import type { CartItemView, CartView, CartWarning } from "@/server/modules/cart/cart.service";
 import { formatPesos } from "@/lib/money";
+import styles from "./cart.module.css";
 
 const WARNING_TEXT: Record<CartWarning, (item: CartItemView) => string> = {
   NO_DISPONIBLE: () => "Ya no está a la venta. Quitalo para continuar.",
@@ -12,27 +15,37 @@ const WARNING_TEXT: Record<CartWarning, (item: CartItemView) => string> = {
     `El precio cambió${item.precioAlAgregarCentavos !== null ? ` (antes ${formatPesos(item.precioAlAgregarCentavos)})` : ""}.`,
 };
 
-/** Tabla del carrito, igual para un cliente y para un visitante. */
+/**
+ * Carrito, igual para un cliente y para un visitante (Documento Maestro, 5.5): productos a la izquierda
+ * y resumen a la derecha en escritorio; en móvil, apilado con el resumen debajo. `actions` son las
+ * acciones del resumen, que dependen de si hay sesión.
+ */
 export function CartTable({
   cart,
   onQuantityChange,
   onRemove,
+  actions,
 }: {
   cart: CartView;
   onQuantityChange: (item: CartItemView, cantidad: number) => void;
   onRemove: (item: CartItemView) => void;
+  actions: ReactNode;
 }) {
   if (cart.items.length === 0) {
     return (
-      <p>
-        Tu carrito está vacío. <Link href="/productos">Ver productos</Link>
-      </p>
+      <div className={styles.empty}>
+        <ShoppingCart aria-hidden="true" size={36} />
+        <p>Tu carrito está vacío.</p>
+        <Link href="/productos" className="ink-btn ink-btn-primary">
+          Ver productos
+        </Link>
+      </div>
     );
   }
 
   return (
-    <>
-      <table>
+    <div className={styles.layout}>
+      <table className={`ink-table-stack ${styles.items}`}>
         <thead>
           <tr>
             <th>Producto</th>
@@ -76,10 +89,17 @@ export function CartTable({
           ))}
         </tbody>
       </table>
-      <p>
-        Subtotal: <strong>{formatPesos(cart.subtotalCentavos)}</strong> (precios finales con impuestos incluidos; no incluye
-        envío). El stock y el precio se confirman al finalizar la compra.
-      </p>
-    </>
+      <aside className={styles.summary} aria-labelledby="cart-summary">
+        <h2 id="cart-summary">Resumen</h2>
+        <p className={styles.total}>
+          <span>Subtotal</span>
+          <strong>{formatPesos(cart.subtotalCentavos)}</strong>
+        </p>
+        <p className={styles.note}>
+          Precios finales con impuestos incluidos; no incluye envío. El stock y el precio se confirman al finalizar la compra.
+        </p>
+        {actions}
+      </aside>
+    </div>
   );
 }

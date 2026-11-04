@@ -35,7 +35,7 @@ function VerifyEmail() {
 
 export default function VerifyEmailPage() {
   return (
-    <main>
+    <main className="ink-auth">
       <h1>Confirmar email</h1>
       <Suspense>
         <VerifyEmail />

@@ -54,7 +54,7 @@ function ResetPasswordForm() {
 
 export default function ResetPasswordPage() {
   return (
-    <main>
+    <main className="ink-auth">
       <h1>Elegí una contraseña nueva</h1>
       <Suspense>
         <ResetPasswordForm />

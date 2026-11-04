@@ -23,7 +23,7 @@ const previewSchema = z.strictObject({ fecha: dateSchema, accion: z.enum(["AGREG
 const asDate = (date: string) => new Date(`${date}T00:00:00Z`);
 const asText = (date: Date) => date.toISOString().slice(0, 10);
 
-const dateTimeFormat = new Intl.DateTimeFormat("es-AR", { dateStyle: "full", timeStyle: "short", timeZone: "America/Argentina/Buenos_Aires" });
+const dateTimeFormat = new Intl.DateTimeFormat("es-AR", { dateStyle: "full", timeStyle: "short", hourCycle: "h23", timeZone: "America/Argentina/Buenos_Aires" });
 
 /**
  * Todos los cambios del calendario de la ventana (fechas excluidas y fechas comprometidas) se

@@ -36,7 +36,7 @@ export function StoreCancelForm({ orderId }: { orderId: string }) {
         Motivo (lo ve el cliente)
         <input name="motivo" required />
       </label>
-      <button type="submit">Cancelar el pedido</button>
+      <button type="submit" className="ink-btn-danger">Cancelar el pedido</button>
     </form>
   );
 }

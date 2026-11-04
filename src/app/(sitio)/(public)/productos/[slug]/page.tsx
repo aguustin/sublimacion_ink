@@ -9,6 +9,8 @@ import { productImageUrls } from "@/server/modules/catalog/product-images.servic
 import { getConfig } from "@/server/shared/config";
 import { AppError } from "@/server/shared/errors";
 import { AddToCart } from "./add-to-cart";
+import { ProductGallery } from "./product-gallery";
+import styles from "./product.module.css";
 
 export const dynamic = "force-dynamic";
 
@@ -71,64 +73,72 @@ export default async function ProductPage({ params }: { params: Params }) {
   const loggedIn = (await getPageUser()) !== null;
 
   return (
-    <main>
+    <main className={styles.page}>
       <script
         type="application/ld+json"
         // JSON.stringify con "<" escapado: el contenido no puede cerrar la etiqueta script.
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData(product, url)).replace(/</g, "\\u003c") }}
       />
-      <p>
-        <Link href="/productos">Productos</Link> › <Link href={`/productos?categoria=${product.categoria.slug}`}>{product.categoria.nombre}</Link>
-      </p>
-      <h1>{product.nombre}</h1>
-      {product.imagenIds.map(
-        (imageId, index) =>
-          images.has(imageId) && (
-            // URL firmada de corta duración al almacenamiento privado (16.1).
-            // eslint-disable-next-line @next/next/no-img-element
-            <img key={imageId} src={images.get(imageId)} alt={index === 0 ? product.nombre : ""} width={320} height={320} />
-          ),
-      )}
-      {product.tipo === "PERSONALIZABLE" && (
-        <p>
-          Producto personalizable: <Link href={`/personalizados/nuevo?producto=${product.slug}`}>pedí tu cotización</Link>.
-        </p>
-      )}
-      <p>{priceLabel(product.precioDesdeCentavos, product.variasPrecios)}</p>
-      {product.descripcion && <p>{product.descripcion}</p>}
+      <nav aria-label="Ubicación" className={styles.breadcrumb}>
+        <ol>
+          <li>
+            <Link href="/productos">Productos</Link>
+          </li>
+          <li>
+            <Link href={`/productos?categoria=${product.categoria.slug}`}>{product.categoria.nombre}</Link>
+          </li>
+        </ol>
+      </nav>
 
-      <h2>Variantes</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>Opción</th>
-            <th>Precio</th>
-            {product.tipo === "ESTANDAR" && (
-              <>
-                <th>Disponibilidad</th>
-                <th />
-              </>
+      <div className={styles.layout}>
+        <ProductGallery images={product.imagenIds.flatMap((imageId) => images.get(imageId) ?? [])} name={product.nombre} />
+
+        <div className={styles.info}>
+          <section className={styles.buy} aria-labelledby="product-name">
+            <p className={styles.category}>{product.categoria.nombre}</p>
+            <h1 id="product-name">{product.nombre}</h1>
+            <p className={styles.price}>{priceLabel(product.precioDesdeCentavos, product.variasPrecios)}</p>
+
+            {product.tipo === "PERSONALIZABLE" && (
+              <div className={styles.custom}>
+                <p>Producto personalizable: lo cotizamos según tu diseño.</p>
+                <Link href={`/personalizados/nuevo?producto=${product.slug}`} className="ink-btn ink-btn-primary">
+                  Pedí tu cotización
+                </Link>
+              </div>
             )}
-          </tr>
-        </thead>
-        <tbody>
-          {product.variantes.map((variant) => (
-            <tr key={variant.id}>
-              <td>{describe(variant)}</td>
-              <td>{variant.precioCentavos === null ? "Consultá el precio" : formatPesos(variant.precioCentavos)}</td>
-              {variant.disponible !== null && (
-                <>
-                  <td>{variant.disponible > 0 ? "Disponible" : "Sin stock"}</td>
-                  <td>
-                    <AddToCart varianteId={variant.id} disponible={variant.disponible} loggedIn={loggedIn} />
-                  </td>
-                </>
-              )}
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      <p>Precios finales en pesos, con impuestos incluidos.</p>
+
+            <h2 className={styles.variantsTitle}>{product.variantes.length === 1 ? "Opción" : "Opciones"}</h2>
+            <ul className={styles.variants}>
+              {product.variantes.map((variant) => (
+                <li key={variant.id} className={styles.variant}>
+                  <span className={styles.variantInfo}>
+                    <span className={styles.variantName}>{describe(variant)}</span>
+                    <span className={styles.variantMeta}>
+                      {variant.precioCentavos === null ? "Consultá el precio" : formatPesos(variant.precioCentavos)}
+                      {variant.disponible !== null && (
+                        <>
+                          {" · "}
+                          {variant.disponible > 0 ? "Disponible" : <span className={styles.soldOut}>Sin stock</span>}
+                        </>
+                      )}
+                    </span>
+                  </span>
+                  {variant.disponible !== null && <AddToCart varianteId={variant.id} disponible={variant.disponible} loggedIn={loggedIn} />}
+                </li>
+              ))}
+            </ul>
+            {product.tipo === "ESTANDAR" && <p className={styles.note}>Precios finales en pesos, con impuestos incluidos.</p>}
+          </section>
+
+          {product.descripcion && (
+            <section className={styles.description} aria-labelledby="product-description">
+              <h2 id="product-description">Descripción</h2>
+              <p>{product.descripcion}</p>
+            </section>
+          )}
+        </div>
+      </div>
     </main>
   );
 }

@@ -1,0 +1,43 @@
+/* Detalle del pedido del cliente: estado actual en una tarjeta simple (Documento Maestro, 5.6) y pagos (12.4). */
+
+.status {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-4);
+  font-weight: 600;
+}
+
+.muted {
+  color: var(--c-text-muted);
+  font-size: 0.92rem;
+  font-weight: 500;
+}
+
+.payments {
+  display: grid;
+  gap: var(--space-2);
+  padding: 0;
+  list-style: none;
+}
+
+.payments li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius);
+  background: var(--c-surface);
+}
+
+.payments li strong {
+  margin-left: auto;
+}
+
+/* Intento no aprobado: borde punteado de error y texto secundario; sigue visible y legible. */
+.paymentFailed {
+  border: 1px dashed var(--st-error-fg);
+  color: var(--c-text-muted);
+}

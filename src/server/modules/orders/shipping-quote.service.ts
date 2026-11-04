@@ -47,6 +47,7 @@ const pickupSchema = z.strictObject({
 const dateFormat = new Intl.DateTimeFormat("es-AR", {
   dateStyle: "short",
   timeStyle: "short",
+  hourCycle: "h23",
   timeZone: "America/Argentina/Buenos_Aires",
 });
 

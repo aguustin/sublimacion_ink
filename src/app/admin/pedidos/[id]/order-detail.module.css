@@ -1,0 +1,261 @@
+/*
+ * Detalle administrativo del pedido (F8): encabezado compacto «Pedido y estado», índice horizontal fijo
+ * y secciones con divisor (sección 6). Las acciones secundarias van delineadas; la principal, en amarillo.
+ */
+
+.page {
+  /* Alto que ocupan arriba la barra del panel (tablet y móvil) y el índice: lo que se deja al saltar a una sección. */
+  --index-offset: calc(var(--topbar-height) + 4rem);
+  max-width: 64rem;
+}
+
+.back {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-height: var(--control-height);
+  color: var(--c-text-muted);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.back:hover {
+  color: var(--c-text);
+}
+
+/* ---------- Pedido y estado ---------- */
+.header {
+  scroll-margin-top: var(--index-offset);
+}
+
+.titleRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+.titleRow h1 {
+  margin: 0;
+}
+
+.warning {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 0.2rem 0.75rem;
+  border: 1.5px solid var(--st-wait-fg);
+  border-radius: 999px;
+  color: var(--st-wait-fg);
+  font-size: 0.85rem;
+  font-weight: 800;
+}
+
+.facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+  gap: var(--space-3);
+  margin: 0;
+  padding: var(--card-padding);
+  border-radius: var(--radius-lg);
+  background: var(--c-surface);
+}
+
+.facts dt {
+  color: var(--c-text-muted);
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.facts dd {
+  display: grid;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.muted {
+  color: var(--c-text-muted);
+}
+
+/* Saldo pendiente: el dato que frena el despacho, destacado con el acento. */
+.balanceFact {
+  padding-left: var(--space-3);
+  border-left: 3px solid var(--c-accent);
+}
+
+.balanceFact a {
+  color: var(--c-accent);
+  font-size: 1.25rem;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.balance {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+  padding: var(--space-4);
+  border: 1.5px solid var(--c-accent);
+  border-radius: var(--radius);
+  background: color-mix(in srgb, var(--c-accent) 10%, transparent);
+}
+
+.balance p {
+  flex: 1 1 18rem;
+  margin: 0;
+}
+
+.balance strong {
+  color: var(--c-accent);
+  font-size: 1.15rem;
+}
+
+/* ---------- Índice fijo ---------- */
+.index {
+  position: sticky;
+  top: var(--topbar-height);
+  z-index: 10;
+  margin: var(--space-4) 0 var(--space-5);
+  padding: var(--space-2) 0;
+  border-bottom: 1px solid var(--c-border);
+  background: var(--c-bg);
+}
+
+.index ul {
+  display: flex;
+  gap: var(--space-1);
+  margin: 0;
+  padding: 0;
+  overflow-x: auto;
+  list-style: none;
+  scrollbar-width: thin;
+}
+
+.index li {
+  flex: none;
+  margin: 0;
+}
+
+.index a {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--control-height);
+  padding: 0 var(--space-3);
+  border-radius: 999px;
+  color: var(--c-text-muted);
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.index a:hover {
+  background: var(--c-surface);
+  color: var(--c-text);
+}
+
+/* ---------- Secciones ---------- */
+.section {
+  scroll-margin-top: var(--index-offset);
+}
+
+/* La primera sección ya queda separada por la línea del índice. */
+.index + .section {
+  padding-top: 0;
+  border-top: none;
+}
+
+.section h3 {
+  margin-top: var(--space-4);
+}
+
+.lines,
+.payments,
+.history {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.lines li {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin: 0;
+}
+
+.lines li > :last-child {
+  flex: none;
+}
+
+.total {
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--c-border);
+  font-size: 1.1rem;
+}
+
+.payments li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+  margin: 0;
+  padding: var(--space-3);
+  border-radius: var(--radius);
+  background: var(--c-surface);
+}
+
+.payments li > span:not([class]) {
+  flex: 1 1 14rem;
+}
+
+.history li {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 var(--space-3);
+  margin: 0;
+}
+
+.design + .design {
+  margin-top: var(--space-5);
+}
+
+.notice {
+  padding: var(--space-3);
+  border-left: 3px solid var(--st-wait-fg);
+}
+
+.actions {
+  margin-top: var(--space-4);
+}
+
+.record {
+  margin-top: var(--space-4);
+  padding-top: var(--space-4);
+  border-top: 1px dashed var(--c-border);
+}
+
+/* Acciones secundarias (reemplazar, extender, cerrar cargos): delineadas, sin el amarillo de la principal. */
+.secondary button[type="submit"] {
+  border-color: var(--c-field-border);
+  background: transparent;
+  color: var(--c-text);
+}
+
+.secondary button[type="submit"]:hover:not(:disabled) {
+  background: var(--c-surface-raised);
+}
+
+@media (min-width: 1024px) {
+  .page {
+    --index-offset: 5rem;
+  }
+
+  .index {
+    top: 0;
+  }
+}

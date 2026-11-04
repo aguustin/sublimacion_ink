@@ -1,6 +1,8 @@
+import { Plus } from "lucide-react";
 import Link from "next/link";
 import { requireAdminPage } from "@/app/session";
 import { listAdminProducts } from "@/server/modules/catalog/catalog-admin.service";
+import { PageHeader } from "../page-header";
 
 export const dynamic = "force-dynamic";
 
@@ -15,10 +17,12 @@ export default async function AdminProductsPage({
 
   return (
     <main>
-      <h1>Productos</h1>
-      <p>
-        <Link href="/admin/productos/nuevo">Nuevo producto</Link>
-      </p>
+      <PageHeader title="Productos" href="/admin/productos">
+        <Link href="/admin/productos/nuevo" className="ink-btn ink-btn-primary">
+          <Plus aria-hidden="true" size={18} />
+          Nuevo producto
+        </Link>
+      </PageHeader>
       <form method="get">
         <label>
           Buscar
@@ -27,7 +31,7 @@ export default async function AdminProductsPage({
         <button type="submit">Buscar</button>
       </form>
       <p>{total} productos (incluye inactivos)</p>
-      <table>
+      <table className="ink-table-cards">
         <thead>
           <tr>
             <th>Nombre</th>
@@ -43,10 +47,10 @@ export default async function AdminProductsPage({
               <td>
                 <Link href={`/admin/productos/${product.id}`}>{product.nombre}</Link>
               </td>
-              <td>{product.categoria.nombre}</td>
-              <td>{product.tipo === "ESTANDAR" ? "Estándar" : "Personalizable"}</td>
-              <td>{product._count.variantes}</td>
-              <td>{product.activo ? "Activo" : "Inactivo"}</td>
+              <td data-label="Categoría">{product.categoria.nombre}</td>
+              <td data-label="Tipo">{product.tipo === "ESTANDAR" ? "Estándar" : "Personalizable"}</td>
+              <td data-label="Variantes">{product._count.variantes}</td>
+              <td data-label="Estado">{product.activo ? "Activo" : "Inactivo"}</td>
             </tr>
           ))}
         </tbody>

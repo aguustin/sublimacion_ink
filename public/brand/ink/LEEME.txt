@@ -2,3 +2,5 @@ INK · Logotipos aprobados · v1.0
 Variantes SVG editables incluidas: principal, invertida, monocromática, monocromática invertida, horizontal, horizontal invertida, horizontal monocromática y compacta.
 Colores: amarillo #F5D627 · negro #1C1B1B.
 El texto permanece editable como texto SVG. Para imprenta, instalar Nunito Sans y convertir el texto a curvas en un editor vectorial.
+
+v1.1 (ajuste aprobado): en las variantes con el lettering sobre la mancha (principal, invertida, monocromáticas y compacta), el texto pasó al 82 % de su tamaño y se centró en la mancha, para que la K no se salga del contorno. Las variantes horizontales no cambian.

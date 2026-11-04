@@ -40,13 +40,17 @@ export function GuestCart() {
         cart={cart}
         onQuantityChange={(item, cantidad) => update(setGuestQuantity(item.varianteId, cantidad))}
         onRemove={(item) => update(setGuestQuantity(item.varianteId, 0))}
+        actions={
+          <>
+            <Link href="/checkout" className="ink-btn ink-btn-primary">
+              Continuar compra
+            </Link>
+            <p>
+              Vas a poder crear tu cuenta en el mismo paso, o <Link href="/ingresar?next=/checkout">ingresá</Link> si ya tenés una.
+            </p>
+          </>
+        }
       />
-      {cart.items.length > 0 && (
-        <p>
-          <Link href="/checkout">Continuar compra</Link> (vas a poder crear tu cuenta en el mismo paso) o{" "}
-          <Link href="/ingresar?next=/checkout">ingresá</Link> si ya tenés una.
-        </p>
-      )}
     </>
   );
 }

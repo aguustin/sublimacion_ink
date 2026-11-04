@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { postJson } from "@/lib/api";
+import styles from "./account.module.css";
 
 export function AccountActions({ emailVerificado }: { emailVerificado: boolean }) {
   const router = useRouter();
@@ -20,13 +21,13 @@ export function AccountActions({ emailVerificado }: { emailVerificado: boolean }
   }
 
   return (
-    <div>
+    <div className={styles.actions}>
       {!emailVerificado && (
         <button type="button" onClick={resendVerification}>
           Reenviar el email de confirmación
         </button>
       )}
-      {message && <p>{message}</p>}
+      {message && <p role="status">{message}</p>}
       <button type="button" onClick={logout}>
         Cerrar sesión
       </button>

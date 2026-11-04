@@ -1,8 +1,10 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import { fieldErrors, type ApiError } from "@/lib/api";
+import styles from "./custom-request.module.css";
 
 type Option = { id: string; label: string };
 
@@ -54,57 +56,111 @@ export function CustomRequestForm({ variants, addresses }: { variants: Option[];
     }
   }
 
+  const errors = fieldErrors(error);
+  // Mensaje de validación junto a su campo (Documento Maestro, 5.6); el control queda marcado como inválido.
+  const invalid = (name: string) => (errors[name] ? { "aria-invalid": true, "aria-describedby": `${name}-error` } : {});
+  const fieldError = (name: string) =>
+    errors[name] && (
+      <span id={`${name}-error`} className={styles.fieldError}>
+        {errors[name]}
+      </span>
+    );
+
   return (
-    <form onSubmit={onSubmit} noValidate>
-      {error && <p role="alert">{Object.values(fieldErrors(error)).join(" ") || error.mensaje}</p>}
-      <label>
-        Opción (medida y material)
-        <select name="varianteId" required>
-          {variants.map((variant) => (
-            <option key={variant.id} value={variant.id}>
-              {variant.label}
-            </option>
-          ))}
-        </select>
-      </label>
-      <label>
-        Cantidad
-        <input name="cantidad" type="number" min={1} max={1000} defaultValue={1} required />
-      </label>
-      <label>
-        Qué querés
-        <textarea name="descripcion" minLength={10} maxLength={2000} required />
-      </label>
-      <label>
-        Fecha deseada
-        <input name="fechaDeseada" type="date" required />
-      </label>
+    <form onSubmit={onSubmit} noValidate className={styles.form}>
+      {error && Object.keys(errors).length === 0 && <p role="alert">{error.mensaje}</p>}
+
       <fieldset>
-        <legend>Entrega</legend>
+        <legend className="ink-step-title">
+          <span className="ink-step-number" aria-hidden="true">
+            1
+          </span>
+          Tu pedido
+        </legend>
         <label>
-          <input type="radio" checked={!shipping} onChange={() => setShipping(false)} /> Retiro en el local
-        </label>
-        <label>
-          <input type="radio" checked={shipping} onChange={() => setShipping(true)} disabled={addresses.length === 0} /> Envío (se cotiza junto con el
-          producto)
-        </label>
-        {shipping && (
-          <select name="direccionId">
-            {addresses.map((address) => (
-              <option key={address.id} value={address.id}>
-                {address.label}
+          Opción (medida y material)
+          <select name="varianteId" required {...invalid("varianteId")}>
+            {variants.map((variant) => (
+              <option key={variant.id} value={variant.id}>
+                {variant.label}
               </option>
             ))}
           </select>
+          {fieldError("varianteId")}
+        </label>
+        <label>
+          Cantidad
+          <input name="cantidad" type="number" min={1} max={1000} defaultValue={1} required {...invalid("cantidad")} />
+          {fieldError("cantidad")}
+        </label>
+        <label>
+          Fecha deseada
+          <input name="fechaDeseada" type="date" required {...invalid("fechaDeseada")} />
+          {fieldError("fechaDeseada")}
+        </label>
+        <label>
+          Qué querés
+          <textarea name="descripcion" minLength={10} maxLength={2000} required {...invalid("descripcion")} />
+          <span className={styles.hint}>Contanos el diseño, los colores y cualquier detalle que tengamos que saber (mínimo 10 caracteres).</span>
+          {fieldError("descripcion")}
+        </label>
+      </fieldset>
+
+      <fieldset>
+        <legend className="ink-step-title">
+          <span className="ink-step-number" aria-hidden="true">
+            2
+          </span>
+          Entrega
+        </legend>
+        <label className="ink-option">
+          <input type="radio" checked={!shipping} onChange={() => setShipping(false)} />
+          <span>Retiro en el local</span>
+        </label>
+        <label className="ink-option">
+          <input type="radio" checked={shipping} onChange={() => setShipping(true)} disabled={addresses.length === 0} />
+          <span>Envío (se cotiza junto con el producto)</span>
+        </label>
+        {addresses.length === 0 && (
+          <p className={styles.hint}>
+            Para pedir envío, agregá una dirección en <Link href="/cuenta">Mi cuenta</Link>.
+          </p>
+        )}
+        {shipping && (
+          <label>
+            Dirección
+            <select name="direccionId" {...invalid("direccionId")}>
+              {addresses.map((address) => (
+                <option key={address.id} value={address.id}>
+                  {address.label}
+                </option>
+              ))}
+            </select>
+            {fieldError("direccionId")}
+          </label>
         )}
       </fieldset>
-      <label>
-        Archivos de referencia (JPG, PNG, WEBP o PDF; hasta 10)
-        <input name="referencias" type="file" multiple accept="image/jpeg,image/png,image/webp,application/pdf" />
-      </label>
-      <button type="submit" disabled={pending}>
-        Enviar la solicitud
-      </button>
+
+      <fieldset>
+        <legend className="ink-step-title">
+          <span className="ink-step-number" aria-hidden="true">
+            3
+          </span>
+          Referencias
+        </legend>
+        <label>
+          Archivos de referencia (opcional)
+          <input name="referencias" type="file" multiple accept="image/jpeg,image/png,image/webp,application/pdf" {...invalid("referencias")} />
+          <span className={styles.hint}>JPG, PNG, WEBP o PDF; hasta 10 archivos.</span>
+          {fieldError("referencias")}
+        </label>
+      </fieldset>
+
+      <div className={styles.submit}>
+        <button type="submit" disabled={pending}>
+          {pending ? "Enviando…" : "Enviar la solicitud"}
+        </button>
+      </div>
     </form>
   );
 }

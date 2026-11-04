@@ -1,0 +1,153 @@
+/*
+ * Checkout (Documento Maestro, 5.5): secciones numeradas (progreso visual) a la izquierda y resumen
+ * a la derecha en escritorio; en móvil, todo apilado con el resumen al final.
+ */
+
+.layout {
+  display: grid;
+  gap: var(--space-5);
+  align-items: start;
+}
+
+.steps {
+  display: grid;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.step {
+  display: grid;
+  gap: var(--space-4);
+  margin: 0;
+  padding: var(--card-padding);
+  border: none;
+  border-radius: var(--radius-lg);
+  background: var(--c-surface);
+  box-shadow: var(--c-shadow);
+}
+
+.options {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.step label:not(:global(.ink-option)) {
+  max-width: var(--field-wide-max);
+  margin: 0;
+}
+
+.hint {
+  margin: 0;
+  color: var(--c-text-muted);
+  font-size: 0.92rem;
+}
+
+/* ---------- Resumen ---------- */
+.summary {
+  display: grid;
+  gap: var(--space-4);
+  padding: var(--card-padding);
+  border-radius: var(--radius-lg);
+  background: var(--c-surface);
+  box-shadow: var(--c-shadow);
+}
+
+.summary h2 {
+  margin: 0;
+  font-size: 1.15rem;
+}
+
+.summary > p {
+  margin: 0;
+}
+
+.items {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.items li {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin: 0;
+}
+
+.items li span:last-child {
+  flex: none;
+  font-weight: 700;
+}
+
+.coupon {
+  padding: var(--space-3) 0;
+  border-block: 1px solid var(--c-border);
+}
+
+.coupon summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: var(--control-height);
+  font-weight: 700;
+  list-style: none;
+  cursor: pointer;
+}
+
+.coupon summary::-webkit-details-marker {
+  display: none;
+}
+
+.couponChevron {
+  transition: transform 140ms ease;
+}
+
+.coupon[open] .couponChevron {
+  transform: rotate(180deg);
+}
+
+.couponBody {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+}
+
+.couponBody label {
+  flex: 1 1 10rem;
+  margin: 0;
+}
+
+.couponBody button {
+  margin: 0;
+}
+
+.coupon [role="alert"] {
+  margin: var(--space-2) 0 0;
+}
+
+.total {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+  font-size: 1.2rem;
+}
+
+.confirm {
+  width: 100%;
+}
+
+@media (min-width: 900px) {
+  .layout {
+    grid-template-columns: minmax(0, 1fr) minmax(18rem, 24rem);
+  }
+
+  .summary {
+    position: sticky;
+    top: 96px;
+  }
+}

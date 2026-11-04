@@ -25,7 +25,7 @@ const instant = new Intl.DateTimeFormat("es-AR", {
   minute: "2-digit",
   timeZone: "America/Argentina/Buenos_Aires",
 });
-const registered = new Intl.DateTimeFormat("es-AR", { dateStyle: "medium", timeStyle: "short", timeZone: "America/Argentina/Buenos_Aires" });
+const registered = new Intl.DateTimeFormat("es-AR", { dateStyle: "medium", timeStyle: "short", hourCycle: "h23", timeZone: "America/Argentina/Buenos_Aires" });
 
 const plural = (count: number, one: string, many: string) => `${count} ${count === 1 ? one : many}`;
 

@@ -14,13 +14,26 @@ const detailInclude = {
 
 const isUuid = (id: string) => /^[0-9a-f-]{36}$/i.test(id);
 
-/** Pedidos del cliente, del más reciente al más antiguo (RF-35). */
+/**
+ * Pedidos del cliente, del más reciente al más antiguo (RF-35). Incluye el tipo y el motivo del último
+ * paso a VENCIDO: con ellos la tienda elige el texto público del vencimiento (Documento Maestro, 12.3).
+ */
 export function listCustomerOrders(clienteId: string, db: Db = getDb()) {
   return db.pedido.findMany({
     where: { clienteId },
     orderBy: { creadoEn: "desc" },
     take: 100,
-    select: { id: true, numero: true, estado: true, totalCentavos: true, venceEn: true, modalidadCierre: true, creadoEn: true },
+    select: {
+      id: true,
+      numero: true,
+      tipo: true,
+      estado: true,
+      totalCentavos: true,
+      venceEn: true,
+      modalidadCierre: true,
+      creadoEn: true,
+      historial: { where: { estadoNuevo: "VENCIDO" }, orderBy: { creadoEn: "desc" }, take: 1, select: { motivo: true } },
+    },
   });
 }
 

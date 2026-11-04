@@ -1,54 +1,17 @@
-/* Panel de INK: tokens de marca, barra lateral y área de contenido. */
+/* Contenedor del panel de INK: barra lateral negra y área de contenido grafito (Documento Maestro, sección 6). */
 
-/* El panel es su propio layout raíz: sin el margen por defecto del navegador. */
 .body {
   margin: 0;
-  background: #fbf8f2;
+  min-height: 100vh;
 }
 
 .shell {
-  --ink-yellow: #f5d627;
-  --ink-yellow-soft: #fbeb93;
-  --ink-black: #1c1b1b;
-  --ink-paper: #fbf8f2;
-  --ink-cream: #f3ecdc;
-  --ink-line: #e5dcc8;
-  --ink-muted: #625a4f;
-  --ink-success: #2c6a3b;
-  --ink-success-bg: #e6f2e7;
-  --ink-danger: #a3301d;
-  --ink-danger-bg: #fbe9e4;
-  --ink-info-bg: #fdf6cf;
-  --ink-radius: 16px;
-  --ink-radius-lg: 22px;
-  --ink-shadow: 0 1px 2px rgb(28 27 27 / 6%), 0 4px 14px rgb(28 27 27 / 6%);
-  --ink-shadow-deep: 0 24px 60px rgb(28 27 27 / 28%), 0 6px 18px rgb(28 27 27 / 14%);
-  --ink-focus: 0 0 0 3px var(--ink-paper), 0 0 0 6px var(--ink-black);
-
+  --topbar-height: 64px;
   display: grid;
   grid-template-columns: 1fr;
   /* Las filas no se estiran: la barra superior conserva su alto en tablet y móvil. */
   align-content: start;
   min-height: 100vh;
-  background: var(--ink-paper);
-  color: var(--ink-black);
-  font-family: var(--font-ink), "Nunito Sans", system-ui, sans-serif;
-  font-size: 1rem;
-  line-height: 1.5;
-}
-
-/* Los altos mínimos (44 px de área táctil) incluyen el relleno. */
-.shell,
-.shell *,
-.shell *::before,
-.shell *::after {
-  box-sizing: border-box;
-}
-
-.shell *:focus-visible {
-  outline: none;
-  box-shadow: var(--ink-focus);
-  border-radius: 10px;
 }
 
 /* Barra superior (tablet y móvil) */
@@ -60,18 +23,22 @@
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  padding: 0.75rem 1.25rem;
-  background: var(--ink-black);
-  color: var(--ink-cream);
+  min-height: var(--topbar-height);
+  padding: 0.5rem 1.25rem;
+  background: var(--c-sidebar);
+  border-bottom: 1px solid var(--c-border);
 }
 
 .menuButton {
-  min-height: 44px;
-  padding: 0.5rem 1rem;
-  border: 1.5px solid rgb(243 236 220 / 35%);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-height: var(--control-height);
+  padding: 0.5rem 1.1rem;
+  border: 1.5px solid var(--c-field-border);
   border-radius: 999px;
   background: transparent;
-  color: var(--ink-cream);
+  color: var(--c-text);
   font: inherit;
   font-weight: 700;
   cursor: pointer;
@@ -79,46 +46,53 @@
 
 .sidebar {
   display: none;
-  background: var(--ink-black);
-  color: var(--ink-cream);
+  background: var(--c-sidebar);
 }
 
 .sidebarOpen {
   display: block;
   position: sticky;
-  top: 68px;
+  top: var(--topbar-height);
   z-index: 19;
   padding: 0.5rem 1rem 1rem;
+  border-bottom: 1px solid var(--c-border);
 }
 
-/* Logotipo: palabra INK con una gota de tinta */
+/* Logo completo: marca de INK y nombre del área */
 .brand {
   display: inline-flex;
   align-items: center;
-  gap: 0.55rem;
-  color: var(--ink-yellow);
-  font-weight: 900;
-  font-size: 1.5rem;
-  letter-spacing: 0.08em;
+  gap: 0.6rem;
+  color: var(--c-text);
   text-decoration: none;
 }
 
-.brand small {
-  color: var(--ink-cream);
-  font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  opacity: 0.75;
+.brandLogo {
+  display: block;
+  flex: none;
+  width: auto;
+  height: 40px;
 }
 
-.brandMark {
-  width: 28px;
-  height: 28px;
-  flex: none;
+.brandLabel {
+  color: var(--c-text-muted);
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
 }
 
 .sidebarBrand {
   display: none;
+}
+
+/* Marca compacta provisoria (F3): el texto «INK» en amarillo. */
+.brandCompact {
+  display: block;
+  flex: none;
+  width: 52px;
+  height: auto;
+  color: var(--ink-yellow);
 }
 
 .nav ul {
@@ -134,21 +108,22 @@
   position: relative;
   display: flex;
   align-items: center;
-  min-height: 44px;
+  gap: 0.75rem;
+  min-height: var(--control-height);
   padding: 0.55rem 0.9rem 0.55rem 1.1rem;
   border-radius: 12px;
-  color: var(--ink-cream);
+  color: var(--c-text);
   text-decoration: none;
   font-weight: 600;
 }
 
 .navLink:hover {
-  background: rgb(243 236 220 / 8%);
+  background: rgb(255 255 255 / 6%);
 }
 
 .navLink[aria-current="page"] {
-  background: rgb(245 214 39 / 14%);
-  color: #fff;
+  background: rgb(245 214 39 / 12%);
+  color: var(--ink-yellow);
   font-weight: 800;
 }
 
@@ -162,6 +137,15 @@
   width: 4px;
   border-radius: 4px;
   background: var(--ink-yellow);
+}
+
+.navIcon {
+  flex: none;
+}
+
+/* Botón para contraer o expandir la barra: solo en escritorio. */
+.collapseButton {
+  display: none;
 }
 
 .main {
@@ -180,10 +164,10 @@
   }
 }
 
-/* Pantallas grandes: barra lateral persistente */
+/* Escritorio: barra lateral persistente */
 @media (min-width: 1024px) {
   .shell {
-    grid-template-columns: 264px minmax(0, 1fr);
+    grid-template-columns: auto minmax(0, 1fr);
   }
 
   .topbar {
@@ -195,10 +179,61 @@
     top: 0;
     display: flex;
     flex-direction: column;
-    gap: 2rem;
+    gap: 1.75rem;
+    width: 256px;
     height: 100vh;
-    padding: 1.75rem 1rem;
+    padding: 1.5rem 1rem;
     overflow-y: auto;
+    border-right: 1px solid #2a2928;
+    transition: width 160ms ease;
+  }
+
+  .collapseButton {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    min-height: var(--control-height);
+    margin-top: auto;
+    padding: 0.55rem 0.9rem 0.55rem 1.1rem;
+    border: none;
+    border-radius: 12px;
+    background: transparent;
+    color: var(--c-text-muted);
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .collapseButton:hover {
+    background: rgb(255 255 255 / 6%);
+    color: var(--c-text);
+  }
+
+  /* Contraída: solo iconos; los nombres quedan para los lectores de pantalla. */
+  .sidebarCollapsed {
+    width: 84px;
+    padding-inline: 0.75rem;
+  }
+
+  .sidebarCollapsed .sidebarBrand {
+    justify-content: center;
+    min-height: 56px;
+    padding: 0;
+  }
+
+  .sidebarCollapsed .navLink,
+  .sidebarCollapsed .collapseButton {
+    justify-content: center;
+    padding-inline: 0;
+  }
+
+  .sidebarCollapsed .navLabel {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
   }
 
   .sidebarOpen .nav ul {
@@ -210,16 +245,19 @@
     padding: 0 0.6rem;
   }
 
+  .sidebarBrand .brandLogo {
+    height: 56px;
+  }
+
   .main {
     padding: 2.5rem 3rem 5rem;
   }
 }
 
-/* Pantallas muy grandes o televisores: todo un poco más grande y legible a distancia */
+/* Pantallas muy grandes o televisores */
 @media (min-width: 1800px) {
-  .shell {
-    grid-template-columns: 320px minmax(0, 1fr);
-    font-size: 1.2rem;
+  .sidebar:not(.sidebarCollapsed) {
+    width: 300px;
   }
 
   .navLink {

@@ -19,6 +19,7 @@ const STATES_WITH_DISPATCH_DATE = ["CONFIRMADO", "EN_PRODUCCION"] as const;
 const dateFormat = new Intl.DateTimeFormat("es-AR", {
   dateStyle: "full",
   timeStyle: "short",
+  hourCycle: "h23",
   timeZone: "America/Argentina/Buenos_Aires",
 });
 

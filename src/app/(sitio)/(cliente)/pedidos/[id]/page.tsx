@@ -2,10 +2,12 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { CancellationBreakdown } from "@/app/cancellation-breakdown";
 import { CustomOrderDetails } from "@/app/custom-order-details";
-import { DESIGN_STATUS_LABELS, DesignHistory } from "@/app/design-history";
+import { DesignHistory } from "@/app/design-history";
 import { requirePageUser } from "@/app/session";
 import { formatPesos } from "@/lib/money";
-import { formatDateTime, ORDER_STATUS_LABELS, PAYMENT_STATUS_LABELS, paymentWindowOpen } from "@/lib/orders";
+import { StatusBadge } from "@/app/ui/status-badge";
+import { formatDateTime, paymentWindowOpen } from "@/lib/orders";
+import { DESIGN_FAMILY, DESIGN_PUBLIC_LABELS, ORDER_FAMILY, orderPublicLabel, PAYMENT_FAMILY, PAYMENT_PUBLIC_LABELS } from "@/lib/status";
 import { getOrderDesigns } from "@/server/modules/designs/design.service";
 import { getCustomOrderDetails } from "@/server/modules/orders/custom-order.service";
 import { getCustomerOrder } from "@/server/modules/orders/orders.service";
@@ -17,9 +19,13 @@ import { CancelOrder } from "./cancel-order";
 import { DesignReview } from "./design-review";
 import { QuoteResponse } from "./quote-response";
 import { ShippingResponse } from "./shipping-response";
+import styles from "./order.module.css";
 import { SimulatedPayment } from "./simulated-payment";
 
 export const dynamic = "force-dynamic";
+
+// Concepto de cada pago (Documento Maestro, 12.4): el dato ya se guarda en el pago.
+const PAYMENT_CONCEPT: Record<string, string> = { TOTAL: "Total", SENA: "Seña", SALDO: "Saldo" };
 
 export const metadata: Metadata = { title: "Pedido · Sublimaciones", robots: { index: false } };
 
@@ -45,15 +51,19 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
   const balancePayable = balance > 0 && balanceStates.includes(order.estado);
   const quote = order.estado === "ENVIO_COTIZADO" && order.venceEn! > new Date() ? await getShippingQuoteView(user.id, order.id) : null;
   const address = order.direccionEnvio as { calle: string; ciudad: string; provincia: string; codigoPostal: string } | null;
+  // Estado actual (5.6): fecha real del último cambio y, para VENCIDO, el motivo del último vencimiento (12.3).
+  const lastChange = order.historial.at(-1);
+  const lastExpiry = [...order.historial].reverse().find((entry) => entry.estadoNuevo === "VENCIDO");
   const windowStarted = order.inicioVentanaCargo !== null && (order.ventanaCargoFija || order.inicioVentanaCargo <= new Date());
 
   return (
     <main>
       <h1>Pedido #{order.numero}</h1>
-      <p>
-        Estado: <strong>{ORDER_STATUS_LABELS[order.estado]}</strong> ·{" "}
-        {order.modalidadEntrega === "ENVIO" ? "Envío a domicilio" : "Retiro en el local"}
-      </p>
+      <section className={styles.status} aria-label="Estado del pedido">
+        <StatusBadge family={ORDER_FAMILY[order.estado] ?? "neutral"}>{orderPublicLabel(order.estado, order.tipo, lastExpiry?.motivo)}</StatusBadge>
+        <span>{order.modalidadEntrega === "ENVIO" ? "Envío a domicilio" : "Retiro en el local"}</span>
+        {lastChange && <span className={styles.muted}>Actualizado el {formatDateTime(lastChange.creadoEn)}</span>}
+      </section>
       {order.modalidadEntrega === "ENVIO" && address && (
         <p>
           Dirección: {address.calle}, {address.ciudad}, {address.provincia} ({address.codigoPostal})
@@ -87,7 +97,11 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
         return (
           <section key={item.id} aria-label="Diseño">
             <h2>Diseño: {item.descripcion}</h2>
-            <p>{DESIGN_STATUS_LABELS[design?.estado ?? "SIN_PROPUESTA"]}</p>
+            <p>
+              <StatusBadge family={DESIGN_FAMILY[design?.estado ?? "SIN_PROPUESTA"] ?? "neutral"}>
+                {DESIGN_PUBLIC_LABELS[design?.estado ?? "SIN_PROPUESTA"]!}
+              </StatusBadge>
+            </p>
             {design && <DesignHistory design={design} />}
             {designOpen && current && !current.aprobacion && design?.estado === "PENDIENTE_APROBACION" && (
               <DesignReview versionId={current.id} numero={current.numero} huella={current.huella} />
@@ -182,11 +196,18 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
       {order.pagos.length > 0 && (
         <>
           <h2>Pagos</h2>
-          <ul>
+          {/* Cada intento queda a la vista; los no aprobados se diferencian sin ocultarse (12.4). */}
+          <ul className={styles.payments}>
             {order.pagos.map((payment) => (
-              <li key={payment.id}>
-                {formatDateTime(payment.creadoEn)} · {payment.medio === "ONLINE" ? "Online" : "Efectivo"}
-                {payment.simulado && " (SIMULADO)"} · {PAYMENT_STATUS_LABELS[payment.estado]} · {formatPesos(payment.importeCentavos)}
+              <li key={payment.id} className={payment.estado === "APROBADO" ? undefined : styles.paymentFailed}>
+                <StatusBadge family={PAYMENT_FAMILY[payment.estado] ?? "neutral"}>
+                  {PAYMENT_PUBLIC_LABELS[payment.estado] ?? payment.estado}
+                </StatusBadge>
+                <span>
+                  {PAYMENT_CONCEPT[payment.concepto]} · {formatDateTime(payment.creadoEn)} · {payment.medio === "ONLINE" ? "Online" : "Efectivo"}
+                  {payment.simulado && " (SIMULADO)"}
+                </span>
+                <strong>{formatPesos(payment.importeCentavos)}</strong>
               </li>
             ))}
           </ul>
@@ -197,7 +218,7 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
       <ul>
         {order.historial.map((entry) => (
           <li key={entry.id}>
-            {formatDateTime(entry.creadoEn)} · {ORDER_STATUS_LABELS[entry.estadoNuevo]}
+            {formatDateTime(entry.creadoEn)} · {orderPublicLabel(entry.estadoNuevo, order.tipo, entry.motivo)}
           </li>
         ))}
       </ul>

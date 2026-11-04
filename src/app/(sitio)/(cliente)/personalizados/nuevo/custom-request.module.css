@@ -1,0 +1,59 @@
+/* Solicitud de personalizado: pasos numerados en tarjetas, como el checkout. */
+
+.page {
+  max-width: 880px;
+}
+
+.back {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  margin-bottom: var(--space-3);
+  font-weight: 700;
+}
+
+.lead {
+  max-width: 62ch;
+  color: var(--c-text-muted);
+}
+
+.form {
+  display: grid;
+  gap: var(--space-4);
+  margin: var(--space-5) 0 0;
+}
+
+/* Cada paso es una tarjeta; dentro, los campos usan el diseño compartido de formularios. */
+.form > fieldset {
+  margin: 0;
+  padding: var(--card-padding);
+  border: none;
+  border-radius: var(--radius-lg);
+  background: var(--c-surface);
+  box-shadow: var(--c-shadow);
+}
+
+.hint {
+  color: var(--c-text-muted);
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+p.hint {
+  margin: 0;
+}
+
+.fieldError {
+  color: var(--st-error-fg);
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.submit {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.submit button {
+  margin: 0;
+}

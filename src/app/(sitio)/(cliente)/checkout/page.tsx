@@ -14,7 +14,7 @@ export default async function CheckoutPage() {
   const user = await getPageUser();
   if (!user) {
     return (
-      <main>
+      <main className="ink-auth">
         <h1>Finalizar compra</h1>
         <GuestCheckout />
       </main>

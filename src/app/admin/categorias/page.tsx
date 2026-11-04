@@ -1,6 +1,7 @@
 import { requireAdminPage } from "@/app/session";
 import { listCategories } from "@/server/modules/catalog/catalog-admin.service";
 import { CategoriesManager } from "./categories-manager";
+import { PageHeader } from "../page-header";
 
 export const dynamic = "force-dynamic";
 
@@ -9,7 +10,7 @@ export default async function AdminCategoriesPage() {
   const categories = await listCategories();
   return (
     <main>
-      <h1>Categorías</h1>
+      <PageHeader title="Categorías" href="/admin/categorias" />
       <CategoriesManager
         categories={categories.map((category) => ({
           id: category.id,

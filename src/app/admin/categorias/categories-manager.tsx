@@ -38,7 +38,7 @@ export function CategoriesManager({ categories }: { categories: Category[] }) {
         </label>
         <button type="submit">Crear</button>
       </form>
-      <table>
+      <table className="ink-table-stack">
         <thead>
           <tr>
             <th>Nombre</th>

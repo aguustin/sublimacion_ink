@@ -1,0 +1,49 @@
+/* Encabezado de página del panel: título y descripción a la izquierda, acciones a la derecha. */
+
+.header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-3) var(--space-5);
+  margin-bottom: var(--space-5);
+  padding-bottom: var(--space-4);
+  border-bottom: 1px solid var(--c-border);
+}
+
+.text {
+  min-width: 0;
+}
+
+.text h1 {
+  margin: 0;
+}
+
+.description {
+  max-width: 70ch;
+  margin: var(--space-2) 0 0;
+  color: var(--c-text-muted);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.actions > * {
+  margin: 0;
+}
+
+/* Grupos de acciones dentro del encabezado (por ejemplo, la navegación por años). */
+.actions nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.actions nav > * {
+  margin: 0;
+}

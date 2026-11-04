@@ -58,7 +58,7 @@ const acceptSchema = z.strictObject({
 
 const rejectSchema = z.strictObject({ cotizacionId: z.uuid() });
 
-const dateFormat = new Intl.DateTimeFormat("es-AR", { dateStyle: "short", timeStyle: "short", timeZone: "America/Argentina/Buenos_Aires" });
+const dateFormat = new Intl.DateTimeFormat("es-AR", { dateStyle: "short", timeStyle: "short", hourCycle: "h23", timeZone: "America/Argentina/Buenos_Aires" });
 
 const idempotencyKeySchema = z.uuid("Falta la clave de idempotencia de la solicitud.");
 

@@ -50,7 +50,7 @@ export async function transitionOrder(
     to: EstadoPedido;
     actorId?: string | null;
     motivo?: string;
-    data?: Prisma.PedidoUpdateManyMutationInput;
+    data?: Prisma.PedidoUncheckedUpdateManyInput;
     /** Instante del historial; por defecto, el de la base. */
     at?: Date;
   },

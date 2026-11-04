@@ -56,7 +56,7 @@ export function CancelOrder({ orderId }: { orderId: string }) {
         Motivo
         <input name="motivo" required />
       </label>
-      <button type="submit">Confirmar la cancelación</button>{" "}
+      <button type="submit" className="ink-btn-danger">Confirmar la cancelación</button>{" "}
       <button type="button" onClick={() => setPreview(null)}>
         Volver
       </button>

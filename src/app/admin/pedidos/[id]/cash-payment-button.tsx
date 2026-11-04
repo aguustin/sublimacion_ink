@@ -20,7 +20,7 @@ export function CashPaymentButton({ orderId, total }: { orderId: string; total: 
 
   return (
     <>
-      <button type="button" onClick={register} disabled={pending}>
+      <button type="button" className="ink-btn-primary" onClick={register} disabled={pending}>
         Registrar pago en efectivo ({total})
       </button>
       {error && <p role="alert">{error}</p>}

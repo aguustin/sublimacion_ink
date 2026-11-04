@@ -22,7 +22,7 @@ export function VoidCouponForm({ couponId }: { couponId: string }) {
         Motivo
         <input name="motivo" required />
       </label>
-      <button type="submit">Anular</button>
+      <button type="submit" className="ink-btn-danger">Anular</button>
     </form>
   );
 }

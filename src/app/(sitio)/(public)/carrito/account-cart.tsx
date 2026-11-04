@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { postJson, sendJson, type ApiResult } from "@/lib/api";
+import { notifyCartChanged } from "@/lib/guest-cart";
 import type { CartView } from "@/server/modules/cart/cart.service";
 import { CartTable } from "./cart-table";
 
@@ -16,6 +17,7 @@ export function AccountCart({ initialCart }: { initialCart: CartView }) {
     if (result.ok) {
       setCart(result.data);
       setError(null);
+      notifyCartChanged();
     } else {
       setError(result.error.mensaje);
     }
@@ -39,12 +41,12 @@ export function AccountCart({ initialCart }: { initialCart: CartView }) {
         cart={cart}
         onQuantityChange={(item, cantidad) => apply(sendJson<CartView>("PATCH", `/api/cart/items/${item.id}`, { cantidad }))}
         onRemove={(item) => apply(sendJson<CartView>("DELETE", `/api/cart/items/${item.id}`))}
+        actions={
+          <Link href="/checkout" className="ink-btn ink-btn-primary">
+            Continuar compra
+          </Link>
+        }
       />
-      {cart.items.length > 0 && (
-        <p>
-          <Link href="/checkout">Continuar compra</Link>
-        </p>
-      )}
     </>
   );
 }

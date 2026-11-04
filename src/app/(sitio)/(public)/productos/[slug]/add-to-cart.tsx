@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { useState } from "react";
 import { postJson } from "@/lib/api";
-import { addToGuestCart } from "@/lib/guest-cart";
+import { addToGuestCart, notifyCartChanged } from "@/lib/guest-cart";
+import styles from "./product.module.css";
 
 export function AddToCart({ varianteId, disponible, loggedIn }: { varianteId: string; disponible: number; loggedIn: boolean }) {
   const [cantidad, setCantidad] = useState(1);
@@ -17,6 +18,7 @@ export function AddToCart({ varianteId, disponible, loggedIn }: { varianteId: st
     if (loggedIn) {
       const result = await postJson("/api/cart/items", { varianteId, cantidad });
       setMessage(result.ok ? "Agregado al carrito." : result.error.mensaje);
+      if (result.ok) notifyCartChanged();
     } else {
       const added = addToGuestCart(varianteId, cantidad, disponible);
       setMessage(added > 0 ? "Agregado al carrito." : "Ya tenés en el carrito todas las unidades disponibles.");
@@ -25,7 +27,7 @@ export function AddToCart({ varianteId, disponible, loggedIn }: { varianteId: st
   }
 
   return (
-    <span>
+    <div className={styles.addToCart}>
       <input
         type="number"
         min={1}
@@ -33,16 +35,15 @@ export function AddToCart({ varianteId, disponible, loggedIn }: { varianteId: st
         value={cantidad}
         onChange={(event) => setCantidad(Math.max(1, Math.min(disponible, Number(event.target.value) || 1)))}
         aria-label="Cantidad"
-      />{" "}
-      <button type="button" onClick={add} disabled={pending}>
+      />
+      <button type="button" className="ink-btn-primary" onClick={add} disabled={pending}>
         Agregar al carrito
       </button>
       {message && (
-        <span role="status">
-          {" "}
+        <p role="status" className={styles.added}>
           {message} <Link href="/carrito">Ver carrito</Link>
-        </span>
+        </p>
       )}
-    </span>
+    </div>
   );
 }

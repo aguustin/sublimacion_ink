@@ -16,7 +16,7 @@
 
 .eyebrow {
   margin: 0 0 0.35rem;
-  color: var(--ink-muted);
+  color: var(--c-text-muted);
   font-size: 0.8rem;
   font-weight: 800;
   letter-spacing: 0.14em;
@@ -53,7 +53,7 @@
 .lead {
   max-width: 62ch;
   margin: 0.9rem 0 0;
-  color: var(--ink-muted);
+  color: var(--c-text-muted);
   font-size: 1.05rem;
 }
 
@@ -63,9 +63,10 @@
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  min-height: 48px;
-  padding: 0.7rem 1.35rem;
-  border: 2px solid var(--ink-black);
+  /* Mismas medidas que el resto de los controles (ink.css, criterio dimensional). */
+  min-height: var(--control-height);
+  padding: 0.55rem 1.15rem;
+  border: 1.5px solid var(--c-field-border);
   border-radius: 999px;
   font: inherit;
   font-weight: 800;
@@ -83,34 +84,35 @@
 }
 
 .primary {
+  border-color: var(--ink-yellow);
   background: var(--ink-yellow);
-  color: var(--ink-black);
-  box-shadow: 0 3px 0 var(--ink-black);
+  color: var(--c-on-accent);
+  box-shadow: 0 3px 0 rgb(0 0 0 / 45%);
 }
 
 .primary:hover:not(:disabled) {
   transform: translateY(-1px);
-  box-shadow: 0 4px 0 var(--ink-black);
+  box-shadow: 0 4px 0 rgb(0 0 0 / 45%);
 }
 
 .primary:active:not(:disabled) {
   transform: translateY(2px);
-  box-shadow: 0 1px 0 var(--ink-black);
+  box-shadow: 0 1px 0 rgb(0 0 0 / 45%);
 }
 
 .secondary {
-  background: #fff;
-  color: var(--ink-black);
+  background: var(--c-surface);
+  color: var(--c-text);
 }
 
 .secondary:hover:not(:disabled) {
-  background: var(--ink-cream);
+  background: var(--c-surface-raised);
 }
 
 .ghost {
   border-color: transparent;
   background: transparent;
-  color: var(--ink-black);
+  color: var(--c-text);
   text-decoration: underline;
   text-underline-offset: 0.2em;
 }
@@ -120,9 +122,9 @@
   margin: 0;
   padding: 0;
   list-style: none;
-  border-radius: var(--ink-radius-lg);
-  background: #fff;
-  box-shadow: var(--ink-shadow);
+  border-radius: var(--radius-lg);
+  background: var(--c-surface);
+  box-shadow: var(--c-shadow);
 }
 
 .row {
@@ -137,7 +139,7 @@
 }
 
 .row + .row {
-  border-top: 1.5px dashed var(--ink-line);
+  border-top: 1.5px dashed var(--c-border);
 }
 
 @media (min-width: 640px) {
@@ -158,7 +160,7 @@
   padding: 0.55rem 0.4rem 0.6rem;
   border-radius: 18px;
   background: var(--ink-yellow);
-  color: var(--ink-black);
+  color: var(--c-on-accent);
   text-align: center;
   line-height: 1.05;
 }
@@ -194,7 +196,7 @@
 
 .meta {
   margin: 0.25rem 0 0;
-  color: var(--ink-muted);
+  color: var(--c-text-muted);
   font-size: 0.92rem;
 }
 
@@ -223,9 +225,9 @@
   align-items: center;
   max-width: 720px;
   padding: 1.75rem 2rem;
-  border: 2px dashed var(--ink-line);
-  border-radius: var(--ink-radius-lg);
-  background: #fff;
+  border: 2px dashed var(--c-border);
+  border-radius: var(--radius-lg);
+  background: var(--c-surface);
 }
 
 .emptyArt {
@@ -241,7 +243,7 @@
 
 .emptyText {
   margin: 0.4rem 0 1rem;
-  color: var(--ink-muted);
+  color: var(--c-text-muted);
 }
 
 @media (max-width: 520px) {
@@ -255,8 +257,8 @@
 /* Carga inicial */
 .skeleton {
   height: 92px;
-  border-radius: var(--ink-radius);
-  background: linear-gradient(90deg, var(--ink-cream) 25%, #fff 50%, var(--ink-cream) 75%);
+  border-radius: var(--radius);
+  background: linear-gradient(90deg, var(--c-surface-raised) 25%, var(--c-surface) 50%, var(--c-surface-raised) 75%);
   background-size: 200% 100%;
   animation: shimmer 1.4s infinite linear;
 }
@@ -283,24 +285,24 @@
 
 /* Modales */
 .dialog {
-  width: min(560px, calc(100vw - 2rem));
+  width: min(var(--dialog-width), calc(100vw - 2rem));
   max-height: min(88vh, 860px);
   padding: 0;
   border: none;
-  border-radius: var(--ink-radius-lg);
-  background: var(--ink-paper);
-  color: var(--ink-black);
-  box-shadow: var(--ink-shadow-deep);
+  border-radius: var(--radius-lg);
+  background: var(--c-bg);
+  color: var(--c-text);
+  box-shadow: var(--c-shadow-deep);
   font-family: var(--font-ink), "Nunito Sans", system-ui, sans-serif;
   overflow: hidden;
 }
 
 .dialogWide {
-  width: min(760px, calc(100vw - 2rem));
+  width: min(var(--dialog-wide), calc(100vw - 2rem));
 }
 
 .dialog::backdrop {
-  background: rgb(28 27 27 / 55%);
+  background: var(--c-backdrop);
   backdrop-filter: blur(2px);
 }
 
@@ -312,8 +314,8 @@
 
 .dialogHeader {
   padding: 1.5rem 1.75rem 1rem;
-  border-bottom: 1.5px solid var(--ink-line);
-  background: #fff;
+  border-bottom: 1.5px solid var(--c-border);
+  background: var(--c-surface);
 }
 
 .step {
@@ -347,8 +349,8 @@
   justify-content: flex-end;
   gap: 0.75rem;
   padding: 1rem 1.75rem 1.25rem;
-  border-top: 1.5px solid var(--ink-line);
-  background: #fff;
+  border-top: 1.5px solid var(--c-border);
+  background: var(--c-surface);
 }
 
 /* Formulario */
@@ -366,32 +368,40 @@
 }
 
 .hint {
-  color: var(--ink-muted);
+  color: var(--c-text-muted);
   font-size: 0.9rem;
 }
 
 .input {
   box-sizing: border-box;
   width: 100%;
-  min-height: 48px;
-  padding: 0.65rem 0.9rem;
-  border: 2px solid var(--ink-line);
-  border-radius: 12px;
-  background: #fff;
-  color: var(--ink-black);
+  min-height: var(--control-height);
+  padding: 0.55rem 0.8rem;
+  border: 1.5px solid var(--c-field-border);
+  border-radius: var(--radius-sm);
+  background: var(--c-field-bg);
+  color: var(--c-text);
   font: inherit;
+  color-scheme: dark;
+}
+
+/* Foco del campo: borde amarillo y fondo apenas distinto (Documento Maestro, sección 6). */
+.input:focus-visible {
+  outline: none;
+  border-color: var(--c-focus);
+  background: var(--c-field-bg-focus);
 }
 
 .input:hover {
-  border-color: #cbbfa6;
+  border-color: var(--c-text-muted);
 }
 
 .input[aria-invalid="true"] {
-  border-color: var(--ink-danger);
+  border-color: var(--st-error-fg);
 }
 
 textarea.input {
-  min-height: 96px;
+  min-height: 7.5rem;
   resize: vertical;
 }
 
@@ -400,7 +410,7 @@ textarea.input {
   gap: 0.4rem;
   align-items: baseline;
   margin: 0;
-  color: var(--ink-danger);
+  color: var(--st-error-fg);
   font-weight: 700;
   font-size: 0.92rem;
 }
@@ -412,14 +422,14 @@ textarea.input {
   margin: 0 0 1.25rem;
   padding: 0.85rem 1rem;
   border-radius: 12px;
-  background: var(--ink-danger-bg);
-  color: var(--ink-danger);
+  background: var(--st-error-bg);
+  color: var(--st-error-fg);
   font-weight: 700;
 }
 
 .note {
   margin: 1.25rem 0 0;
-  color: var(--ink-muted);
+  color: var(--c-text-muted);
   font-size: 0.9rem;
 }
 
@@ -439,7 +449,7 @@ textarea.input {
 
 .summaryReason {
   margin: 0.15rem 0 0;
-  color: var(--ink-muted);
+  color: var(--c-text-muted);
   overflow-wrap: anywhere;
 }
 
@@ -451,11 +461,14 @@ textarea.input {
   border: 2px solid var(--ink-black);
   border-radius: 999px;
   background: var(--ink-yellow);
+  color: var(--c-on-accent);
   font-weight: 900;
 }
 
 .countNone {
-  background: #fff;
+  border-color: var(--c-field-border);
+  background: transparent;
+  color: var(--c-text);
 }
 
 /* Pedidos afectados: tarjetas apiladas, sin desplazamiento horizontal */
@@ -469,9 +482,9 @@ textarea.input {
 
 .order {
   padding: 1rem 1.1rem;
-  border: 1.5px solid var(--ink-line);
-  border-radius: var(--ink-radius);
-  background: #fff;
+  border: 1.5px solid var(--c-border);
+  border-radius: var(--radius);
+  background: var(--c-surface);
 }
 
 .orderTitle {
@@ -497,7 +510,7 @@ textarea.input {
 }
 
 .orderFacts dt {
-  color: var(--ink-muted);
+  color: var(--c-text-muted);
   font-size: 0.78rem;
   font-weight: 800;
   letter-spacing: 0.06em;
@@ -512,7 +525,7 @@ textarea.input {
 .previous {
   text-decoration: line-through;
   text-decoration-thickness: 1.5px;
-  color: var(--ink-muted);
+  color: var(--c-text-muted);
 }
 
 /* El inicio nuevo se destaca con fondo y con el rótulo «Nuevo», no solo con el color. */
@@ -521,13 +534,14 @@ textarea.input {
   padding: 0.1rem 0.5rem;
   border-radius: 8px;
   background: var(--ink-yellow);
+  color: var(--c-on-accent);
   font-weight: 900;
 }
 
 .nothing {
   padding: 1.25rem 1.25rem;
-  border-radius: var(--ink-radius);
-  background: var(--ink-info-bg);
+  border-radius: var(--radius);
+  background: var(--st-neutral-bg);
 }
 
 .nothing strong {
@@ -554,10 +568,10 @@ textarea.input {
   align-items: flex-start;
   width: min(460px, 100%);
   padding: 1rem 1rem 1rem 1.15rem;
-  border-left: 6px solid var(--ink-success);
+  border-left: 6px solid var(--st-done-fg);
   border-radius: 14px;
-  background: #fff;
-  box-shadow: var(--ink-shadow-deep);
+  background: var(--c-surface);
+  box-shadow: var(--c-shadow-deep);
   pointer-events: auto;
 }
 
@@ -566,7 +580,7 @@ textarea.input {
 }
 
 .toastError {
-  border-left-color: var(--ink-danger);
+  border-left-color: var(--st-error-fg);
 }
 
 .toastBody {
@@ -581,7 +595,7 @@ textarea.input {
 
 .toastText {
   margin: 0.2rem 0 0;
-  color: var(--ink-muted);
+  color: var(--c-text-muted);
   overflow-wrap: anywhere;
 }
 

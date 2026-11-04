@@ -22,6 +22,7 @@ export const PAYMENT_STATUS_LABELS: Record<string, string> = {
 const dateTime = new Intl.DateTimeFormat("es-AR", {
   dateStyle: "short",
   timeStyle: "short",
+  hourCycle: "h23",
   timeZone: "America/Argentina/Buenos_Aires",
 });
 

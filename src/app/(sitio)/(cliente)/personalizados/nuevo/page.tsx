@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { ChevronLeft } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requirePageUser } from "@/app/session";
@@ -6,6 +7,7 @@ import { getProductBySlug } from "@/server/modules/catalog/catalog.service";
 import { listAddresses } from "@/server/modules/users/profile.service";
 import { AppError } from "@/server/shared/errors";
 import { CustomRequestForm } from "./custom-request-form";
+import styles from "./custom-request.module.css";
 
 export const dynamic = "force-dynamic";
 
@@ -25,11 +27,14 @@ export default async function NewCustomRequestPage({ searchParams }: { searchPar
   const addresses = await listAddresses(user.id);
 
   return (
-    <main>
+    <main className={styles.page}>
+      <Link href={`/productos/${product.slug}`} className={styles.back}>
+        <ChevronLeft aria-hidden="true" size={18} />
+        Volver al producto
+      </Link>
       <h1>Cotización: {product.nombre}</h1>
-      <p>
-        Contanos qué querés. La tienda te envía la cotización; recién cuando la aceptes empieza el plazo para pagar la seña.{" "}
-        <Link href={`/productos/${product.slug}`}>Volver al producto</Link>
+      <p className={styles.lead}>
+        Contanos qué querés. La tienda te envía la cotización; recién cuando la aceptes empieza el plazo para pagar la seña.
       </p>
       <CustomRequestForm
         variants={product.variantes.map((variant) => ({

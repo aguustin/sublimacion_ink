@@ -96,7 +96,6 @@ export function subtractCountedHours(end: Date, hours: number, isExcludedDay: (d
   let cursor = end;
   for (let guard = 0; remaining > 0; guard++) {
     if (guard > 366) throw new Error("No hay días que cuenten suficientes para calcular el plazo.");
-    // El tramo que termina en `cursor` pertenece al día del instante anterior (a las 00:00, al día previo).
     const dayOf = new Date(cursor.getTime() - 1);
     const dayStart = localMidnight(dayOf, 0, timeZone);
     if (!isExcludedDay(localDate(dayOf, timeZone))) {

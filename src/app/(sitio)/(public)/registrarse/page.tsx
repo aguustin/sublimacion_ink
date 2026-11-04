@@ -27,7 +27,7 @@ function RegisterPageContent() {
 
 export default function RegisterPage() {
   return (
-    <main>
+    <main className="ink-auth">
       <h1>Crear una cuenta</h1>
       <Suspense>
         <RegisterPageContent />
