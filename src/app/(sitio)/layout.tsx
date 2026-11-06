@@ -21,12 +21,42 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <div className={`ink-base ${styles.main}`}>{children}</div>
         <footer className={styles.footer}>
           <div className={styles.footerInner}>
-            <InkLogo variant="invertido" className={styles.footerLogo} />
+            <div className={styles.footerBrand}>
+              <InkLogo variant="invertido" className={styles.footerLogo} />
+              <p>Productos sublimados estándar y personalizados: tazas, remeras, stickers, carteles y más.</p>
+            </div>
             {/* Solo destinos reales (F15). */}
-            <nav aria-label="Pie de página" className={styles.footerLinks}>
-              <Link href="/productos">Productos</Link>
-              <Link href="/contacto">Contacto</Link>
+            <nav aria-label="Pie de página" className={styles.footerColumns}>
+              <div>
+                <p className={styles.footerTitle}>Tienda</p>
+                <ul className={styles.footerLinks}>
+                  <li>
+                    <Link href="/productos">Productos</Link>
+                  </li>
+                  <li>
+                    <Link href="/productos?tipo=PERSONALIZABLE">Personalizados</Link>
+                  </li>
+                  <li>
+                    <Link href="/carrito">Carrito</Link>
+                  </li>
+                </ul>
+              </div>
+              <div>
+                <p className={styles.footerTitle}>Tu cuenta</p>
+                <ul className={styles.footerLinks}>
+                  <li>
+                    <Link href="/pedidos">Mis pedidos</Link>
+                  </li>
+                  <li>
+                    <Link href="/mensajes">Mensajes</Link>
+                  </li>
+                  <li>
+                    <Link href="/contacto">Contacto</Link>
+                  </li>
+                </ul>
+              </div>
             </nav>
+            <p className={styles.footerBottom}>© {new Date().getFullYear()} INK · Precios finales en pesos, con impuestos incluidos.</p>
           </div>
         </footer>
       </body>

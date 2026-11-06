@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import { ChevronLeft, ChevronRight, ImageOff, SearchX, SlidersHorizontal } from "lucide-react";
+import { ChevronLeft, ChevronRight, Search, SearchX, SlidersHorizontal, X } from "lucide-react";
 import Link from "next/link";
-import { priceLabel } from "@/lib/money";
 import { getFilterOptions, listProducts } from "@/server/modules/catalog/catalog.service";
 import { productImageUrls } from "@/server/modules/catalog/product-images.service";
 import { getConfig } from "@/server/shared/config";
+import { ProductGrid } from "../../product-card";
 import styles from "./catalog.module.css";
 
 export const dynamic = "force-dynamic";
@@ -36,45 +36,97 @@ export default async function ProductsPage({ searchParams }: { searchParams: Sea
   const pageHref = (page: number) => `/productos?${new URLSearchParams({ ...params, pagina: String(page) })}`;
 
   const hasFilters = Object.keys(params).some((key) => key !== "pagina");
+  // Enlace al catálogo con un filtro cambiado (o quitado con `undefined`); siempre vuelve a la página 1.
+  const withParam = (key: string, value: string | undefined) => {
+    const next = new URLSearchParams(params);
+    next.delete("pagina");
+    if (value === undefined) next.delete(key);
+    else next.set(key, value);
+    const query = next.toString();
+    return query ? `/productos?${query}` : "/productos";
+  };
+  const moreFilters = ["material", "medida", "precioMin", "precioMax"].filter((key) => params[key]).length;
+  const TYPES = [
+    { value: undefined, label: "Todos" },
+    { value: "ESTANDAR", label: "Listos para comprar" },
+    { value: "PERSONALIZABLE", label: "Personalizables" },
+  ];
 
   return (
     <main className={styles.page}>
-      <div className={styles.heading}>
-        <h1>Productos</h1>
-        <p className={styles.count}>{total === 1 ? "1 producto" : `${total} productos`}</p>
-      </div>
+      <header className={styles.hero}>
+        <div className={styles.heroText}>
+          <span className="ink-eyebrow">Catálogo</span>
+          <h1>{params.q ? `Resultados para «${params.q}»` : "Productos"}</h1>
+          <p className={styles.count}>{total === 1 ? "1 producto" : `${total} productos`}</p>
+        </div>
+        {/* Buscador grande: conserva los demás filtros. */}
+        <form method="get" action="/productos" role="search" className={styles.searchForm}>
+          {Object.entries(params)
+            .filter(([key]) => key !== "q" && key !== "pagina")
+            .map(([key, value]) => (
+              <input key={key} type="hidden" name={key} value={value} />
+            ))}
+          <Search aria-hidden="true" size={20} className={styles.searchIcon} />
+          <label className={styles.srOnly} htmlFor="catalog-search">
+            Buscar en el catálogo
+          </label>
+          <input
+            id="catalog-search"
+            name="q"
+            type="search"
+            defaultValue={params.q}
+            placeholder="¿Qué estás buscando?"
+            className={styles.searchInput}
+          />
+          <button type="submit" className={styles.searchButton}>
+            Buscar
+          </button>
+        </form>
+      </header>
 
-      <div className={styles.layout}>
-        {/* Filtros: panel lateral en escritorio; en móvil, desplegable (Documento Maestro, 5.3). */}
-        <details className={styles.filters} open={hasFilters || undefined}>
-          <summary className={styles.filtersSummary}>
+      <div className={styles.toolbar}>
+        {/* Filtros rápidos de un toque: categoría y tipo. */}
+        <nav aria-label="Categorías" className={styles.chips}>
+          <Link href={withParam("categoria", undefined)} className={styles.chip} aria-current={!params.categoria ? "page" : undefined}>
+            Todo
+          </Link>
+          {options.categorias.map((category) => (
+            <Link
+              key={category.slug}
+              href={withParam("categoria", category.slug)}
+              className={styles.chip}
+              aria-current={params.categoria === category.slug ? "page" : undefined}
+            >
+              {category.nombre}
+            </Link>
+          ))}
+        </nav>
+        <nav aria-label="Tipo de producto" className={styles.segmented}>
+          {TYPES.map((type) => (
+            <Link
+              key={type.label}
+              href={withParam("tipo", type.value)}
+              className={styles.segment}
+              aria-current={(params.tipo ?? undefined) === type.value ? "page" : undefined}
+            >
+              {type.label}
+            </Link>
+          ))}
+        </nav>
+
+        <details className={styles.more} open={moreFilters > 0 || undefined}>
+          <summary className={styles.moreSummary}>
             <SlidersHorizontal aria-hidden="true" size={18} />
-            Filtros
+            Más filtros
+            {moreFilters > 0 && <span className={styles.moreCount}>{moreFilters}</span>}
           </summary>
-          <form method="get" action="/productos" className={styles.filtersForm}>
-            <label>
-              Buscar
-              <input name="q" type="search" defaultValue={params.q} />
-            </label>
-            <label>
-              Categoría
-              <select name="categoria" defaultValue={params.categoria ?? ""}>
-                <option value="">Todas</option>
-                {options.categorias.map((category) => (
-                  <option key={category.slug} value={category.slug}>
-                    {category.nombre}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label>
-              Tipo
-              <select name="tipo" defaultValue={params.tipo ?? ""}>
-                <option value="">Todos</option>
-                <option value="ESTANDAR">Estándar</option>
-                <option value="PERSONALIZABLE">Personalizable</option>
-              </select>
-            </label>
+          <form method="get" action="/productos" className={styles.moreForm}>
+            {["q", "categoria", "tipo"]
+              .filter((key) => params[key])
+              .map((key) => (
+                <input key={key} type="hidden" name={key} value={params[key]} />
+              ))}
             <label>
               Material
               <select name="material" defaultValue={params.material ?? ""}>
@@ -93,89 +145,66 @@ export default async function ProductsPage({ searchParams }: { searchParams: Sea
                 ))}
               </select>
             </label>
-            <div className={styles.priceRange}>
-              <label>
-                Precio desde ($)
-                <input name="precioMin" type="number" min="0" step="1" defaultValue={params.precioMin} />
-              </label>
-              <label>
-                Precio hasta ($)
-                <input name="precioMax" type="number" min="0" step="1" defaultValue={params.precioMax} />
-              </label>
-            </div>
-            <div className={styles.filterActions}>
-              <button type="submit">Filtrar</button>
-              {hasFilters && <Link href="/productos">Limpiar filtros</Link>}
+            <label>
+              Precio desde ($)
+              <input name="precioMin" type="number" min="0" step="1" inputMode="numeric" placeholder="0" defaultValue={params.precioMin} />
+            </label>
+            <label>
+              Precio hasta ($)
+              <input name="precioMax" type="number" min="0" step="1" inputMode="numeric" placeholder="Sin tope" defaultValue={params.precioMax} />
+            </label>
+            <div className={styles.moreActions}>
+              <button type="submit">Aplicar filtros</button>
+              {hasFilters && (
+                <Link href="/productos" className={styles.clear}>
+                  <X aria-hidden="true" size={16} />
+                  Limpiar todo
+                </Link>
+              )}
             </div>
           </form>
         </details>
-
-        <section className={styles.results} aria-label="Resultados">
-          {productos.length === 0 ? (
-            <div className={styles.empty}>
-              <SearchX aria-hidden="true" size={32} />
-              <p>No encontramos productos con esos filtros.</p>
-              {hasFilters && (
-                <Link href="/productos" className="ink-btn">
-                  Ver todos los productos
-                </Link>
-              )}
-            </div>
-          ) : (
-            <ul className={styles.grid}>
-              {productos.map((product) => (
-                <li key={product.id}>
-                  <Link href={`/productos/${product.slug}`} className={styles.card}>
-                    <div className={styles.media}>
-                      {product.imagenId && images.has(product.imagenId) ? (
-                        // URL firmada de corta duración al almacenamiento privado (16.1); no pasa por el optimizador de imágenes.
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img src={images.get(product.imagenId)} alt="" loading="lazy" className={styles.image} />
-                      ) : (
-                        // Sin foto cargada: una superficie neutra, sin imágenes inventadas.
-                        <ImageOff aria-hidden="true" size={32} className={styles.noImage} />
-                      )}
-                    </div>
-                    <div className={styles.body}>
-                      <span className={styles.category}>{product.categoria.nombre}</span>
-                      <span className={styles.name}>{product.nombre}</span>
-                      <span className={styles.price}>{priceLabel(product.precioDesdeCentavos, product.variasPrecios)}</span>
-                      <span className={styles.tags}>
-                        {product.tipo === "PERSONALIZABLE" && <span className={styles.tag}>Personalizable</span>}
-                        {product.hayStock === false && <span className={styles.tag}>Sin stock</span>}
-                      </span>
-                    </div>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          )}
-
-          {totalPages > 1 && (
-            <nav aria-label="Páginas" className={styles.pagination}>
-              {pagina > 1 ? (
-                <Link href={pageHref(pagina - 1)} className="ink-btn">
-                  <ChevronLeft aria-hidden="true" size={18} />
-                  Anterior
-                </Link>
-              ) : (
-                <span />
-              )}
-              <span>
-                Página {pagina} de {totalPages}
-              </span>
-              {pagina < totalPages ? (
-                <Link href={pageHref(pagina + 1)} className="ink-btn">
-                  Siguiente
-                  <ChevronRight aria-hidden="true" size={18} />
-                </Link>
-              ) : (
-                <span />
-              )}
-            </nav>
-          )}
-        </section>
       </div>
+
+      <section className={styles.results} aria-label="Resultados">
+        {productos.length === 0 ? (
+          <div className={styles.empty}>
+            <SearchX aria-hidden="true" size={32} />
+            <p>No encontramos productos con esos filtros.</p>
+            {hasFilters && (
+              <Link href="/productos" className="ink-btn">
+                Ver todos los productos
+              </Link>
+            )}
+          </div>
+        ) : (
+          <ProductGrid products={productos} images={images} />
+        )}
+
+        {totalPages > 1 && (
+          <nav aria-label="Páginas" className={styles.pagination}>
+            {pagina > 1 ? (
+              <Link href={pageHref(pagina - 1)} className="ink-btn">
+                <ChevronLeft aria-hidden="true" size={18} />
+                Anterior
+              </Link>
+            ) : (
+              <span />
+            )}
+            <span>
+              Página {pagina} de {totalPages}
+            </span>
+            {pagina < totalPages ? (
+              <Link href={pageHref(pagina + 1)} className="ink-btn">
+                Siguiente
+                <ChevronRight aria-hidden="true" size={18} />
+              </Link>
+            ) : (
+              <span />
+            )}
+          </nav>
+        )}
+      </section>
     </main>
   );
 }

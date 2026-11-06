@@ -1,0 +1,102 @@
+/* Contacto (rediseño v1.38): un canal por tarjeta, toda la tarjeta es el enlace. */
+
+.page {
+  display: grid;
+  gap: var(--space-6);
+}
+
+.header {
+  max-width: 36rem;
+}
+
+.header h1 {
+  margin: 0 0 var(--space-3);
+  font-size: clamp(2.25rem, 1.6rem + 2.5vw, 3.5rem);
+  line-height: 1.05;
+}
+
+.header p {
+  margin: 0;
+  color: var(--c-text-muted);
+  font-size: 1.1rem;
+  line-height: 1.6;
+}
+
+.channels {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 17rem), 1fr));
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.channels li {
+  margin: 0;
+}
+
+.channel {
+  display: grid;
+  gap: var(--space-1);
+  height: 100%;
+  padding: var(--space-5);
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius-lg);
+  background: var(--c-surface);
+  color: var(--c-text);
+  text-decoration: none;
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.channel:hover {
+  border-color: var(--ink-black);
+  box-shadow: var(--c-shadow-hover);
+}
+
+.icon {
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  margin-bottom: var(--space-3);
+  border-radius: 14px;
+  background: var(--c-accent-soft);
+}
+
+.label {
+  color: var(--c-text-muted);
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.value {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 1.1rem;
+  font-weight: 800;
+  overflow-wrap: anywhere;
+}
+
+.chat {
+  border-color: var(--ink-black);
+  background: var(--ink-black);
+  color: #fff;
+}
+
+.chat .label {
+  color: rgb(255 255 255 / 65%);
+}
+
+.chat .icon {
+  background: var(--ink-yellow);
+  color: var(--ink-black);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .channel {
+    transition: none;
+  }
+}

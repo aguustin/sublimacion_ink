@@ -1,15 +1,16 @@
 import type { Metadata } from "next";
+import { CreditCard, Receipt, Sparkles, Truck } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { cache } from "react";
 import { getPageUser } from "@/app/session";
-import { formatPesos, priceLabel } from "@/lib/money";
+import { priceLabel } from "@/lib/money";
 import { getProductBySlug, type PublicProductDetail } from "@/server/modules/catalog/catalog.service";
 import { productImageUrls } from "@/server/modules/catalog/product-images.service";
 import { getConfig } from "@/server/shared/config";
 import { AppError } from "@/server/shared/errors";
-import { AddToCart } from "./add-to-cart";
 import { ProductGallery } from "./product-gallery";
+import { PurchasePanel } from "./purchase-panel";
 import styles from "./product.module.css";
 
 export const dynamic = "force-dynamic";
@@ -95,40 +96,59 @@ export default async function ProductPage({ params }: { params: Params }) {
 
         <div className={styles.info}>
           <section className={styles.buy} aria-labelledby="product-name">
-            <p className={styles.category}>{product.categoria.nombre}</p>
+            <Link href={`/productos?categoria=${product.categoria.slug}`} className={styles.category}>
+              {product.categoria.nombre}
+            </Link>
             <h1 id="product-name">{product.nombre}</h1>
-            <p className={styles.price}>{priceLabel(product.precioDesdeCentavos, product.variasPrecios)}</p>
 
-            {product.tipo === "PERSONALIZABLE" && (
+            {product.tipo === "PERSONALIZABLE" ? (
               <div className={styles.custom}>
-                <p>Producto personalizable: lo cotizamos según tu diseño.</p>
-                <Link href={`/personalizados/nuevo?producto=${product.slug}`} className="ink-btn ink-btn-primary">
+                <p className={styles.quotePrice}>{priceLabel(product.precioDesdeCentavos, product.variasPrecios)}</p>
+                <p>Lo hacemos con tu diseño: contanos qué querés y te mandamos la cotización. Recién cuando la aceptes se paga la seña.</p>
+                {product.variantes.length > 0 && (
+                  <>
+                    <p className={styles.optionsLegend}>{product.variantes.length === 1 ? "Opción disponible" : "Opciones disponibles"}</p>
+                    <ul className={styles.chips}>
+                      {product.variantes.map((variant) => (
+                        <li key={variant.id}>{describe(variant)}</li>
+                      ))}
+                    </ul>
+                  </>
+                )}
+                <Link href={`/personalizados/nuevo?producto=${product.slug}`} className={`ink-btn ink-btn-primary ${styles.addButton}`}>
+                  <Sparkles aria-hidden="true" size={18} />
                   Pedí tu cotización
                 </Link>
               </div>
+            ) : (
+              <PurchasePanel
+                loggedIn={loggedIn}
+                options={product.variantes.map((variant) => ({
+                  id: variant.id,
+                  label: describe(variant),
+                  precioCentavos: variant.precioCentavos,
+                  disponible: variant.disponible,
+                }))}
+              />
             )}
 
-            <h2 className={styles.variantsTitle}>{product.variantes.length === 1 ? "Opción" : "Opciones"}</h2>
-            <ul className={styles.variants}>
-              {product.variantes.map((variant) => (
-                <li key={variant.id} className={styles.variant}>
-                  <span className={styles.variantInfo}>
-                    <span className={styles.variantName}>{describe(variant)}</span>
-                    <span className={styles.variantMeta}>
-                      {variant.precioCentavos === null ? "Consultá el precio" : formatPesos(variant.precioCentavos)}
-                      {variant.disponible !== null && (
-                        <>
-                          {" · "}
-                          {variant.disponible > 0 ? "Disponible" : <span className={styles.soldOut}>Sin stock</span>}
-                        </>
-                      )}
-                    </span>
-                  </span>
-                  {variant.disponible !== null && <AddToCart varianteId={variant.id} disponible={variant.disponible} loggedIn={loggedIn} />}
+            {/* Solo funcionalidades reales (F15). */}
+            <ul className={styles.perks}>
+              <li>
+                <CreditCard aria-hidden="true" size={18} />
+                {product.tipo === "PERSONALIZABLE" ? "Seña online o en efectivo en el local" : "Pagá online o en efectivo en el local"}
+              </li>
+              <li>
+                <Truck aria-hidden="true" size={18} />
+                Retiro en el local o envío cotizado
+              </li>
+              {product.tipo === "ESTANDAR" && (
+                <li>
+                  <Receipt aria-hidden="true" size={18} />
+                  Precios finales en pesos, con impuestos incluidos
                 </li>
-              ))}
+              )}
             </ul>
-            {product.tipo === "ESTANDAR" && <p className={styles.note}>Precios finales en pesos, con impuestos incluidos.</p>}
           </section>
 
           {product.descripcion && (

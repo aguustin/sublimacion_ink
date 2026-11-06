@@ -4,6 +4,8 @@ import { ChatThread } from "@/app/chat/chat-thread";
 import { requirePageUser } from "@/app/session";
 import { getClientMessages } from "@/server/modules/chat/chat.service";
 import { listCustomerOrders } from "@/server/modules/orders/orders.service";
+import { AccountNav } from "../account-nav";
+import styles from "../account-page.module.css";
 
 export const dynamic = "force-dynamic";
 
@@ -18,8 +20,11 @@ export default async function MessagesPage({ searchParams }: { searchParams: Pro
 
   return (
     <main>
-      <h1>Mensajes</h1>
-      <p>Consultá a la tienda sobre tus pedidos, diseños o cualquier duda. Podés adjuntar imágenes o PDF.</p>
+      <AccountNav />
+      <header className={styles.header}>
+        <h1>Mensajes</h1>
+        <p>Consultá a la tienda sobre tus pedidos, diseños o cualquier duda. Podés adjuntar imágenes o PDF.</p>
+      </header>
       <ChatThread
         endpoint="/api/conversation/messages"
         readEndpoint="/api/conversation/read"
@@ -28,6 +33,7 @@ export default async function MessagesPage({ searchParams }: { searchParams: Pro
         orders={orders.map(({ id, numero }) => ({ id, numero }))}
         orderBasePath="/pedidos/"
         initialOrderId={orders.some((order) => order.id === pedido) ? pedido : undefined}
+        heading={{ title: "Tienda INK", subtitle: "Te respondemos por acá", avatar: "INK" }}
       />
     </main>
   );

@@ -36,7 +36,10 @@ export default async function AdminConversationsPage() {
                   <span className={styles.email}>{cliente.email}</span>
                 </td>
                 <td data-label="Último mensaje">
-                  {ultimo && `${ultimo.deTienda ? "Vos: " : ""}${ultimo.texto.length > 80 ? `${ultimo.texto.slice(0, 80)}…` : ultimo.texto}`}
+                  {ultimo &&
+                    (ultimo.ocultoEn
+                      ? "(mensaje oculto)"
+                      : `${ultimo.deTienda ? "Vos: " : ""}${ultimo.texto.length > 80 ? `${ultimo.texto.slice(0, 80)}…` : ultimo.texto}`)}
                 </td>
                 <td data-label="Fecha">{ultimoMensajeEn && formatDateTime(ultimoMensajeEn)}</td>
                 <td data-label="Sin leer">{sinLeer > 0 && <StatusBadge family="wait">{String(sinLeer)}</StatusBadge>}</td>

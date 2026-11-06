@@ -1,0 +1,35 @@
+UX/UI REDESIGN — DESIGN DIRECTION
+
+Act as a world-class Senior Product Designer specialized in premium SaaS products and modern mobile applications.
+
+Analyze the existing screen and redesign it to achieve a polished, professional and high-end user experience.
+
+Visual direction
+Modern, elegant and minimal.
+Strong visual hierarchy.
+Sophisticated typography.
+Consistent spacing and alignment.
+Carefully selected color palette.
+High-quality component design.
+Subtle and purposeful micro-interactions.
+Excellent mobile experience.
+UX requirements
+Simplify user flows.
+Reduce unnecessary interactions.
+Improve information architecture.
+Make primary actions immediately recognizable.
+Improve readability and accessibility.
+Maintain consistency across the entire product.
+Implementation requirements
+Respect the existing technology stack.
+Reuse the established design system.
+Preserve all existing functionality.
+Implement reusable React components.
+Ensure responsive behavior.
+Quality control
+
+Do not stop after implementing the first version.
+
+Review the actual rendered interface, identify visual weaknesses, correct them and repeat until the result feels like a professionally designed production product.
+
+Avoid generic templates and superficial visual improvements.

@@ -1,0 +1,395 @@
+/*
+ * Inicio de la tienda (rediseño v1.38). La presentación ocupa todo el ancho, en negro, y continúa la
+ * barra superior; debajo, secciones abiertas sobre el fondo, sin tarjetas apiladas.
+ */
+
+.page {
+  display: grid;
+  gap: var(--space-7);
+}
+
+/* Las secciones del inicio no son tarjetas (el estilo base de <section> de la tienda sí lo es). */
+.page section {
+  margin: 0;
+  padding: 0;
+  border-radius: 0;
+  background: none;
+}
+
+/* ---------- Presentación ---------- */
+.page .hero {
+  /* Sangra hasta los bordes de la ventana y se pega a la barra superior. */
+  margin: -1.5rem calc(50% - 50vw) 0;
+  padding: var(--space-7) 1rem calc(var(--space-7) + var(--space-4));
+  overflow: hidden;
+  background: radial-gradient(ellipse 60% 80% at 85% 50%, rgb(245 214 39 / 14%), transparent 70%), var(--ink-black);
+  color: #fff;
+}
+
+.heroInner {
+  display: grid;
+  align-items: center;
+  gap: var(--space-6);
+  /* El mismo ancho útil que el contenido (que descuenta su relleno lateral): todo queda alineado. */
+  max-width: calc(var(--content-max) - 3rem);
+  margin: 0 auto;
+}
+
+.heroText {
+  display: grid;
+  gap: var(--space-4);
+  max-width: 40rem;
+}
+
+.heroEyebrow {
+  color: var(--ink-yellow);
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.hero h1 {
+  margin: 0;
+  font-size: clamp(2.25rem, 1.4rem + 4vw, 4.25rem);
+  line-height: 1.02;
+  letter-spacing: -0.035em;
+}
+
+.highlight {
+  color: var(--ink-yellow);
+}
+
+.heroLead {
+  max-width: 34rem;
+  margin: 0;
+  color: rgb(255 255 255 / 78%);
+  font-size: 1.1rem;
+  line-height: 1.6;
+}
+
+.heroActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-top: var(--space-2);
+}
+
+.heroActions :global(.ink-btn) {
+  min-height: 3.25rem;
+  margin: 0;
+  padding-inline: 1.5rem;
+  font-size: 1.02rem;
+}
+
+.heroSecondary {
+  border-color: rgb(255 255 255 / 40%);
+  color: #fff;
+}
+
+.heroSecondary:hover:not(:disabled) {
+  border-color: #fff;
+  background: rgb(255 255 255 / 8%);
+}
+
+.heroArt {
+  display: none;
+}
+
+.heroLogo {
+  display: block;
+  width: 100%;
+  height: auto;
+  transform: rotate(-8deg);
+  filter: drop-shadow(0 30px 60px rgb(0 0 0 / 45%));
+}
+
+@media (min-width: 640px) {
+  .page .hero {
+    margin-top: -2rem;
+    padding-inline: 1.5rem;
+  }
+}
+
+@media (min-width: 900px) {
+  .heroInner {
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+  }
+
+  .heroArt {
+    display: block;
+    justify-self: center;
+    width: min(100%, 22rem);
+  }
+
+  .page .hero {
+    padding-block: calc(var(--space-7) + var(--space-5));
+  }
+}
+
+/* ---------- Beneficios ---------- */
+/* En móvil, una sola tarjeta con separadores; en escritorio, tres tarjetas sobre el borde de la presentación. */
+.benefits {
+  display: grid;
+  margin: calc(-1 * var(--space-7) - var(--space-5)) 0 0;
+  padding: 0;
+  border-radius: var(--radius-lg);
+  background: var(--c-surface);
+  box-shadow: var(--c-shadow-float);
+  list-style: none;
+}
+
+.benefits li {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  margin: 0;
+  padding: var(--space-4) var(--space-5);
+}
+
+.benefits li + li {
+  border-top: 1px solid var(--c-border);
+}
+
+.benefits strong {
+  display: block;
+  font-size: 1rem;
+}
+
+.benefitIcon {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 14px;
+  background: var(--c-accent-soft);
+  color: var(--ink-black);
+}
+
+.benefitText {
+  display: block;
+  margin-top: 0.15rem;
+  color: var(--c-text-muted);
+  font-size: 0.92rem;
+  line-height: 1.45;
+}
+
+@media (min-width: 900px) {
+  .benefits {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--space-3);
+    position: relative;
+    z-index: 1;
+    background: none;
+    box-shadow: none;
+  }
+
+  .benefits li {
+    border-radius: var(--radius-lg);
+    background: var(--c-surface);
+    box-shadow: var(--c-shadow-float);
+  }
+
+  .benefits li + li {
+    border-top: none;
+  }
+}
+
+/* ---------- Secciones ---------- */
+.sectionHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-5);
+}
+
+.sectionHead h2 {
+  margin: 0;
+  font-size: clamp(1.6rem, 1.2rem + 1.5vw, 2.25rem);
+}
+
+.seeAll {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-height: var(--control-height);
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.seeAll:hover {
+  text-decoration: underline;
+  text-decoration-color: var(--c-accent);
+  text-decoration-thickness: 2px;
+}
+
+/* ---------- Categorías ---------- */
+.categories {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(45%, 14rem), 1fr));
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.categories li {
+  margin: 0;
+}
+
+.category {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  min-height: 4.5rem;
+  padding: var(--space-4);
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius-lg);
+  background: var(--c-surface);
+  color: var(--c-text);
+  font-size: 1.1rem;
+  font-weight: 900;
+  letter-spacing: -0.01em;
+  overflow-wrap: anywhere;
+  text-decoration: none;
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    transform 160ms ease;
+}
+
+.category:hover {
+  border-color: var(--ink-black);
+  box-shadow: var(--c-shadow-hover);
+  transform: translateY(-2px);
+}
+
+.categoryArrow {
+  flex: none;
+  padding: 0.35rem;
+  box-sizing: content-box;
+  border-radius: 999px;
+  background: var(--c-accent);
+  transition: transform 160ms ease;
+}
+
+.category:hover .categoryArrow {
+  transform: translateX(3px);
+}
+
+/* ---------- Personalizados ---------- */
+.page .custom {
+  display: grid;
+  justify-items: start;
+  gap: var(--space-5);
+  padding: var(--space-6) var(--space-5);
+  border-radius: 28px;
+  background: var(--c-accent);
+  color: var(--ink-black);
+}
+
+.customHead h2 {
+  margin: 0 0 var(--space-2);
+  font-size: clamp(1.75rem, 1.2rem + 2vw, 2.5rem);
+}
+
+.customHead p {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.customHead :global(.ink-eyebrow) {
+  color: var(--ink-black);
+  opacity: 0.7;
+}
+
+.steps {
+  display: grid;
+  gap: var(--space-3);
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: none;
+}
+
+/* En móvil, el número a la izquierda del texto; en escritorio, arriba. */
+.steps li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  column-gap: var(--space-3);
+  row-gap: var(--space-1);
+  margin: 0;
+  padding: var(--space-4);
+  border-radius: var(--radius-lg);
+  background: rgb(255 255 255 / 55%);
+}
+
+.steps li > :not(.stepNumber) {
+  grid-column: 2;
+}
+
+.steps strong {
+  font-size: 1.1rem;
+}
+
+.steps li > span:last-child {
+  line-height: 1.5;
+}
+
+.stepNumber {
+  display: grid;
+  grid-row: span 2;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 999px;
+  background: var(--ink-black);
+  color: var(--ink-yellow);
+  font-weight: 900;
+}
+
+.custom :global(.ink-btn-primary) {
+  background: var(--ink-black);
+  border-color: var(--ink-black);
+  color: #fff;
+}
+
+.custom :global(.ink-btn-primary):hover:not(:disabled) {
+  background: #000;
+}
+
+@media (min-width: 768px) {
+  .page .custom {
+    padding: var(--space-7);
+  }
+
+  .steps {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .steps li {
+    grid-template-columns: 1fr;
+    padding: var(--space-5);
+  }
+
+  .steps li > :not(.stepNumber) {
+    grid-column: 1;
+  }
+
+  .stepNumber {
+    grid-row: auto;
+    margin-bottom: var(--space-2);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .category,
+  .categoryArrow {
+    transition: none;
+  }
+}

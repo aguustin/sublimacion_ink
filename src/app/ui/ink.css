@@ -79,13 +79,16 @@
   --st-neutral-fg: #d0cec8;
 }
 
-/* Tienda: tema claro (Documento Maestro, sección 5). */
+/*
+ * Tienda: tema claro (Documento Maestro, sección 5). Rediseño v1.38: fondo blanco roto cálido en lugar
+ * del gris azulado, bordes y sombras más suaves. Los colores de texto y de los campos son los de F11.
+ */
 .ink-public {
-  --c-bg: #e3e8ef;
+  --c-bg: #f6f5f1;
   --c-surface: #ffffff;
-  --c-surface-raised: #f4f6f9;
+  --c-surface-raised: #f1efe9;
   color-scheme: light;
-  --c-border: #d3dae3;
+  --c-border: #e4e1d9;
   --c-text: #1c1b1b;
   --c-text-muted: #4b5563;
   --c-field-border: #7b8594;
@@ -96,8 +99,12 @@
   --c-field-bg: #ffffff;
   --c-field-bg-focus: #fffbe6;
   --c-backdrop: rgb(28 27 27 / 55%);
-  --c-shadow: 0 1px 2px rgb(28 27 27 / 6%), 0 6px 18px rgb(28 27 27 / 8%);
+  /* Tarjetas: un filete del color del borde y una sombra mínima; la sombra real, solo en lo que flota. */
+  --c-shadow: 0 0 0 1px var(--c-border), 0 1px 2px rgb(28 27 27 / 4%);
+  --c-shadow-float: 0 1px 2px rgb(28 27 27 / 4%), 0 8px 24px rgb(28 27 27 / 8%);
+  --c-shadow-hover: 0 2px 4px rgb(28 27 27 / 5%), 0 16px 40px rgb(28 27 27 / 10%);
   --c-shadow-deep: 0 24px 60px rgb(28 27 27 / 28%), 0 6px 18px rgb(28 27 27 / 14%);
+  --c-accent-soft: #fdf6cf;
 
   --st-wait-bg: #fff1c2;
   --st-wait-fg: #704f00;
@@ -161,6 +168,23 @@
   margin: var(--space-5) 0 var(--space-2);
   font-size: 1.1rem;
   font-weight: 700;
+}
+
+/* Tienda: títulos más compactos y con más peso, como en una marca editorial. */
+:where(.ink-public .ink-base :is(h1, h2)) {
+  font-weight: 900;
+  letter-spacing: -0.02em;
+}
+
+/* Etiqueta chica sobre un título de sección. */
+.ink-eyebrow {
+  display: block;
+  margin: 0 0 var(--space-2);
+  color: var(--c-text-muted);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
 }
 
 :where(.ink-base p) {
@@ -472,6 +496,103 @@
   width: 1.15rem;
   height: 1.15rem;
   accent-color: var(--c-accent);
+}
+
+/*
+ * Controles de la tienda (rediseño según diseno.txt): más altos y redondeados, borde suave que se
+ * oscurece al pasar el mouse, halo amarillo al enfocar y selects con su propia flecha. El panel no cambia.
+ */
+:where(.ink-public .ink-base label:not([class])) {
+  gap: 0.4rem;
+  font-size: 0.92rem;
+  font-weight: 700;
+}
+
+:where(.ink-public .ink-base input:not([type="checkbox"], [type="radio"], [type="hidden"], [type="file"])),
+:where(.ink-public .ink-base select),
+:where(.ink-public .ink-base textarea) {
+  min-height: 3.1rem;
+  padding: 0.7rem 1rem;
+  border: 1.5px solid #c9c4b8;
+  border-radius: 14px;
+  background-color: #fff;
+  font-size: 1rem;
+  font-weight: 500;
+  transition:
+    border-color 140ms ease,
+    box-shadow 140ms ease,
+    background-color 140ms ease;
+}
+
+:where(.ink-public .ink-base input:not([type="checkbox"], [type="radio"], [type="hidden"], [type="file"]):hover),
+:where(.ink-public .ink-base select:hover),
+:where(.ink-public .ink-base textarea:hover) {
+  border-color: #8f897d;
+}
+
+:where(.ink-public .ink-base :is(input, select, textarea)::placeholder) {
+  color: #8f897d;
+}
+
+:where(.ink-public .ink-base input:focus-visible),
+:where(.ink-public .ink-base select:focus-visible),
+:where(.ink-public .ink-base textarea:focus-visible) {
+  border-color: var(--ink-black);
+  background-color: #fff;
+  box-shadow: 0 0 0 4px rgb(245 214 39 / 55%);
+}
+
+/* Select: la flecha del navegador se reemplaza por una propia, igual en todos los sistemas. */
+:where(.ink-public .ink-base select) {
+  padding-right: 2.75rem;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%231c1b1b' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-position: right 1rem center;
+  background-repeat: no-repeat;
+  appearance: none;
+  cursor: pointer;
+}
+
+/* Archivos: zona punteada con un botón real. */
+:where(.ink-public .ink-base input[type="file"]) {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1.5px dashed #c9c4b8;
+  border-radius: 14px;
+  background: #fff;
+  color: var(--c-text-muted);
+  font: inherit;
+  font-size: 0.92rem;
+  cursor: pointer;
+}
+
+:where(.ink-public .ink-base input[type="file"]:hover) {
+  border-color: var(--ink-black);
+}
+
+.ink-public input[type="file"]::file-selector-button {
+  margin-right: 0.75rem;
+  padding: 0.55rem 1rem;
+  border: none;
+  border-radius: 999px;
+  background: var(--ink-black);
+  color: #fff;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+:where(.ink-public .ink-base :is(input[type="checkbox"], input[type="radio"])) {
+  accent-color: var(--ink-black);
+}
+
+:where(.ink-public .ink-base input[type="number"]) {
+  appearance: textfield;
+}
+
+/* Botón principal: un leve halo al pasar el mouse lo hace sentir vivo. */
+:where(.ink-public .ink-base button[type="submit"]:hover:not(:disabled)),
+.ink-public .ink-btn-primary:hover:not(:disabled) {
+  box-shadow: 0 6px 18px rgb(245 214 39 / 45%);
 }
 
 :where(.ink-base fieldset) {

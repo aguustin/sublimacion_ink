@@ -25,7 +25,7 @@ const TYPE_LABELS = { FACTURA: "factura", NOTA_CREDITO: "nota de crédito" } as 
 /**
  * Registro de un comprobante emitido fuera del sistema (RN-26, RF-56): la tienda factura con su
  * facturador y acá solo lo asienta en el pedido, con el PDF opcional que el cliente descarga.
- * [PROPUESTA] La nota de crédito va en un pedido cancelado que ya tiene factura.
+ * Confirmado en v1.36: la nota de crédito va en un pedido cancelado que ya tiene factura.
  */
 export async function registerReceipt(actor: Actor, pedidoId: string, input: unknown, db: Db = getDb()) {
   const data = receiptSchema.parse(input);

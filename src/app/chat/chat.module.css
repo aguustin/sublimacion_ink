@@ -1,26 +1,114 @@
-/* Chat cliente–tienda (F-07): burbujas propias a la derecha, de la otra parte a la izquierda. */
+/*
+ * Chat cliente–tienda (rediseño según diseno.txt): una tarjeta como las apps de mensajería, con
+ * encabezado, burbujas sobre un fondo suave y una barra de escritura abajo. Solo variables de tema:
+ * sirve en la tienda (clara) y en el panel (oscuro).
+ */
 
 .thread {
   display: grid;
-  gap: var(--space-4);
-  max-width: var(--field-wide-max);
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  max-width: 52rem;
+  overflow: hidden;
+  border: 1px solid var(--c-border);
+  border-radius: 24px;
+  background: var(--c-surface);
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* ---------- Encabezado ---------- */
+.head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-5);
+  border-bottom: 1px solid var(--c-border);
+}
+
+.avatar {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 999px;
+  background: var(--ink-black);
+  color: var(--ink-yellow);
+  font-size: 0.85rem;
+  font-weight: 900;
+  font-style: italic;
+}
+
+.headText {
+  display: grid;
+  line-height: 1.3;
+}
+
+.headText span {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  color: var(--c-text-muted);
+  font-size: 0.88rem;
+}
+
+.headText span::before {
+  content: "";
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 999px;
+  background: var(--st-done-fg);
+}
+
+/* ---------- Mensajes ---------- */
+.body {
+  min-height: 18rem;
+  max-height: min(60vh, 36rem);
+  overflow-y: auto;
+  background: var(--c-surface-raised);
 }
 
 .empty {
-  margin: 0;
-  padding: var(--card-padding);
-  border-radius: var(--radius-lg);
-  background: var(--c-surface);
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: var(--space-2);
+  min-height: 18rem;
+  padding: var(--space-6) var(--space-5);
   color: var(--c-text-muted);
+  text-align: center;
+}
+
+.empty p {
+  margin: 0;
+  color: var(--c-text);
+  font-size: 1.05rem;
+  font-weight: 800;
+}
+
+.emptyIcon {
+  display: grid;
+  place-items: center;
+  width: 3.5rem;
+  height: 3.5rem;
+  margin-bottom: var(--space-2);
+  border-radius: 999px;
+  background: var(--c-accent);
+  color: var(--ink-black);
 }
 
 .messages {
   display: grid;
-  gap: var(--space-3);
-  max-height: min(60vh, 40rem);
+  gap: var(--space-4);
   margin: 0;
-  padding: var(--space-2);
-  overflow-y: auto;
+  padding: var(--space-5);
   list-style: none;
 }
 
@@ -30,39 +118,57 @@
   gap: var(--space-1);
   max-width: min(85%, 32rem);
   margin: 0;
-  padding: var(--space-3) var(--space-4);
-  border-radius: var(--radius-lg);
-  overflow-wrap: anywhere;
 }
 
 .mine {
   justify-self: end;
-  border-bottom-right-radius: var(--space-1);
-  background: color-mix(in srgb, var(--c-accent) 22%, var(--c-surface));
+  justify-items: end;
 }
 
 .theirs {
   justify-self: start;
-  border-bottom-left-radius: var(--space-1);
-  background: var(--c-surface);
-  box-shadow: var(--c-shadow);
+  justify-items: start;
 }
 
-.author {
-  color: var(--c-text-muted);
-  font-size: 0.8rem;
-  font-weight: 800;
+.bubble {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  border-radius: 20px;
+  overflow-wrap: anywhere;
+}
+
+.mine .bubble {
+  border-bottom-right-radius: 6px;
+  background: var(--c-accent);
+  color: var(--ink-black);
+}
+
+.theirs .bubble {
+  border-bottom-left-radius: 6px;
+  background: var(--c-surface);
+  box-shadow: 0 0 0 1px var(--c-border);
 }
 
 .text {
   margin: 0;
+  line-height: 1.5;
   white-space: pre-wrap;
 }
 
 .order {
   justify-self: start;
-  font-size: 0.9rem;
-  font-weight: 700;
+  padding: 0.15rem 0.6rem;
+  border-radius: 999px;
+  background: rgb(28 27 27 / 8%);
+  color: inherit;
+  font-size: 0.85rem;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.order:hover {
+  text-decoration: underline;
 }
 
 .attachments {
@@ -72,65 +178,136 @@
 }
 
 .attachments button {
-  min-height: 2.25rem;
+  min-height: 2.1rem;
   margin: 0;
-  padding: 0.3rem 0.8rem;
+  padding: 0.25rem 0.8rem;
+  border-color: currentColor;
   font-size: 0.85rem;
 }
 
 .meta {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
   color: var(--c-text-muted);
-  font-size: 0.8rem;
+  font-size: 0.78rem;
+  font-weight: 600;
 }
 
+/* Mensaje oculto por la tienda (16.2). */
+.hidden .bubble {
+  opacity: 0.65;
+}
+
+.hidden .text {
+  font-style: italic;
+}
+
+.hiddenNote {
+  margin: 0;
+  color: var(--st-error-fg);
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.hide {
+  min-height: 0;
+  margin: 0;
+  padding: 0 0.4rem;
+  border: none;
+  background: none;
+  color: inherit;
+  font-size: 0.78rem;
+  text-decoration: underline;
+}
+
+/* ---------- Escritura ---------- */
 .composer {
   display: grid;
   gap: var(--space-3);
-  padding: var(--card-padding);
-  border-radius: var(--radius-lg);
+  margin: 0;
+  padding: var(--space-4);
+  border-top: 1px solid var(--c-border);
   background: var(--c-surface);
-  box-shadow: var(--c-shadow);
 }
 
 .composer [role="alert"] {
   margin: 0;
-}
-
-.textLabel {
-  display: grid;
-  gap: var(--space-1);
+  color: var(--st-error-fg);
   font-weight: 700;
 }
 
-.textLabel textarea {
+.composer .input {
   width: 100%;
   max-width: none;
+  min-height: 3.25rem;
+  resize: vertical;
+  border-radius: 18px;
 }
 
-.options {
+.bar {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-3);
+  align-items: center;
+  gap: var(--space-2);
 }
 
-.options label {
-  flex: 1 1 var(--field-min);
-  margin: 0;
-}
-
-.options input[type="file"] {
-  width: 100%;
-}
-
-.attachLabel {
+.attach {
   display: inline-flex;
   align-items: center;
-  gap: var(--space-1);
+  gap: var(--space-2);
+  min-height: 2.6rem;
+  margin: 0;
+  padding: 0 1rem;
+  border: 1.5px solid var(--c-border);
+  border-radius: 999px;
+  color: var(--c-text);
+  font-size: 0.92rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.attach:hover,
+.attach:focus-within {
+  border-color: var(--c-text);
+}
+
+.composer .orderSelect {
+  width: auto;
+  min-height: 2.6rem;
+  padding-block: 0;
+  border-radius: 999px;
+  font-size: 0.92rem;
+  font-weight: 700;
 }
 
 .send {
-  justify-self: end;
-  border-color: var(--c-accent);
-  background: var(--c-accent);
-  color: var(--c-on-accent);
+  margin: 0 0 0 auto;
+  min-height: 2.75rem;
+  padding: 0 1.3rem;
+  border-color: var(--ink-black);
+  background: var(--ink-black);
+  color: #fff;
+}
+
+.send:hover:not(:disabled) {
+  background: #000;
+  box-shadow: none;
+}
+
+@media (max-width: 479px) {
+  .sendLabel {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+  }
+
+  .send {
+    width: 2.75rem;
+    padding: 0;
+    border-radius: 999px;
+  }
 }

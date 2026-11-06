@@ -16,7 +16,7 @@ const compensationSchema = z.strictObject({
 /**
  * Compensación por demora en el envío (RN-04, D-05, T-107): la carga el admin a mano, con motivo,
  * importe y quién la autorizó, y genera su devolución. No hay cálculo automático ni umbral.
- * [PROPUESTA T-107] El importe no puede superar lo pagado que todavía no se devolvió.
+ * T-107 (confirmado en v1.36): el importe no puede superar lo pagado que todavía no se devolvió.
  */
 export async function registerDelayCompensation(actor: Actor, pedidoId: string, input: unknown, db: Db = getDb()) {
   const data = compensationSchema.parse(input);

@@ -1,0 +1,109 @@
+/* Pestañas del área del cliente (rediseño según diseno.txt): píldoras, la activa en amarillo. */
+
+.tabs {
+  margin: 0 0 var(--space-5);
+}
+
+.tabs ul {
+  display: inline-flex;
+  gap: var(--space-1);
+  max-width: 100%;
+  margin: 0;
+  padding: 0.3rem;
+  overflow-x: auto;
+  border-radius: 999px;
+  background: var(--c-surface);
+  box-shadow: 0 0 0 1px var(--c-border);
+  list-style: none;
+  scrollbar-width: none;
+}
+
+.tabs li {
+  flex: none;
+  margin: 0;
+}
+
+.tab {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 2.6rem;
+  padding: 0 1.1rem;
+  border-radius: 999px;
+  color: var(--c-text-muted);
+  font-weight: 800;
+  text-decoration: none;
+  white-space: nowrap;
+  transition:
+    background-color 140ms ease,
+    color 140ms ease;
+}
+
+.tab:hover {
+  background: var(--c-surface-raised);
+  color: var(--c-text);
+}
+
+.tab[aria-current="page"] {
+  background: var(--ink-yellow);
+  color: var(--ink-black);
+}
+
+.badge {
+  display: inline-grid;
+  place-items: center;
+  min-width: 1.35rem;
+  height: 1.35rem;
+  padding: 0 0.35rem;
+  border-radius: 999px;
+  background: var(--ink-black);
+  color: var(--ink-yellow);
+  font-size: 0.75rem;
+  font-weight: 900;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* Pantallas angostas: las cuatro pestañas comparten el ancho, con el ícono arriba del rótulo. */
+@media (max-width: 479px) {
+  .tabs ul {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    width: 100%;
+    border-radius: 20px;
+  }
+
+  .tab {
+    flex-direction: column;
+    justify-content: center;
+    gap: 0.15rem;
+    width: 100%;
+    min-height: 3.4rem;
+    padding: 0 var(--space-1);
+    border-radius: 16px;
+    font-size: 0.78rem;
+  }
+
+  .badge {
+    position: absolute;
+    top: 0.2rem;
+    left: calc(50% + 0.35rem);
+    min-width: 1.1rem;
+    height: 1.1rem;
+    font-size: 0.68rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tab {
+    transition: none;
+  }
+}

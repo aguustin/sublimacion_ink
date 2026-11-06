@@ -1,200 +1,277 @@
-/* Catálogo (Documento Maestro, 5.3): filtros laterales en escritorio, desplegables en móvil, y cuadrícula de tarjetas blancas. */
+/*
+ * Catálogo (rediseño según diseno.txt): encabezado con buscador grande, filtros rápidos de un toque
+ * (categorías y tipo), «Más filtros» desplegable y los productos a todo el ancho.
+ */
 
 .page {
   display: grid;
-  gap: 1.25rem;
+  /* La columna nunca crece más que la pantalla, aunque las píldoras no se partan en líneas. */
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-5);
 }
 
-.heading {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 0.5rem 1rem;
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
 }
 
-.heading h1 {
+/* ---------- Encabezado ---------- */
+.hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-5);
+  align-items: end;
+  padding: var(--space-6) var(--space-5);
+  border-radius: 28px;
+  background: radial-gradient(circle at 92% 10%, rgb(245 214 39 / 55%), transparent 45%), var(--c-accent-soft);
+}
+
+.heroText h1 {
   margin: 0;
+  font-size: clamp(2.25rem, 1.6rem + 2.5vw, 3.5rem);
+  line-height: 1.02;
+  letter-spacing: -0.035em;
 }
 
 .count {
-  margin: 0;
+  margin: var(--space-2) 0 0;
   color: var(--c-text-muted);
+  font-weight: 700;
+}
+
+.searchForm {
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin: 0;
+  padding: 0.35rem;
+  border: 2px solid transparent;
+  border-radius: 999px;
+  background: #fff;
+  box-shadow: var(--c-shadow-float);
+  transition:
+    border-color 140ms ease,
+    box-shadow 140ms ease;
+}
+
+.searchForm:focus-within {
+  border-color: var(--ink-black);
+  box-shadow: 0 0 0 4px rgb(245 214 39 / 55%);
+}
+
+.searchIcon {
+  flex: none;
+  margin: 0 0.25rem 0 0.75rem;
+}
+
+/* El campo vive dentro de la píldora: sin borde ni halo propios. */
+.page .searchInput {
+  flex: 1;
+  min-width: 0;
+  min-height: 2.75rem;
+  padding: 0 0.5rem;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
   font-weight: 600;
 }
 
-.layout {
-  display: grid;
-  gap: 1.5rem;
-  align-items: start;
-}
-
-/* ---------- Filtros ---------- */
-.filters {
-  border-radius: var(--radius);
-  background: var(--c-surface);
-  box-shadow: var(--c-shadow);
-}
-
-.filtersSummary {
-  display: flex;
+.searchButton {
+  flex: none;
+  min-height: 2.75rem;
   margin: 0;
-  font-size: 1rem;
-  align-items: center;
-  gap: 0.5rem;
-  min-height: 48px;
-  padding: 0.75rem 1.1rem;
-  font-weight: 800;
-  cursor: pointer;
-  list-style: none;
+  border-color: var(--ink-black);
+  background: var(--ink-black);
+  color: #fff;
 }
 
-.filtersSummary::-webkit-details-marker {
+.searchButton:hover:not(:disabled) {
+  background: #000;
+}
+
+@media (min-width: 900px) {
+  .hero {
+    grid-template-columns: minmax(0, 1fr) minmax(20rem, 28rem);
+    padding: var(--space-7) var(--space-6);
+  }
+}
+
+/* ---------- Filtros rápidos ---------- */
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.chips {
+  display: flex;
+  gap: var(--space-2);
+  max-width: 100%;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.chip,
+.segment {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  min-height: 2.6rem;
+  padding: 0 1.1rem;
+  border: 1.5px solid var(--c-border);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--c-text);
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+  transition:
+    border-color 140ms ease,
+    background-color 140ms ease,
+    transform 140ms ease;
+}
+
+.chip:hover,
+.segment:hover {
+  border-color: var(--ink-black);
+  transform: translateY(-1px);
+}
+
+.chip[aria-current="page"] {
+  border-color: var(--ink-black);
+  background: var(--ink-black);
+  color: #fff;
+}
+
+/* Tipo: control segmentado, una sola opción a la vez. */
+.segmented {
+  display: inline-flex;
+  max-width: 100%;
+  padding: 0.25rem;
+  overflow-x: auto;
+  border-radius: 999px;
+  background: var(--c-surface-raised);
+  scrollbar-width: none;
+}
+
+.segment {
+  min-height: 2.2rem;
+  border: none;
+  background: transparent;
+}
+
+.segment:hover {
+  transform: none;
+}
+
+.segment[aria-current="page"] {
+  background: var(--ink-yellow);
+  box-shadow: 0 1px 2px rgb(28 27 27 / 12%);
+}
+
+/* ---------- Más filtros ---------- */
+.more {
+  margin-left: auto;
+}
+
+.moreSummary {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 2.6rem;
+  padding: 0 1.1rem;
+  border: 1.5px solid var(--c-border);
+  border-radius: 999px;
+  background: #fff;
+  font-weight: 700;
+  list-style: none;
+  cursor: pointer;
+}
+
+.moreSummary::-webkit-details-marker {
   display: none;
 }
 
-.filtersForm {
-  display: grid;
-  /* En móvil y tablet, los filtros se reparten en columnas; en el panel lateral queda una sola. */
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, var(--field-min)), 1fr));
-  gap: var(--form-gap-y) var(--form-gap-x);
-  margin: 0;
-  padding: 0 var(--space-4) var(--space-4);
+.moreSummary:hover,
+.more[open] .moreSummary {
+  border-color: var(--ink-black);
 }
 
-.filtersForm label {
+.moreCount {
+  display: inline-grid;
+  place-items: center;
+  min-width: 1.35rem;
+  height: 1.35rem;
+  border-radius: 999px;
+  background: var(--ink-yellow);
+  font-size: 0.75rem;
+  font-weight: 900;
+}
+
+/* Cuando está abierto, el panel ocupa toda la fila debajo de los filtros rápidos. */
+.more[open] {
+  flex-basis: 100%;
+  margin-left: 0;
+}
+
+.moreForm {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 13rem), 1fr));
+  align-items: end;
+  gap: var(--space-4);
+  margin: var(--space-3) 0 0;
+  padding: var(--space-5);
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius-lg);
+  background: #fff;
+}
+
+.moreForm label {
   max-width: none;
   margin: 0;
 }
 
-.filtersForm input,
-.filtersForm select {
-  width: 100%;
-}
-
-.priceRange {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.6rem;
-}
-
-.filterActions {
-  grid-column: 1 / -1;
+.moreActions {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 0.75rem 1rem;
+  gap: var(--space-3);
+}
+
+.moreActions button {
+  margin: 0;
+}
+
+.clear {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  color: var(--c-text-muted);
+  font-weight: 700;
 }
 
 /* ---------- Resultados ---------- */
 .results {
   min-width: 0;
-  margin: 0;
+  margin: var(--space-2) 0 0;
   padding: 0;
+  border-radius: 0;
   background: none;
-}
-
-.grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr));
-  gap: 1rem;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.grid li + li {
-  margin: 0;
-}
-
-.card {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  overflow: hidden;
-  border-radius: var(--radius);
-  background: var(--c-surface);
-  box-shadow: var(--c-shadow);
-  color: var(--c-text);
-  text-decoration: none;
-  transition:
-    transform 140ms ease,
-    box-shadow 140ms ease;
-}
-
-.card:hover {
-  transform: translateY(-3px);
-  box-shadow: var(--c-shadow-deep);
-}
-
-/* La fotografía domina la tarjeta. */
-.media {
-  display: grid;
-  place-items: center;
-  aspect-ratio: 4 / 3;
-  background: var(--c-surface-raised);
-}
-
-.image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.noImage {
-  color: var(--c-field-border);
-}
-
-.body {
-  display: grid;
-  gap: 0.2rem;
-  padding: 0.9rem 1rem 1.1rem;
-}
-
-.category {
-  color: var(--c-text-muted);
-  font-size: 0.82rem;
-  font-weight: 700;
-}
-
-.name {
-  font-size: 1.05rem;
-  font-weight: 800;
-  line-height: 1.3;
-}
-
-.price {
-  font-weight: 800;
-}
-
-.tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.35rem;
-  margin-top: 0.25rem;
-}
-
-.tags:empty {
-  display: none;
-}
-
-/* Atributos útiles, no estados (sección 7, badges). */
-.tag {
-  padding: 0.1rem 0.55rem;
-  border: 1px solid var(--c-field-border);
-  border-radius: 999px;
-  color: var(--c-text-muted);
-  font-size: 0.78rem;
-  font-weight: 700;
 }
 
 .empty {
   display: grid;
   justify-items: center;
-  gap: 0.75rem;
-  padding: 2.5rem 1.5rem;
-  border-radius: var(--radius);
-  background: var(--c-surface);
+  gap: var(--space-3);
+  padding: var(--space-7) var(--space-5);
+  border: 1px dashed var(--c-border);
+  border-radius: var(--radius-lg);
   color: var(--c-text-muted);
   text-align: center;
 }
@@ -209,8 +286,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
-  margin-top: 1.5rem;
+  gap: var(--space-4);
+  margin-top: var(--space-6);
   font-weight: 700;
 }
 
@@ -218,36 +295,39 @@
   text-decoration: none;
 }
 
-/* Escritorio: panel lateral siempre visible y cuatro columnas cuando hay espacio. */
-@media (min-width: 900px) {
-  .layout {
-    grid-template-columns: 260px minmax(0, 1fr);
+/* Móvil: el tipo reparte el ancho en tres partes iguales y «Más filtros» va a la izquierda. */
+@media (max-width: 639px) {
+  .segmented {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    width: 100%;
+    border-radius: 18px;
   }
 
-  .filters {
-    position: sticky;
-    top: 96px;
+  .segment {
+    justify-content: center;
+    min-height: 2.6rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 14px;
+    font-size: 0.85rem;
+    line-height: 1.2;
+    text-align: center;
+    white-space: normal;
   }
 
-  /* En escritorio el panel queda siempre abierto, sin JavaScript: el contenido del <details> se muestra igual. */
-  .filters::details-content {
-    content-visibility: visible;
-    display: block;
+  .more {
+    margin-left: 0;
   }
 
-  .filtersSummary {
-    pointer-events: none;
+  .hero {
+    padding: var(--space-5) var(--space-4);
   }
 }
 
-@media (min-width: 1200px) {
-  .grid {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-  }
-}
-
-@media (min-width: 1800px) {
-  .grid {
-    grid-template-columns: repeat(5, minmax(0, 1fr));
+@media (prefers-reduced-motion: reduce) {
+  .chip,
+  .segment,
+  .searchForm {
+    transition: none;
   }
 }

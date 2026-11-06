@@ -1,8 +1,9 @@
 import sharp from "sharp";
 import { afterAll, beforeEach, describe, expect, it } from "vitest";
 import { GET as storeMessagesGet, POST as storeMessagesPost } from "@/app/api/admin/conversations/[clienteId]/messages/route";
+import { POST as hideRoute } from "@/app/api/admin/messages/[id]/hide/route";
 import { POST as register } from "@/app/api/auth/register/route";
-import { POST as clientMessagesPost } from "@/app/api/conversation/messages/route";
+import { GET as clientMessagesGet, POST as clientMessagesPost } from "@/app/api/conversation/messages/route";
 import { POST as clientReadRoute } from "@/app/api/conversation/read/route";
 import { GET as fileUrlRoute } from "@/app/api/files/[id]/url/route";
 import { POST as uploadRoute } from "@/app/api/files/route";
@@ -114,6 +115,24 @@ describe("chat: conversación y avisos", () => {
       params({ clienteId: ana.id }),
     );
     expect((await conversation.json()).mensajes).toHaveLength(5);
+  });
+});
+
+describe("chat: mensajes ocultos", () => {
+  it("el cliente no recibe el texto ni puede abrir el adjunto de un mensaje oculto; no se oculta dos veces", async () => {
+    const file = await upload(admin, pdf(), "privado.pdf", "application/pdf");
+    const sent = await storeSend(admin, ana.id, { texto: "Dato que no debía ir", archivoIds: [file] });
+    const id = (await sent.json()).mensaje.id as string;
+    const hide = () =>
+      hideRoute(apiRequest(`/api/admin/messages/${id}/hide`, { cookie: admin.cookie, body: { motivo: "Error de la tienda" } }), params({ id }));
+    expect((await hide()).status).toBe(200);
+    expect((await (await hide()).json()).codigo).toBe("MENSAJE_YA_OCULTO");
+
+    const { mensajes } = await (await clientMessagesGet(apiRequest("/api/conversation/messages", { method: "GET", cookie: ana.cookie }))).json();
+    expect(mensajes[0]).toMatchObject({ texto: "", adjuntos: [], motivoOculto: null });
+    expect(JSON.stringify(mensajes)).not.toContain("Dato que no debía ir");
+    expect((await fileUrl(ana, file)).status).toBe(404);
+    expect((await fileUrl(admin, file)).status).toBe(200);
   });
 });
 

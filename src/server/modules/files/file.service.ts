@@ -123,7 +123,8 @@ async function findAccessible(db: Db, user: SessionUser, id: string) {
             // Comprobantes de sus pedidos (INC-12, RN-26).
             { comprobante: { pedido: { clienteId: user.id } } },
             // Adjuntos de la tienda en su conversación (INC-13).
-            { adjuntoMensaje: { mensaje: { conversacion: { clienteId: user.id } } } },
+            // Un mensaje oculto por la tienda deja de dar acceso a sus adjuntos (16.2).
+            { adjuntoMensaje: { mensaje: { conversacion: { clienteId: user.id }, ocultoEn: null } } },
           ],
         };
   const archivo = isUuid(id) ? await db.archivo.findFirst({ where: { id, estado: "ACTIVO", ...access } }) : null;
@@ -135,7 +136,11 @@ async function findAccessible(db: Db, user: SessionUser, id: string) {
  * URL firmada de corta duración, generada solo después de autorizar. Con `miniatura`, la de la
  * miniatura si existe (INC-07); si no, la del original.
  */
-export async function getFileUrl(user: SessionUser, id: string, { db = getDb(), storage = getStorage(), miniatura = false }: Options & { miniatura?: boolean } = {}) {
+export async function getFileUrl(
+  user: SessionUser,
+  id: string,
+  { db = getDb(), storage = getStorage(), miniatura = false }: Options & { miniatura?: boolean } = {},
+) {
   const archivo = await findAccessible(db, user, id);
   const expiresInSeconds = getConfig().FILES_URL_TTL_SECONDS;
   const thumbnail = miniatura && archivo.claveMiniatura;

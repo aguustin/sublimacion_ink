@@ -8,6 +8,7 @@ import { formatDateTime } from "@/lib/orders";
 import { ORDER_FAMILY, orderPublicLabel } from "@/lib/status";
 import { listCustomerOrders } from "@/server/modules/orders/orders.service";
 import styles from "./orders.module.css";
+import { AccountNav } from "../account-nav";
 
 export const dynamic = "force-dynamic";
 
@@ -20,6 +21,7 @@ export default async function OrdersPage() {
 
   return (
     <main>
+      <AccountNav />
       <h1>Mis pedidos</h1>
       {orders.length === 0 ? (
         <div className={styles.empty}>

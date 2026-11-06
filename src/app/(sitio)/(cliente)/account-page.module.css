@@ -1,0 +1,18 @@
+/* Encabezado de las secciones del área del cliente (mensajes, cupones, cuenta). */
+
+.header {
+  margin-bottom: var(--space-5);
+}
+
+.header h1 {
+  margin: 0 0 var(--space-2);
+  font-size: clamp(2rem, 1.5rem + 2vw, 2.75rem);
+  letter-spacing: -0.03em;
+}
+
+.header p {
+  max-width: 40rem;
+  margin: 0;
+  color: var(--c-text-muted);
+  font-size: 1.02rem;
+}

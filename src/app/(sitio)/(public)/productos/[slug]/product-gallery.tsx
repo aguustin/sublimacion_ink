@@ -1,6 +1,6 @@
 "use client";
 
-import { ImageOff } from "lucide-react";
+import { InkLogo } from "@/app/ui/ink-logo";
 import { useState } from "react";
 import styles from "./product.module.css";
 
@@ -12,11 +12,11 @@ export function ProductGallery({ images, name }: { images: string[]; name: strin
   const [current, setCurrent] = useState(0);
 
   if (images.length === 0) {
-    // Sin fotos cargadas: una superficie neutra, sin imágenes inventadas.
+    // Sin fotos cargadas: la marca en tono suave, sin imágenes inventadas.
     return (
       <div className={styles.gallery}>
         <div className={`${styles.mainImage} ${styles.noImage}`}>
-          <ImageOff aria-hidden="true" size={48} />
+          <InkLogo variant="principal" className={styles.noImageLogo} title="" />
           <span>Sin fotos por ahora</span>
         </div>
       </div>

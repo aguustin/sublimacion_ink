@@ -36,11 +36,22 @@ const messageSelect = {
   texto: true,
   creadoEn: true,
   leidoEn: true,
+  ocultoEn: true,
+  motivoOculto: true,
   pedido: { select: { id: true, numero: true } },
   adjuntos: { orderBy: { orden: "asc" }, select: { archivo: { select: { id: true, nombreOriginal: true, tipoMimeDetectado: true } } } },
 } satisfies Prisma.MensajeSelect;
 
 export type ChatMessage = Prisma.MensajeGetPayload<{ select: typeof messageSelect }>;
+
+/**
+ * Lo que ve el cliente de un mensaje (16.2): de uno oculto por la tienda, solo que existió; ni el
+ * texto, ni los adjuntos, ni el pedido, ni el motivo, que es interno.
+ */
+function forClient(message: ChatMessage): ChatMessage {
+  if (!message.ocultoEn) return { ...message, motivoOculto: null };
+  return { ...message, texto: "", pedido: null, adjuntos: [], motivoOculto: null };
+}
 
 async function latestMessages(db: Db | Tx, conversacionId: string | undefined): Promise<ChatMessage[]> {
   if (!conversacionId) return [];
@@ -108,12 +119,12 @@ async function createMessage(tx: Tx, clienteId: string, author: SessionUser, deT
 export async function getClientMessages(user: SessionUser, db: Db = getDb()) {
   assertClient(user);
   const conversation = await db.conversacion.findUnique({ where: { clienteId: user.id }, select: { id: true } });
-  return latestMessages(db, conversation?.id);
+  return (await latestMessages(db, conversation?.id)).map(forClient);
 }
 
 /**
  * El cliente escribe a la tienda. Se avisa a la administración solo con el primer mensaje sin leer
- * ([PROPUESTA]): una ráfaga de mensajes no manda un correo por cada uno.
+ * (confirmado en v1.36): una ráfaga de mensajes no manda un correo por cada uno.
  */
 export async function sendClientMessage(user: SessionUser, input: unknown, db: Db = getDb()) {
   assertClient(user);
@@ -148,7 +159,7 @@ export async function markReadByClient(user: SessionUser, db: Db = getDb()) {
 
 /** Mensajes de la tienda que el cliente todavía no leyó (indicador de la cuenta). */
 export function unreadForClient(clienteId: string, db: Db = getDb()) {
-  return db.mensaje.count({ where: { conversacion: { clienteId }, deTienda: true, leidoEn: null } });
+  return db.mensaje.count({ where: { conversacion: { clienteId }, deTienda: true, leidoEn: null, ocultoEn: null } });
 }
 
 async function findCustomer(db: Db | Tx, clienteId: string) {
@@ -206,7 +217,7 @@ export async function listConversations(db: Db = getDb()) {
     select: {
       ultimoMensajeEn: true,
       cliente: { select: { id: true, nombre: true, email: true } },
-      mensajes: { orderBy: { creadoEn: "desc" }, take: 1, select: { texto: true, deTienda: true } },
+      mensajes: { orderBy: { creadoEn: "desc" }, take: 1, select: { texto: true, deTienda: true, ocultoEn: true } },
       _count: { select: { mensajes: { where: { deTienda: false, leidoEn: null } } } },
     },
   });
@@ -221,4 +232,33 @@ export async function listConversations(db: Db = getDb()) {
 /** Mensajes de clientes sin leer por la tienda (panel inicial, RF-45). */
 export function unreadForStore(db: Db = getDb()) {
   return db.mensaje.count({ where: { deTienda: false, leidoEn: null } });
+}
+
+const hideSchema = z.strictObject({
+  motivo: z.string("Indicá el motivo.").trim().min(1, "Indicá el motivo.").max(500),
+});
+
+/**
+ * La tienda oculta un mensaje (16.2), de cualquiera de los dos lados, con motivo auditado. No se
+ * borra: queda para la tienda con el motivo; el cliente ve solo que hubo un mensaje oculto.
+ */
+export async function hideMessage(admin: SessionUser, mensajeId: string, input: unknown, db: Db = getDb()) {
+  const { motivo } = hideSchema.parse(input);
+  return db.$transaction(async (tx) => {
+    const message = isUuid(mensajeId) ? await tx.mensaje.findUnique({ where: { id: mensajeId }, select: { id: true, conversacionId: true } }) : null;
+    if (!message) throw new AppError("MENSAJE_NO_ENCONTRADO", "No encontramos ese mensaje.", 404);
+    const hidden = await tx.mensaje.updateMany({
+      where: { id: message.id, ocultoEn: null },
+      data: { ocultoEn: new Date(), ocultoPorId: admin.id, motivoOculto: motivo },
+    });
+    if (hidden.count === 0) throw new AppError("MENSAJE_YA_OCULTO", "Ese mensaje ya está oculto.", 409);
+    await recordAudit(tx, {
+      actorId: admin.id,
+      accion: "MENSAJE_OCULTADO",
+      entidad: "conversacion",
+      entidadId: message.conversacionId,
+      datos: { mensajeId: message.id, motivo },
+    });
+    return { ocultado: true };
+  });
 }

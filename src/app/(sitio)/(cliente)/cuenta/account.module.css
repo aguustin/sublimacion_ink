@@ -1,13 +1,49 @@
-/* Mi cuenta (Documento Maestro, 5.6). */
+/* Mi cuenta (rediseño según diseno.txt): perfil con avatar, aviso de email y tarjetas de datos y direcciones. */
 
 .page {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--space-5);
-  max-width: 880px;
 }
 
-.header h1 {
-  margin-bottom: var(--space-2);
+.page > nav {
+  margin-bottom: 0;
+}
+
+/* ---------- Perfil ---------- */
+.profile {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-4) var(--space-5);
+  padding: var(--space-5);
+  border-radius: 24px;
+  background: radial-gradient(circle at 95% 0%, rgb(245 214 39 / 55%), transparent 50%), var(--c-accent-soft);
+}
+
+.avatar {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 4.5rem;
+  height: 4.5rem;
+  border-radius: 999px;
+  background: var(--ink-black);
+  color: var(--ink-yellow);
+  font-size: 1.5rem;
+  font-weight: 900;
+}
+
+.profileText {
+  flex: 1 1 16rem;
+  min-width: 0;
+}
+
+.profileText h1 {
+  margin: 0 0 var(--space-1);
+  font-size: clamp(1.75rem, 1.3rem + 1.8vw, 2.5rem);
+  letter-spacing: -0.03em;
+  overflow-wrap: anywhere;
 }
 
 .email {
@@ -20,52 +56,101 @@
   font-weight: 600;
 }
 
-.shortcuts {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
-  gap: var(--space-3);
+.logout {
+  margin: 0;
+  background: #fff;
 }
 
-.shortcut {
+/* ---------- Aviso de email ---------- */
+.verify {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: var(--space-3);
-  min-height: 3.5rem;
-  padding: var(--space-3) var(--space-4);
-  border-radius: var(--radius);
+  justify-content: space-between;
+  gap: var(--space-3) var(--space-5);
+  padding: var(--space-4) var(--space-5);
+  border: 1.5px solid var(--c-accent);
+  border-radius: var(--radius-lg);
   background: var(--c-surface);
-  box-shadow: var(--c-shadow);
-  color: var(--c-text);
-  font-weight: 800;
-  text-decoration: none;
-  transition: box-shadow 140ms ease;
 }
 
-.shortcut:hover {
-  box-shadow: var(--c-shadow-deep);
+.verify strong {
+  font-size: 1.05rem;
 }
 
-.chevron {
-  margin-left: auto;
+.verify p {
+  margin: var(--space-1) 0 0;
   color: var(--c-text-muted);
+}
+
+/* ---------- Tarjetas ---------- */
+.grid {
+  display: grid;
+  gap: var(--space-5);
+  align-items: start;
+}
+
+@media (min-width: 900px) {
+  .grid {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
+  }
 }
 
 .card {
   margin: 0;
-  box-shadow: var(--c-shadow);
+  padding: var(--space-5);
+  border: 1px solid var(--c-border);
+  border-radius: 24px;
 }
 
-.card h2 {
-  margin: 0 0 var(--space-4);
+.cardHead {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-5);
+}
+
+.cardHead h2 {
+  margin: 0;
   font-size: 1.2rem;
+  letter-spacing: -0.01em;
 }
 
+.cardIcon {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 12px;
+  background: var(--c-accent-soft);
+}
+
+/* Datos: etiqueta chica arriba y valor abajo, como una ficha. */
 .data {
-  margin: 0 0 var(--space-4);
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-1);
+  margin: 0 0 var(--space-5);
+}
+
+.data dt {
+  color: var(--c-text-muted);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.data dd {
+  margin: 0 0 var(--space-3);
+  font-size: 1.05rem;
+  font-weight: 700;
 }
 
 .muted {
   color: var(--c-text-muted);
+  font-weight: 500;
 }
 
 .actions {
@@ -81,14 +166,17 @@
 
 .actions [role="status"] {
   margin: 0;
+  color: var(--st-done-fg);
+  font-weight: 700;
 }
 
 .fieldError {
   color: var(--st-error-fg);
-  font-size: 0.9rem;
+  font-size: 0.88rem;
   font-weight: 700;
 }
 
+/* ---------- Direcciones ---------- */
 .addresses {
   display: grid;
   gap: var(--space-3);
@@ -107,21 +195,20 @@
   align-items: flex-start;
   gap: var(--space-3);
   padding: var(--space-4);
-  border: 1px solid var(--c-border);
-  border-radius: var(--radius);
+  border-radius: var(--radius-lg);
+  background: var(--c-surface-raised);
 }
 
 .addressIcon {
   flex: none;
   margin-top: 0.15rem;
-  color: var(--c-text-muted);
 }
 
 .addressText {
   display: grid;
-  flex: 1 1 14rem;
+  flex: 1 1 12rem;
   gap: 0.1rem;
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .addressActions {
@@ -131,13 +218,23 @@
 }
 
 .addressActions button {
+  min-height: 2.4rem;
   margin: 0;
+  padding: 0 0.9rem;
+  font-size: 0.88rem;
+  background: var(--c-surface);
 }
 
 /* El formulario de edición ocupa la tarjeta completa. */
 .address > form {
   flex-basis: 100%;
   margin: 0;
+}
+
+.newAddress {
+  padding: var(--space-4);
+  border: 1.5px dashed var(--c-border);
+  border-radius: var(--radius-lg);
 }
 
 .newAddress h3 {

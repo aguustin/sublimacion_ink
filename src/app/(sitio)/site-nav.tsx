@@ -1,6 +1,6 @@
 "use client";
 
-import { Menu, Search, ShoppingCart, User, X } from "lucide-react";
+import { ArrowRight, Menu, Search, ShoppingCart, Sparkles, User, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -10,6 +10,7 @@ import styles from "./site.module.css";
 
 const LINKS = [
   { href: "/productos", label: "Productos" },
+  { href: "/productos?tipo=PERSONALIZABLE", label: "Personalizados" },
   { href: "/contacto", label: "Contacto" },
 ];
 
@@ -54,11 +55,23 @@ function useCartCount(pathname: string): number {
 export function SiteNav() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
-  const isActive = (href: string) => pathname === href || pathname.startsWith(`${href}/`);
+  const isActive = (href: string) => !href.includes("?") && (pathname === href || pathname.startsWith(`${href}/`));
   const cartCount = useCartCount(pathname);
 
   return (
     <header className={styles.header}>
+      {/* Franja de marca: invita a personalizar, el diferencial de la tienda. */}
+      <Link href="/productos?tipo=PERSONALIZABLE" className={styles.ribbon}>
+        <Sparkles aria-hidden="true" size={16} />
+        <span>
+          <strong>Hacelo con tu diseño</strong>
+          <span className={styles.ribbonLong}>: tazas, remeras y más, a tu medida.</span>
+        </span>
+        <span className={styles.ribbonCta}>
+          Cotizá
+          <ArrowRight aria-hidden="true" size={16} />
+        </span>
+      </Link>
       <div className={styles.headerInner}>
         <button type="button" className={styles.menuButton} aria-expanded={open} aria-controls="site-menu" onClick={() => setOpen((value) => !value)}>
           {open ? <X aria-hidden="true" size={20} /> : <Menu aria-hidden="true" size={20} />}
@@ -80,8 +93,8 @@ export function SiteNav() {
             </Link>
           ))}
         </nav>
-        {/* Buscador integrado: usa la búsqueda que ya tiene el catálogo (parámetro q). */}
-        <form action="/productos" method="get" role="search" className={styles.search}>
+        {/* Buscador integrado: usa la búsqueda del catálogo (parámetro q). En el catálogo no se repite: ahí está el suyo. */}
+        <form action="/productos" method="get" role="search" className={styles.search} hidden={pathname === "/productos"}>
           <label className={styles.srOnly} htmlFor="site-search">
             Buscar productos
           </label>

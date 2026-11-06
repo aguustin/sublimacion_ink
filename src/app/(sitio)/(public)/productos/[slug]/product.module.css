@@ -1,4 +1,7 @@
-/* Detalle de producto (Documento Maestro, 5.4): galería y bloque de compra; la descripción, debajo. */
+/*
+ * Detalle de producto (Documento Maestro 5.4, rediseño v1.38): galería protagonista y compra a la
+ * derecha, sin marco de tarjeta; una sola acción principal; la descripción, debajo.
+ */
 
 .page {
   display: grid;
@@ -12,6 +15,7 @@
   margin: 0;
   padding: 0;
   color: var(--c-text-muted);
+  font-size: 0.92rem;
   font-weight: 600;
   list-style: none;
 }
@@ -21,13 +25,24 @@
 }
 
 .breadcrumb li + li::before {
-  content: "›";
+  content: "/";
   margin-right: var(--space-2);
+  opacity: 0.5;
+}
+
+.breadcrumb a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.breadcrumb a:hover {
+  color: var(--c-text);
+  text-decoration: underline;
 }
 
 .layout {
   display: grid;
-  gap: var(--space-5);
+  gap: var(--space-6);
   align-items: start;
 }
 
@@ -43,9 +58,9 @@
   place-items: center;
   aspect-ratio: 1;
   overflow: hidden;
-  border-radius: var(--radius-lg);
-  background: var(--c-surface);
-  box-shadow: var(--c-shadow);
+  border-radius: 24px;
+  background: var(--c-surface-raised);
+  box-shadow: inset 0 0 0 1px var(--c-border);
 }
 
 .mainImage img {
@@ -54,18 +69,20 @@
   object-fit: cover;
 }
 
-/* Sin fotos: superficie más baja para no ocupar la pantalla con un espacio vacío. */
+/* Sin fotos: la marca en tono suave, más baja para no ocupar la pantalla con un espacio vacío. */
 .noImage {
-  aspect-ratio: 4 / 3;
+  aspect-ratio: 5 / 4;
   align-content: center;
-  gap: var(--space-2);
-  background: var(--c-surface-raised);
+  gap: var(--space-3);
   color: var(--c-text-muted);
+  font-size: 0.9rem;
   font-weight: 700;
 }
 
-.noImage svg {
-  color: var(--c-field-border);
+.noImageLogo {
+  width: auto;
+  height: 7rem;
+  opacity: 0.1;
 }
 
 .thumbs {
@@ -88,7 +105,7 @@
   padding: 0;
   overflow: hidden;
   border: 2px solid transparent;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius);
   background: var(--c-surface);
   cursor: pointer;
 }
@@ -103,108 +120,312 @@
   border-color: var(--ink-black);
 }
 
-/* ---------- Bloque de compra ---------- */
+/* ---------- Compra ---------- */
 .info {
   display: grid;
-  gap: var(--space-4);
+  gap: var(--space-6);
   min-width: 0;
 }
 
+/* Sin marco: la compra se lee sobre el fondo, como en las tiendas actuales. */
 .buy {
   display: grid;
   gap: var(--space-4);
-  padding: var(--card-padding);
-  border-radius: var(--radius-lg);
-  background: var(--c-surface);
-  box-shadow: var(--c-shadow);
+  margin: 0;
+  padding: 0;
+  border-radius: 0;
+  background: none;
 }
 
 .category {
-  margin: 0;
+  justify-self: start;
   color: var(--c-text-muted);
-  font-weight: 700;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+.category:hover {
+  color: var(--c-text);
 }
 
 .buy h1 {
   margin: 0;
+  font-size: clamp(2rem, 1.5rem + 2vw, 3rem);
+  line-height: 1.05;
+  letter-spacing: -0.03em;
 }
 
 .price {
   margin: 0;
-  font-size: 1.5rem;
-  font-weight: 800;
+  font-size: 1.75rem;
+  font-weight: 900;
+  letter-spacing: -0.01em;
 }
 
-.variantsTitle {
-  margin: 0;
-  font-size: 1rem;
-}
-
-.variants {
+.purchase {
   display: grid;
-  gap: var(--space-2);
+  gap: var(--space-4);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--c-border);
+}
+
+.options {
   margin: 0;
   padding: 0;
-  list-style: none;
+  border: none;
 }
 
-.variants li + li {
-  margin: 0;
-}
-
-.variant {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-3);
-  padding: var(--space-3) var(--space-4);
-  border: 1px solid var(--c-border);
-  border-radius: var(--radius);
-}
-
-.variantInfo {
-  display: grid;
-  gap: 0.1rem;
-}
-
-.variantName {
+.optionsLegend {
+  margin: 0 0 var(--space-2);
+  padding: 0;
+  font-size: 0.92rem;
   font-weight: 800;
 }
 
-.variantMeta {
+.optionList {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 10rem), 1fr));
+  gap: var(--space-2);
+}
+
+/* Opción como tarjeta seleccionable: el radio queda accesible pero la tarjeta entera es el control. */
+.option {
+  position: relative;
+  display: grid;
+  gap: 0.1rem;
+  max-width: none;
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+  border: 1.5px solid var(--c-border);
+  border-radius: var(--radius);
+  background: var(--c-surface);
+  cursor: pointer;
+  transition:
+    border-color 120ms ease,
+    box-shadow 120ms ease;
+}
+
+.option input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.option:hover {
+  border-color: var(--c-field-border);
+}
+
+.option[data-selected] {
+  border-color: var(--ink-black);
+  box-shadow: 0 0 0 1px var(--ink-black);
+}
+
+.option:has(:focus-visible) {
+  outline: 3px solid var(--c-focus);
+  outline-offset: 2px;
+}
+
+.option[data-sold-out] .optionName {
   color: var(--c-text-muted);
-  font-size: 0.92rem;
+  text-decoration: line-through;
+}
+
+.optionName {
+  font-weight: 800;
+}
+
+.optionMeta {
+  color: var(--c-text-muted);
+  font-size: 0.88rem;
   font-weight: 600;
 }
 
-.soldOut {
+.singleOption {
+  margin: 0;
+  color: var(--c-text-muted);
+}
+
+.singleOption strong {
+  color: var(--c-text);
+}
+
+/* Personalizable (RN-31): «Consultá el precio» como dato, no como un precio grande. */
+.quotePrice {
+  justify-self: start;
+  padding: 0.3rem 0.85rem;
+  border-radius: 999px;
+  background: var(--c-accent-soft);
+  font-weight: 800;
+}
+
+.stock {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0;
+  color: var(--st-done-fg);
+  font-size: 0.92rem;
+  font-weight: 700;
+}
+
+.stock::before {
+  content: "";
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 999px;
+  background: currentColor;
+}
+
+.stock[data-sold-out] {
   color: var(--st-error-fg);
 }
 
-.note {
-  margin: 0;
-  color: var(--c-text-muted);
-  font-size: 0.92rem;
+.buyRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
 }
 
+.stepper {
+  display: inline-flex;
+  align-items: center;
+  height: 3.25rem;
+  border: 1.5px solid var(--c-field-border);
+  border-radius: 999px;
+  background: var(--c-surface);
+}
+
+.stepper button {
+  width: 2.75rem;
+  height: 100%;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  border: none;
+  border-radius: 999px;
+}
+
+.stepper input {
+  width: 3rem;
+  min-height: 0;
+  height: 100%;
+  padding: 0;
+  border: none;
+  background: none;
+  font-weight: 800;
+  text-align: center;
+  appearance: textfield;
+}
+
+.stepper input::-webkit-inner-spin-button,
+.stepper input::-webkit-outer-spin-button {
+  appearance: none;
+  margin: 0;
+}
+
+.addButton {
+  flex: 1 1 12rem;
+  min-height: 3.25rem;
+  margin: 0;
+  font-size: 1.02rem;
+}
+
+.added,
+.addError {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius);
+  font-weight: 700;
+}
+
+.added {
+  background: var(--st-done-bg);
+  color: var(--st-done-fg);
+}
+
+.added a {
+  margin-left: auto;
+  color: inherit;
+}
+
+.addError {
+  background: var(--st-error-bg);
+  color: var(--st-error-fg);
+}
+
+/* Personalizable: cotización en lugar de carrito. */
 .custom {
   display: grid;
-  gap: var(--space-3);
-  justify-items: start;
-  padding: var(--space-4);
-  border-radius: var(--radius);
-  background: var(--c-surface-raised);
+  gap: var(--space-4);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--c-border);
 }
 
 .custom p {
   margin: 0;
 }
 
-.description {
-  padding: var(--card-padding);
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.chips li {
+  margin: 0;
+  padding: 0.3rem 0.8rem;
+  border: 1px solid var(--c-border);
+  border-radius: 999px;
+  background: var(--c-surface);
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+
+.custom .addButton {
+  justify-self: stretch;
+}
+
+.perks {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+  padding: var(--space-4);
   border-radius: var(--radius-lg);
   background: var(--c-surface);
+  color: var(--c-text-muted);
+  font-size: 0.92rem;
+  font-weight: 600;
+  list-style: none;
+}
+
+.perks li {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0;
+}
+
+.perks svg {
+  flex: none;
+  color: var(--c-text);
+}
+
+/* ---------- Descripción ---------- */
+.description {
+  margin: 0;
+  padding: 0;
+  border-radius: 0;
+  background: none;
 }
 
 .description h2 {
@@ -214,14 +435,16 @@
 
 .description p {
   margin: 0;
+  color: var(--c-text-muted);
+  line-height: 1.65;
   white-space: pre-line;
 }
 
 /* Escritorio: galería a la izquierda y compra a la derecha. */
 @media (min-width: 900px) {
   .layout {
-    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
-    gap: var(--space-6);
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+    gap: var(--space-7);
   }
 
   .gallery {
@@ -230,19 +453,8 @@
   }
 }
 
-/* Cantidad y «Agregar al carrito»: juntos, con el aviso debajo. */
-.addToCart {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-2);
-}
-
-.addToCart button {
-  margin: 0;
-}
-
-.added {
-  flex-basis: 100%;
-  margin: 0;
+@media (prefers-reduced-motion: reduce) {
+  .option {
+    transition: none;
+  }
 }

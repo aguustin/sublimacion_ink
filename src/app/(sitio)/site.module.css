@@ -1,10 +1,12 @@
-/* Estructura de la tienda: barra negra, contenido sobre #E3E8EF y pie mínimo (Documento Maestro, sección 5). */
+/* Estructura de la tienda: barra negra, contenido sobre el fondo claro y pie (Documento Maestro 5, rediseño v1.38). */
 
 .body {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
   margin: 0;
+  /* Los bloques a todo el ancho (100vw) no generan desplazamiento lateral por la barra de desplazamiento. */
+  overflow-x: clip;
 }
 
 .main {
@@ -59,6 +61,14 @@
   align-items: center;
 }
 
+.brand svg {
+  transition: transform 220ms ease;
+}
+
+.brand:hover svg {
+  transform: rotate(-6deg) scale(1.05);
+}
+
 /* El logo se dimensiona por alto: acompaña la altura de los controles de la barra (sección 2). */
 .logo {
   display: block;
@@ -103,25 +113,74 @@
   align-items: center;
   gap: 0.45rem;
   min-height: var(--control-height);
-  padding: 0.4rem 0.8rem;
-  border-radius: 10px;
+  padding: 0.4rem 1rem;
+  border-radius: 999px;
   color: #fff;
   font-weight: 700;
   text-decoration: none;
+  transition:
+    background-color 140ms ease,
+    color 140ms ease,
+    transform 140ms ease;
 }
 
 .link:hover,
 .action:hover {
-  background: rgb(255 255 255 / 8%);
+  background: rgb(255 255 255 / 10%);
+  color: var(--ink-yellow);
 }
 
-/* Opción activa: acento amarillo y subrayado, no solo color. */
-.link[aria-current="page"],
+/* Opción activa: píldora amarilla con texto negro. */
+.link[aria-current="page"] {
+  background: var(--ink-yellow);
+  color: var(--ink-black);
+}
+
 .action[aria-current="page"] {
   color: var(--ink-yellow);
+}
+
+/* ---------- Franja de marca ---------- */
+.ribbon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 2.25rem;
+  padding: 0.35rem 1rem;
+  background: var(--ink-yellow);
+  color: var(--ink-black);
+  font-size: 0.88rem;
+  text-align: center;
+  text-decoration: none;
+}
+
+.ribbon strong {
+  font-weight: 900;
+}
+
+.ribbonCta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  font-weight: 900;
   text-decoration: underline;
   text-decoration-thickness: 2px;
-  text-underline-offset: 0.35em;
+  text-underline-offset: 0.2em;
+}
+
+.ribbon:hover .ribbonCta svg {
+  transform: translateX(3px);
+}
+
+.ribbonCta svg {
+  transition: transform 140ms ease;
+}
+
+@media (max-width: 479px) {
+  .ribbonLong {
+    display: none;
+  }
 }
 
 .search {
@@ -129,33 +188,56 @@
   position: relative;
 }
 
+/* Sin buscador (en el catálogo, que tiene el suyo): la barra no reserva su fila. */
+.search[hidden] {
+  display: none;
+}
+
+.headerInner:has(> .search[hidden]) {
+  grid-template-areas:
+    "menu brand actions"
+    "links links links";
+}
+
+@media (min-width: 900px) {
+  .headerInner:has(> .search[hidden]) {
+    grid-template-areas: "brand links . actions";
+  }
+}
+
 .searchIcon {
   position: absolute;
   top: 50%;
-  left: 0.9rem;
+  left: 1rem;
   transform: translateY(-50%);
-  color: rgb(255 255 255 / 75%);
+  color: var(--ink-black);
   pointer-events: none;
 }
 
+/* Buscador blanco sobre la barra negra: se encuentra de un vistazo. */
 .searchInput {
   width: 100%;
   min-height: var(--control-height);
-  padding: 0.5rem 1rem 0.5rem 2.5rem;
-  border: 1.5px solid rgb(255 255 255 / 30%);
+  padding: 0.5rem 1rem 0.5rem 2.75rem;
+  border: 2px solid transparent;
   border-radius: 999px;
-  background: rgb(255 255 255 / 10%);
-  color: #fff;
+  background: #fff;
+  color: var(--ink-black);
   font: inherit;
+  font-weight: 600;
+  transition:
+    border-color 140ms ease,
+    box-shadow 140ms ease;
 }
 
 .searchInput::placeholder {
-  color: rgb(255 255 255 / 70%);
+  color: #6b675e;
 }
 
 .searchInput:focus-visible {
-  outline: 3px solid var(--ink-yellow);
-  outline-offset: 2px;
+  outline: none;
+  border-color: var(--ink-yellow);
+  box-shadow: 0 0 0 4px rgb(245 214 39 / 35%);
 }
 
 .actions {
@@ -177,9 +259,17 @@
   }
 }
 
-.cart {
-  border: 1.5px solid var(--ink-yellow);
-  border-radius: 999px;
+/* Carrito: la acción de compra, en amarillo sólido. */
+.cart,
+.cart[aria-current="page"] {
+  background: var(--ink-yellow);
+  color: var(--ink-black);
+}
+
+.cart:hover {
+  background: #f8e15a;
+  color: var(--ink-black);
+  transform: translateY(-1px);
 }
 
 .header :focus-visible {
@@ -220,32 +310,89 @@
 }
 
 .footerInner {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
+  display: grid;
+  gap: var(--space-6);
   max-width: var(--content-max);
   margin: 0 auto;
-  padding: 1.5rem 1rem;
+  padding: var(--space-7) 1rem var(--space-5);
+}
+
+.footerBrand {
+  display: grid;
+  justify-items: start;
+  gap: var(--space-3);
+  max-width: 22rem;
+}
+
+.footerBrand p {
+  margin: 0;
+  color: rgb(255 255 255 / 65%);
+  line-height: 1.55;
 }
 
 .footerLogo {
   display: block;
   flex: none;
   width: auto;
-  height: 56px;
+  height: 64px;
+}
+
+.footerColumns {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-5);
+}
+
+.footerTitle {
+  margin: 0 0 var(--space-3);
+  color: var(--ink-yellow);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
 }
 
 .footerLinks {
-  display: flex;
-  gap: 1.5rem;
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
 .footerLinks a {
+  color: rgb(255 255 255 / 85%);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.footerLinks a:hover {
   color: #fff;
-  font-weight: 700;
+  text-decoration: underline;
   text-underline-offset: 0.25em;
+}
+
+.footerBottom {
+  padding-top: var(--space-5);
+  border-top: 1px solid rgb(255 255 255 / 12%);
+  color: rgb(255 255 255 / 55%);
+  font-size: 0.85rem;
+}
+
+@media (min-width: 768px) {
+  .footerInner {
+    grid-template-columns: minmax(0, 1fr) auto;
+    padding-inline: 1.5rem;
+  }
+
+  .footerColumns {
+    grid-template-columns: repeat(2, minmax(10rem, auto));
+    gap: var(--space-7);
+  }
+
+  .footerBottom {
+    grid-column: 1 / -1;
+  }
 }
 
 .footer :focus-visible {
@@ -270,8 +417,8 @@
   height: 1.5rem;
   padding: 0 0.4rem;
   border-radius: 999px;
-  background: var(--ink-yellow);
-  color: var(--ink-black);
+  background: var(--ink-black);
+  color: var(--ink-yellow);
   font-size: 0.8rem;
   font-weight: 900;
   line-height: 1;
