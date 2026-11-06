@@ -65,19 +65,24 @@ export async function removeProductImage(actor: Actor, productoId: string, archi
  * URLs firmadas de las imágenes de productos para mostrarlas en el catálogo. Son públicas por
  * naturaleza, pero el bucket sigue privado: solo se firman archivos activos asociados a un producto.
  */
-export async function productImageUrls(archivoIds: string[], { db = getDb(), storage = getStorage() }: { db?: Db; storage?: ObjectStorage } = {}) {
+export async function productImageUrls(
+  archivoIds: string[],
+  { db = getDb(), storage = getStorage(), miniatura = false }: { db?: Db; storage?: ObjectStorage; miniatura?: boolean } = {},
+) {
   if (archivoIds.length === 0) return new Map<string, string>();
   const archivos = await db.archivo.findMany({
     where: { id: { in: archivoIds }, estado: "ACTIVO", contexto: "PRODUCTO", imagenProducto: { isNot: null } },
-    select: { id: true, claveObjeto: true, tipoMimeDetectado: true, nombreOriginal: true },
+    select: { id: true, claveObjeto: true, claveMiniatura: true, tipoMimeDetectado: true, nombreOriginal: true },
   });
   const expiresInSeconds = getConfig().FILES_URL_TTL_SECONDS;
   const entries = await Promise.all(
     archivos.map(async (archivo) => {
-      const url = await storage.signedGetUrl(archivo.claveObjeto, {
+      // Listados: la miniatura (INC-07) si existe; la imagen original si no.
+      const thumbnail = miniatura && archivo.claveMiniatura;
+      const url = await storage.signedGetUrl(thumbnail || archivo.claveObjeto, {
         expiresInSeconds,
-        contentType: archivo.tipoMimeDetectado,
-        fileName: archivo.nombreOriginal,
+        contentType: thumbnail ? "image/webp" : archivo.tipoMimeDetectado,
+        fileName: thumbnail ? `${archivo.nombreOriginal}.webp` : archivo.nombreOriginal,
       });
       return [archivo.id, url] as const;
     }),

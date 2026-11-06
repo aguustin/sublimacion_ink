@@ -27,11 +27,12 @@ model Usuario {
   creadoEn          DateTime  @default(now()) @map("creado_en") @db.Timestamptz
   actualizadoEn     DateTime  @updatedAt @map("actualizado_en") @db.Timestamptz
 
-  sesiones    Sesion[]
-  tokens      TokenUsuario[]
-  carrito     Carrito?
-  pedidos     Pedido[]
-  direcciones Direccion[]
+  sesiones     Sesion[]
+  tokens       TokenUsuario[]
+  carrito      Carrito?
+  pedidos      Pedido[]
+  direcciones  Direccion[]
+  conversacion Conversacion?
 
   @@map("usuario")
 }
@@ -159,7 +160,7 @@ model Variante {
   creadoEn        DateTime @default(now()) @map("creado_en") @db.Timestamptz
   actualizadoEn   DateTime @updatedAt @map("actualizado_en") @db.Timestamptz
 
-  producto     Producto          @relation(fields: [productoId], references: [id])
+  producto     Producto                   @relation(fields: [productoId], references: [id])
   movimientos  MovimientoStock[]
   retenciones  RetencionStock[]
   itemsCarrito ItemCarrito[]
@@ -353,11 +354,11 @@ model Pedido {
   creadoEn                   DateTime         @default(now()) @map("creado_en") @db.Timestamptz
   actualizadoEn              DateTime         @updatedAt @map("actualizado_en") @db.Timestamptz
 
-  cliente              Usuario                 @relation(fields: [clienteId], references: [id])
-  cupon                Cupon?                  @relation("CuponUsado", fields: [cuponId], references: [id])
-  cuponEmitido         Cupon?                  @relation("CuponOrigen")
-  pedidoOrigen         Pedido?                 @relation("Reemision", fields: [pedidoOrigenId], references: [id])
-  reemision            Pedido?                 @relation("Reemision")
+  cliente              Usuario                   @relation(fields: [clienteId], references: [id])
+  cupon                Cupon?                    @relation("CuponUsado", fields: [cuponId], references: [id])
+  cuponEmitido         Cupon?                    @relation("CuponOrigen")
+  pedidoOrigen         Pedido?                   @relation("Reemision", fields: [pedidoOrigenId], references: [id])
+  reemision            Pedido?                   @relation("Reemision")
   solicitud            SolicitudPersonalizacion?
   referencias          ReferenciaPedido[]
   cotizaciones         Cotizacion[]
@@ -372,6 +373,9 @@ model Pedido {
   ajustes              AjusteEconomico[]
   reembolsos           Reembolso[]
   retenciones          RetencionStock[]
+  entrega              Entrega?
+  comprobantes         ComprobanteExterno[]
+  mensajes             Mensaje[]
 
   @@unique([clienteId, claveIdempotencia])
   @@index([estado, venceEn])
@@ -640,6 +644,8 @@ model Cancelacion {
 enum TipoAjuste {
   CARGO_SERVICIO_CANCELACION
   RETENCION_SENA
+  /// Compensación por demora en el envío, cargada a mano por el admin en el piloto (RN-04, D-05).
+  COMPENSACION_DEMORA
 }
 
 enum EstadoAjuste {
@@ -663,12 +669,17 @@ model AjusteEconomico {
   estado                    EstadoAjuste
   /// Referencia interna editable (RF-53, R-15): no cambia el cargo.
   costoRealEstimadoCentavos Int?         @map("costo_real_estimado_centavos")
+  /// Compensación por demora (D-05): motivo, quién la autorizó y el admin que la cargó.
+  justificacion             String?
+  autorizadoPor             String?      @map("autorizado_por")
+  autorId                   String?      @map("autor_id") @db.Uuid
   notaCierre                String?      @map("nota_cierre")
   cerradoPorId              String?      @map("cerrado_por_id") @db.Uuid
   cerradoEn                 DateTime?    @map("cerrado_en") @db.Timestamptz
   creadoEn                  DateTime     @default(now()) @map("creado_en") @db.Timestamptz
 
-  pedido Pedido @relation(fields: [pedidoId], references: [id])
+  pedido     Pedido      @relation(fields: [pedidoId], references: [id])
+  reembolsos Reembolso[]
 
   @@index([pedidoId])
   @@map("ajuste_economico")
@@ -687,6 +698,8 @@ model Reembolso {
   id                String          @id @default(uuid()) @db.Uuid
   pedidoId          String          @map("pedido_id") @db.Uuid
   pagoId            String          @map("pago_id") @db.Uuid
+  /// Ajuste que originó la devolución (compensación por demora, D-05); nulo en las de una cancelación.
+  ajusteId          String?         @map("ajuste_id") @db.Uuid
   importeCentavos   Int             @map("importe_centavos")
   incluyeEnvio      Boolean         @map("incluye_envio")
   estado            EstadoReembolso
@@ -698,10 +711,12 @@ model Reembolso {
   cerradoEn         DateTime?       @map("cerrado_en") @db.Timestamptz
   creadoEn          DateTime        @default(now()) @map("creado_en") @db.Timestamptz
 
-  pedido Pedido @relation(fields: [pedidoId], references: [id])
-  pago   Pago   @relation(fields: [pagoId], references: [id])
+  pedido Pedido           @relation(fields: [pedidoId], references: [id])
+  pago   Pago             @relation(fields: [pagoId], references: [id])
+  ajuste AjusteEconomico? @relation(fields: [ajusteId], references: [id])
 
   @@index([pedidoId])
+  @@index([ajusteId])
   @@map("reembolso")
 }
 
@@ -754,6 +769,8 @@ model Archivo {
   id                   String          @id @default(uuid()) @db.Uuid
   /// Generada por el servidor: el nombre original nunca forma parte de la clave.
   claveObjeto          String          @unique @map("clave_objeto")
+  /// Miniatura WEBP de las imágenes (16.1), generada al subir; nula en los PDF o si no se pudo generar.
+  claveMiniatura       String?         @unique @map("clave_miniatura")
   nombreOriginal       String          @map("nombre_original")
   /// Tipo según el contenido real (D-08), no según la extensión ni lo que declara el cliente.
   tipoMimeDetectado    String          @map("tipo_mime_detectado")
@@ -768,9 +785,11 @@ model Archivo {
   eliminadoPorId       String?         @map("eliminado_por_id") @db.Uuid
   creadoEn             DateTime        @default(now()) @map("creado_en") @db.Timestamptz
 
-  imagenProducto ImagenProducto?
-  referencias    ReferenciaPedido[]
+  imagenProducto  ImagenProducto?
+  referencias     ReferenciaPedido[]
   versionesDiseno ArchivoVersionDiseno[]
+  comprobante     ComprobanteExterno?
+  adjuntoMensaje  ArchivoMensaje?
 
   @@index([propietarioClienteId, creadoEn])
   @@map("archivo")
@@ -970,4 +989,105 @@ model CambioVentanaCargo {
 
   @@index([pedidoId, creadoEn])
   @@map("cambio_ventana_cargo")
+}
+
+/// Entrega del pedido (F-06, RF-43). Sin estados propios (D-06, v1.34): el avance lo marcan los estados
+/// del pedido (listo para retirar, despachado, entregado); acá quedan los datos y los autores de cada paso.
+model Entrega {
+  id                String    @id @default(uuid()) @db.Uuid
+  pedidoId          String    @unique @map("pedido_id") @db.Uuid
+  /// Envío: datos de seguimiento opcionales, en texto libre.
+  transportista     String?
+  codigoSeguimiento String?   @map("codigo_seguimiento")
+  listoEn           DateTime? @map("listo_en") @db.Timestamptz
+  listoPorId        String?   @map("listo_por_id") @db.Uuid
+  despachadoEn      DateTime? @map("despachado_en") @db.Timestamptz
+  despachadoPorId   String?   @map("despachado_por_id") @db.Uuid
+  entregadoEn       DateTime? @map("entregado_en") @db.Timestamptz
+  entregadoPorId    String?   @map("entregado_por_id") @db.Uuid
+  creadoEn          DateTime  @default(now()) @map("creado_en") @db.Timestamptz
+  actualizadoEn     DateTime  @updatedAt @map("actualizado_en") @db.Timestamptz
+
+  pedido Pedido @relation(fields: [pedidoId], references: [id])
+
+  @@map("entrega")
+}
+
+enum TipoComprobante {
+  FACTURA
+  NOTA_CREDITO
+}
+
+/// Comprobante emitido fuera del sistema y registrado en el pedido (RN-26, RF-56).
+model ComprobanteExterno {
+  id              String          @id @default(uuid()) @db.Uuid
+  pedidoId        String          @map("pedido_id") @db.Uuid
+  tipo            TipoComprobante
+  letra           String
+  puntoVenta      Int             @map("punto_venta")
+  numero          Int
+  fechaEmision    DateTime        @map("fecha_emision") @db.Date
+  importeCentavos Int             @map("importe_centavos")
+  /// PDF opcional (contexto `COMPROBANTE`): el cliente lo descarga desde su pedido.
+  archivoId       String?         @unique @map("archivo_id") @db.Uuid
+  registradoPorId String          @map("registrado_por_id") @db.Uuid
+  creadoEn        DateTime        @default(now()) @map("creado_en") @db.Timestamptz
+
+  pedido  Pedido   @relation(fields: [pedidoId], references: [id])
+  archivo Archivo? @relation(fields: [archivoId], references: [id])
+
+  @@unique([tipo, letra, puntoVenta, numero])
+  @@index([pedidoId])
+  @@map("comprobante_externo")
+}
+
+/// Chat (RF-29, F-07): una conversación por cliente con la tienda.
+model Conversacion {
+  id              String    @id @default(uuid()) @db.Uuid
+  clienteId       String    @unique @map("cliente_id") @db.Uuid
+  /// Orden del listado del panel: la que tuvo actividad más reciente primero.
+  ultimoMensajeEn DateTime? @map("ultimo_mensaje_en") @db.Timestamptz
+  creadoEn        DateTime  @default(now()) @map("creado_en") @db.Timestamptz
+
+  cliente  Usuario   @relation(fields: [clienteId], references: [id])
+  mensajes Mensaje[]
+
+  @@index([ultimoMensajeEn])
+  @@map("conversacion")
+}
+
+/// Mensaje del chat. No se edita ni se borra (16.2): queda como registro de lo acordado.
+model Mensaje {
+  id             String    @id @default(uuid()) @db.Uuid
+  conversacionId String    @map("conversacion_id") @db.Uuid
+  autorId        String    @map("autor_id") @db.Uuid
+  /// Quién escribió: el cliente o la tienda. Define de qué lado cuenta como no leído.
+  deTienda       Boolean   @map("de_tienda")
+  texto          String
+  /// Pedido sobre el que se consulta (opcional); siempre del mismo cliente (F-07).
+  pedidoId       String?   @map("pedido_id") @db.Uuid
+  /// Cuándo lo leyó la otra parte.
+  leidoEn        DateTime? @map("leido_en") @db.Timestamptz
+  creadoEn       DateTime  @default(now()) @map("creado_en") @db.Timestamptz
+
+  conversacion Conversacion     @relation(fields: [conversacionId], references: [id])
+  pedido       Pedido?          @relation(fields: [pedidoId], references: [id])
+  adjuntos     ArchivoMensaje[]
+
+  @@index([conversacionId, creadoEn])
+  @@index([deTienda, leidoEn])
+  @@map("mensaje")
+}
+
+/// Adjuntos de un mensaje (contexto `CHAT`), en orden. Un archivo pertenece a un solo mensaje.
+model ArchivoMensaje {
+  mensajeId String @map("mensaje_id") @db.Uuid
+  archivoId String @unique @map("archivo_id") @db.Uuid
+  orden     Int
+
+  mensaje Mensaje @relation(fields: [mensajeId], references: [id])
+  archivo Archivo @relation(fields: [archivoId], references: [id])
+
+  @@id([mensajeId, orden])
+  @@map("archivo_mensaje")
 }

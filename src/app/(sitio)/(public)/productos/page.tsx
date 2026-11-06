@@ -28,7 +28,10 @@ export async function generateMetadata({ searchParams }: { searchParams: SearchP
 export default async function ProductsPage({ searchParams }: { searchParams: SearchParams }) {
   const params = single(await searchParams);
   const [{ productos, total, pagina, porPagina }, options] = await Promise.all([listProducts(params), getFilterOptions()]);
-  const images = await productImageUrls(productos.flatMap((product) => (product.imagenId ? [product.imagenId] : [])));
+  const images = await productImageUrls(
+    productos.flatMap((product) => (product.imagenId ? [product.imagenId] : [])),
+    { miniatura: true },
+  );
   const totalPages = Math.max(1, Math.ceil(total / porPagina));
   const pageHref = (page: number) => `/productos?${new URLSearchParams({ ...params, pagina: String(page) })}`;
 

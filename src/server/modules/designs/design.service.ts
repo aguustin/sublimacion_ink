@@ -28,7 +28,7 @@ const versionSchema = z.strictObject({
 const approveSchema = z.strictObject({ huella: z.string().regex(/^[0-9a-f]{64}$/, "Huella inválida.") });
 const changesSchema = z.strictObject({ comentario: z.string().trim().min(3, "Contanos qué cambiar.").max(2000) });
 const transitionSchema = z.strictObject({
-  estado: z.literal("EN_PRODUCCION", "Por ahora solo se puede pasar a producción."),
+  estado: z.literal("EN_PRODUCCION", "Indicá un estado válido: en producción, listo para retirar, despachado o entregado."),
   motivo: z.string().trim().max(500).optional(),
 });
 

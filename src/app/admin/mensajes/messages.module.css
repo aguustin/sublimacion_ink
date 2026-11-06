@@ -1,0 +1,5 @@
+.email {
+  display: block;
+  color: var(--c-text-muted);
+  font-size: 0.9rem;
+}

@@ -6,19 +6,23 @@ import { StatusBadge } from "@/app/ui/status-badge";
 import { ORDER_FAMILY, PAYMENT_FAMILY } from "@/lib/status";
 import { CancellationBreakdown } from "@/app/cancellation-breakdown";
 import { CustomOrderDetails } from "@/app/custom-order-details";
+import { ReceiptsList } from "@/app/receipts-list";
 import { DESIGN_STATUS_LABELS, DesignHistory } from "@/app/design-history";
 import { requireAdminPage } from "@/app/session";
 import { formatPesos } from "@/lib/money";
 import { formatDateTime, ORDER_STATUS_LABELS, PAYMENT_STATUS_LABELS, paymentWindowOpen } from "@/lib/orders";
 import { getOrderDesigns } from "@/server/modules/designs/design.service";
 import { getCustomOrderDetails } from "@/server/modules/orders/custom-order.service";
+import { isDispatchLate } from "@/server/modules/orders/delivery.service";
 import { getAdminOrder } from "@/server/modules/orders/orders.service";
 import { AppError } from "@/server/shared/errors";
 import { AdjustmentActions, RefundActions, StoreCancelForm } from "./cancellation-actions";
 import { CashPaymentButton } from "./cash-payment-button";
 import { CustomQuoteForm } from "./custom-quote-form";
 import { DesignVersionForm, StartProductionButton } from "./design-admin";
+import { DelayCompensationForm, DeliveryStepButton, DispatchForm } from "./delivery-actions";
 import { DispatchDateForm } from "./dispatch-date-form";
+import { ReceiptForm } from "./receipt-form";
 import styles from "./order-detail.module.css";
 import { ExtendReservationForm, ReactivateReservation } from "./reservation-actions";
 import { ShippingQuoteForm } from "./shipping-quote-form";
@@ -35,6 +39,7 @@ const QUOTE_STATUS_LABELS: Record<string, string> = {
 const ADJUSTMENT_LABELS: Record<string, string> = {
   CARGO_SERVICIO_CANCELACION: "Cargo por cancelación",
   RETENCION_SENA: "Seña retenida",
+  COMPENSACION_DEMORA: "Compensación por demora",
   REGISTRADO: "descontado de lo pagado",
   PENDIENTE_ARREGLO: "pendiente de arreglo con el cliente",
   COBRADO: "cobrado",
@@ -98,6 +103,8 @@ export default async function AdminOrderPage({ params }: { params: Promise<{ id:
     (order.estado === "ENVIO_A_COTIZAR" && quoteOpen) ||
     (custom !== null && order.estado === "EN_DEFINICION" && !custom.cotizaciones.some((quote) => quote.estado === "PROPUESTA"));
   const lastChange = order.historial.at(-1);
+  // RN-04: despachado después de la fecha comprometida.
+  const late = isDispatchLate(order.fechaDespachoComprometida, order.entrega?.despachadoEn);
   const production = designs.length > 0 || order.estado === "CONFIRMADO";
   const productionTitle = custom ? "Diseños y producción" : "Producción";
 
@@ -108,7 +115,8 @@ export default async function AdminOrderPage({ params }: { params: Promise<{ id:
     ...(production ? [{ id: "produccion", label: productionTitle }] : []),
     { id: "entrega", label: "Entrega" },
     { id: "pagos", label: "Pagos" },
-    { id: "cancelacion", label: "Cancelación" },
+    { id: "comprobantes", label: "Comprobantes" },
+    { id: "cancelacion", label: "Cancelación y devoluciones" },
     { id: "historial", label: "Historial" },
   ];
 
@@ -122,6 +130,12 @@ export default async function AdminOrderPage({ params }: { params: Promise<{ id:
         <div className={styles.titleRow}>
           <h1 id="estado-titulo">Pedido #{order.numero}</h1>
           <StatusBadge family={ORDER_FAMILY[order.estado] ?? "neutral"}>{ORDER_STATUS_LABELS[order.estado] ?? order.estado}</StatusBadge>
+          {late && (
+            <span className={styles.warning}>
+              <AlertTriangle aria-hidden="true" size={16} />
+              Posible compensación por demora
+            </span>
+          )}
           {quotePending && (
             <span className={styles.warning}>
               <AlertTriangle aria-hidden="true" size={16} />
@@ -138,6 +152,10 @@ export default async function AdminOrderPage({ params }: { params: Promise<{ id:
                 {order.cliente.email}
                 {order.cliente.telefono && ` · ${order.cliente.telefono}`}
               </span>
+              {/* F-07: la tienda responde desde la vista del pedido. */}
+              <Link href={`/admin/mensajes/${order.clienteId}?pedido=${order.id}`} className={styles.chatLink}>
+                Escribirle al cliente
+              </Link>
             </dd>
           </div>
           <div>
@@ -284,8 +302,8 @@ export default async function AdminOrderPage({ params }: { params: Promise<{ id:
         <h3>Fecha comprometida</h3>
         {order.fechaDespachoComprometida ? (
           <p>
-            Listo para retirar el {formatDateTime(order.fechaDespachoComprometida)}. Cancelar tiene cargo desde el{" "}
-            {formatDateTime(order.inicioVentanaCargo!)}
+            {order.modalidadEntrega === "ENVIO" ? "Se despacha el" : "Listo para retirar el"} {formatDateTime(order.fechaDespachoComprometida)}.
+            Cancelar tiene cargo desde el {formatDateTime(order.inicioVentanaCargo!)}
             {order.ventanaCargoFija && " (fija: la fecha se confirmó con 48 h o menos)"}.
           </p>
         ) : (
@@ -294,6 +312,54 @@ export default async function AdminOrderPage({ params }: { params: Promise<{ id:
         {(order.estado === "CONFIRMADO" || order.estado === "EN_PRODUCCION") && (
           <div className={order.fechaDespachoComprometida !== null ? styles.secondary : undefined}>
             <DispatchDateForm orderId={order.id} hasDate={order.fechaDespachoComprometida !== null} />
+          </div>
+        )}
+
+        <h3>Seguimiento</h3>
+        {late && (
+          <p className={styles.notice}>
+            Se despachó después de la fecha comprometida: posible compensación por demora (RN-04). La decide y la carga la tienda.
+          </p>
+        )}
+        {order.entrega?.listoEn && <p>Listo para retirar desde el {formatDateTime(order.entrega.listoEn)}.</p>}
+        {order.entrega?.despachadoEn && (
+          <p>
+            Despachado el {formatDateTime(order.entrega.despachadoEn)}
+            {order.entrega.transportista && ` · ${order.entrega.transportista}`}
+            {order.entrega.codigoSeguimiento && ` · seguimiento ${order.entrega.codigoSeguimiento}`}.
+          </p>
+        )}
+        {order.entrega?.entregadoEn && <p>Entregado el {formatDateTime(order.entrega.entregadoEn)}.</p>}
+        {late && (
+          <div className={styles.secondary}>
+            <h3>Compensación por demora</h3>
+            <p className={styles.muted}>No hay cálculo automático (D-05): el importe lo decide la tienda y no puede superar lo pagado.</p>
+            <DelayCompensationForm orderId={order.id} />
+          </div>
+        )}
+        {!order.entrega && <p className={styles.muted}>Todavía no se registró ningún paso de la entrega.</p>}
+        {(order.estado === "CONFIRMADO" || order.estado === "EN_PRODUCCION") && (
+          <div className={styles.actions}>
+            {order.modalidadEntrega === "RETIRO" ? (
+              <DeliveryStepButton orderId={order.id} step="LISTO_PARA_RETIRO" />
+            ) : (
+              <DispatchForm orderId={order.id} dispatched={false} />
+            )}
+          </div>
+        )}
+        {order.estado === "DESPACHADO" && (
+          <div className={styles.secondary}>
+            <DispatchForm
+              orderId={order.id}
+              dispatched
+              transportista={order.entrega?.transportista}
+              codigoSeguimiento={order.entrega?.codigoSeguimiento}
+            />
+          </div>
+        )}
+        {(order.estado === "LISTO_PARA_RETIRO" || order.estado === "DESPACHADO") && (
+          <div className={styles.actions}>
+            <DeliveryStepButton orderId={order.id} step="ENTREGADO" />
           </div>
         )}
       </Section>
@@ -351,7 +417,19 @@ export default async function AdminOrderPage({ params }: { params: Promise<{ id:
         )}
       </Section>
 
-      <Section id="cancelacion" title="Cancelación">
+      <Section id="comprobantes" title="Comprobantes">
+        <p className={styles.muted}>Facturas y notas de crédito emitidas fuera del sistema (RN-26). El cliente las ve en su pedido.</p>
+        {order.comprobantes.length > 0 ? <ReceiptsList receipts={order.comprobantes} /> : <p>Todavía no se registró ningún comprobante.</p>}
+        <div className={styles.secondary}>
+          <h3>Registrar un comprobante</h3>
+          <ReceiptForm
+            orderId={order.id}
+            allowCreditNote={order.estado === "CANCELADO" && order.comprobantes.some((receipt) => receipt.tipo === "FACTURA")}
+          />
+        </div>
+      </Section>
+
+      <Section id="cancelacion" title="Cancelación y devoluciones">
         {order.cancelacion ? (
           <>
             <p>
@@ -373,22 +451,32 @@ export default async function AdminOrderPage({ params }: { params: Promise<{ id:
         )}
         {order.ajustes.map((adjustment) => (
           <div key={adjustment.id} className={`${styles.record} ${styles.secondary}`}>
-            <p>
-              {ADJUSTMENT_LABELS[adjustment.tipo]}: {formatPesos(adjustment.importeCentavos)} · {ADJUSTMENT_LABELS[adjustment.estado]}
-              {adjustment.notaCierre && ` · ${adjustment.notaCierre}`}
-            </p>
-            <AdjustmentActions
-              adjustmentId={adjustment.id}
-              estado={adjustment.estado}
-              costoRealEstimadoCentavos={adjustment.costoRealEstimadoCentavos}
-            />
+            {adjustment.tipo === "COMPENSACION_DEMORA" ? (
+              // D-05: la devolución que genera figura abajo, con sus acciones.
+              <p>
+                {ADJUSTMENT_LABELS[adjustment.tipo]}: {formatPesos(adjustment.importeCentavos)} · autorizada por {adjustment.autorizadoPor} el{" "}
+                {formatDateTime(adjustment.creadoEn)} · {adjustment.justificacion}
+              </p>
+            ) : (
+              <>
+                <p>
+                  {ADJUSTMENT_LABELS[adjustment.tipo]}: {formatPesos(adjustment.importeCentavos)} · {ADJUSTMENT_LABELS[adjustment.estado]}
+                  {adjustment.notaCierre && ` · ${adjustment.notaCierre}`}
+                </p>
+                <AdjustmentActions
+                  adjustmentId={adjustment.id}
+                  estado={adjustment.estado}
+                  costoRealEstimadoCentavos={adjustment.costoRealEstimadoCentavos}
+                />
+              </>
+            )}
           </div>
         ))}
         {order.reembolsos.map((refund) => (
           <div key={refund.id} className={`${styles.record} ${styles.secondary}`}>
             <p>
               Devolución de {formatPesos(refund.importeCentavos)}
-              {refund.incluyeEnvio && " (incluye el envío)"} · {REFUND_LABELS[refund.estado]}
+              {refund.incluyeEnvio && " (incluye el envío)"} · {refund.motivo} · {REFUND_LABELS[refund.estado]}
               {refund.notaCierre && ` · ${refund.notaCierre}`}
             </p>
             <RefundActions refundId={refund.id} estado={refund.estado} />

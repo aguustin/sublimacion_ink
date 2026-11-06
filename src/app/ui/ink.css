@@ -53,7 +53,7 @@
   --c-sidebar: #1c1b1b;
   color-scheme: dark;
   --c-border: #5b5954;
-  /* F11 (pendiente en el Documento Maestro): valores provisorios que cumplen el contraste. */
+  /* F11 (resuelto en el Documento Maestro v1.5): texto, texto secundario y bordes de campos. */
   --c-text: #f3f2ee;
   --c-text-muted: #bab7b0;
   --c-field-border: #938f88;

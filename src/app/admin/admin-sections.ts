@@ -5,6 +5,7 @@ import {
   ClipboardList,
   House,
   MailWarning,
+  MessageSquare,
   Package,
   Settings,
   Tags,
@@ -16,6 +17,7 @@ import {
 export const ADMIN_SECTIONS: { href: string; label: string; icon: LucideIcon; description?: string }[] = [
   { href: "/admin", label: "Inicio", icon: House },
   { href: "/admin/pedidos", label: "Pedidos", icon: ClipboardList, description: "Pedidos, pagos, envíos, diseños y cancelaciones." },
+  { href: "/admin/mensajes", label: "Mensajes", icon: MessageSquare, description: "Conversaciones con los clientes." },
   { href: "/admin/productos", label: "Productos", icon: Package, description: "Productos, variantes, precios e imágenes." },
   { href: "/admin/categorias", label: "Categorías", icon: Tags, description: "Organización del catálogo." },
   { href: "/admin/inventario", label: "Inventario", icon: Boxes, description: "Stock de variantes y materiales, y sus movimientos." },

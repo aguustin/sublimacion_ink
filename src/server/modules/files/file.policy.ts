@@ -44,4 +44,4 @@ export function objectKeyFor(contexto: ContextoArchivo, mime: AllowedMime): stri
 
 /** Contextos que puede usar cada rol hoy. Los demás se habilitan con la etapa que los asocia a un pedido. */
 export const CLIENT_CONTEXTS: readonly ContextoArchivo[] = ["REFERENCIA", "CHAT"];
-export const ADMIN_CONTEXTS: readonly ContextoArchivo[] = ["PRODUCTO", "VERSION_DISENO"];
+export const ADMIN_CONTEXTS: readonly ContextoArchivo[] = ["PRODUCTO", "VERSION_DISENO", "COMPROBANTE", "CHAT"];

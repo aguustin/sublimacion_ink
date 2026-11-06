@@ -16,7 +16,10 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
     if (error instanceof AppError && error.status === 404) notFound();
     throw error;
   });
-  const [categories, imageUrls] = await Promise.all([listCategories(), productImageUrls(product.imagenes.map((image) => image.archivoId))]);
+  const [categories, imageUrls] = await Promise.all([listCategories(), productImageUrls(
+      product.imagenes.map((image) => image.archivoId),
+      { miniatura: true },
+    )]);
 
   return (
     <main>

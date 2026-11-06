@@ -8,6 +8,7 @@ import { AppError } from "@/server/shared/errors";
 import { logger } from "@/server/shared/logger";
 import { ADMIN_CONTEXTS, CLIENT_CONTEXTS, detectFileType, objectKeyFor, sanitizeOriginalName } from "./file.policy";
 import { getStorage, type ObjectStorage } from "./storage";
+import { hasThumbnail, makeThumbnail } from "./thumbnail";
 
 // Archivos (16.1): subida validada, metadatos en la base, binario en S3 y descarga con URL firmada
 // solo después de autorizar.
@@ -50,11 +51,25 @@ export async function uploadFile(user: SessionUser, input: { file: unknown; cont
     throw new AppError("ALMACENAMIENTO_NO_DISPONIBLE", "No pudimos guardar el archivo. Intentá de nuevo en unos minutos.", 503);
   }
 
+  // Miniatura de las imágenes (INC-07). Si no se puede generar, el archivo se guarda igual: los
+  // listados muestran el original, como antes.
+  let claveMiniatura: string | null = null;
+  if (hasThumbnail(mime)) {
+    const key = `${claveObjeto}.miniatura.webp`;
+    try {
+      await storage.put(key, await makeThumbnail(bytes), "image/webp");
+      claveMiniatura = key;
+    } catch (error) {
+      logger.warn({ err: error, claveObjeto }, "no se pudo generar la miniatura");
+    }
+  }
+
   try {
     return await db.$transaction(async (tx) => {
       const archivo = await tx.archivo.create({
         data: {
           claveObjeto,
+          claveMiniatura,
           nombreOriginal: sanitizeOriginalName(file.name),
           tipoMimeDetectado: mime,
           tamanoBytes: bytes.length,
@@ -74,9 +89,12 @@ export async function uploadFile(user: SessionUser, input: { file: unknown; cont
       return toPublic(archivo);
     });
   } catch (error) {
-    await storage.delete(claveObjeto).catch((cleanupError: unknown) => {
-      logger.error({ err: cleanupError, claveObjeto }, "objeto huérfano: no se pudo borrar tras fallar los metadatos");
-    });
+    for (const key of [claveObjeto, claveMiniatura]) {
+      if (!key) continue;
+      await storage.delete(key).catch((cleanupError: unknown) => {
+        logger.error({ err: cleanupError, claveObjeto: key }, "objeto huérfano: no se pudo borrar tras fallar los metadatos");
+      });
+    }
     throw error;
   }
 }
@@ -102,6 +120,10 @@ async function findAccessible(db: Db, user: SessionUser, id: string) {
             { referencias: { some: { pedido: { clienteId: user.id } } } },
             // Diseños de sus pedidos (INC-09).
             { versionesDiseno: { some: { version: { diseno: { item: { pedido: { clienteId: user.id } } } } } } },
+            // Comprobantes de sus pedidos (INC-12, RN-26).
+            { comprobante: { pedido: { clienteId: user.id } } },
+            // Adjuntos de la tienda en su conversación (INC-13).
+            { adjuntoMensaje: { mensaje: { conversacion: { clienteId: user.id } } } },
           ],
         };
   const archivo = isUuid(id) ? await db.archivo.findFirst({ where: { id, estado: "ACTIVO", ...access } }) : null;
@@ -109,14 +131,18 @@ async function findAccessible(db: Db, user: SessionUser, id: string) {
   return archivo;
 }
 
-/** URL firmada de corta duración, generada solo después de autorizar. */
-export async function getFileUrl(user: SessionUser, id: string, { db = getDb(), storage = getStorage() }: Options = {}) {
+/**
+ * URL firmada de corta duración, generada solo después de autorizar. Con `miniatura`, la de la
+ * miniatura si existe (INC-07); si no, la del original.
+ */
+export async function getFileUrl(user: SessionUser, id: string, { db = getDb(), storage = getStorage(), miniatura = false }: Options & { miniatura?: boolean } = {}) {
   const archivo = await findAccessible(db, user, id);
   const expiresInSeconds = getConfig().FILES_URL_TTL_SECONDS;
-  const url = await storage.signedGetUrl(archivo.claveObjeto, {
+  const thumbnail = miniatura && archivo.claveMiniatura;
+  const url = await storage.signedGetUrl(thumbnail || archivo.claveObjeto, {
     expiresInSeconds,
-    contentType: archivo.tipoMimeDetectado,
-    fileName: archivo.nombreOriginal,
+    contentType: thumbnail ? "image/webp" : archivo.tipoMimeDetectado,
+    fileName: thumbnail ? `${archivo.nombreOriginal}.webp` : archivo.nombreOriginal,
   });
   return { url, expiraEn: new Date(Date.now() + expiresInSeconds * 1000) };
 }
@@ -131,6 +157,10 @@ export async function deleteFile(user: SessionUser, id: string, db: Db = getDb()
   // Un archivo de una versión de diseño es parte de lo que se aprueba y se fabrica (RN-P-05).
   if (await db.archivoVersionDiseno.count({ where: { archivoId: archivo.id } })) {
     throw new AppError("ARCHIVO_EN_USO", "Este archivo es parte de un diseño y no se puede eliminar.", 409);
+  }
+  // Un adjunto enviado es parte del chat, que no se edita ni se borra (16.2).
+  if (await db.archivoMensaje.count({ where: { archivoId: archivo.id } })) {
+    throw new AppError("ARCHIVO_EN_USO", "Este archivo es un adjunto del chat y no se puede eliminar.", 409);
   }
   await db.$transaction(async (tx) => {
     const deleted = await tx.archivo.updateMany({

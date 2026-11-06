@@ -10,6 +10,22 @@ const detailInclude = {
   cancelacion: true,
   ajustes: { orderBy: { creadoEn: "asc" } },
   reembolsos: { orderBy: { creadoEn: "asc" } },
+  // Entrega (INC-12): seguimiento y fechas de cada paso, sin los autores.
+  entrega: { select: { transportista: true, codigoSeguimiento: true, listoEn: true, despachadoEn: true, entregadoEn: true } },
+  // Comprobantes externos (RN-26), con el PDF opcional.
+  comprobantes: {
+    orderBy: { creadoEn: "asc" },
+    select: {
+      id: true,
+      tipo: true,
+      letra: true,
+      puntoVenta: true,
+      numero: true,
+      fechaEmision: true,
+      importeCentavos: true,
+      archivo: { select: { id: true, nombreOriginal: true } },
+    },
+  },
 } satisfies Prisma.PedidoInclude;
 
 const isUuid = (id: string) => /^[0-9a-f-]{36}$/i.test(id);

@@ -36,7 +36,7 @@ const SAMPLES = {
   "diseño final.pdf": { type: "application/pdf", body: bytes("%PDF-1.7\n resto") },
 } as const;
 
-function upload(user: Account, name: string, body: Uint8Array, contexto: string, declaredType = "image/jpeg") {
+function upload(user: Account, name: string, body: Uint8Array<ArrayBuffer>, contexto: string, declaredType = "image/jpeg") {
   const form = new FormData();
   form.set("archivo", new File([body], name, { type: declaredType }));
   form.set("contexto", contexto);

@@ -1,7 +1,8 @@
-import { ChevronRight, ClipboardList, TicketPercent } from "lucide-react";
+import { ChevronRight, ClipboardList, MessageSquare, TicketPercent } from "lucide-react";
 import Link from "next/link";
 import { requirePageUser } from "@/app/session";
 import { StatusBadge } from "@/app/ui/status-badge";
+import { unreadForClient } from "@/server/modules/chat/chat.service";
 import { listAddresses } from "@/server/modules/users/profile.service";
 import { AccountActions } from "./account-actions";
 import styles from "./account.module.css";
@@ -9,10 +10,10 @@ import { AddressesManager, ProfileForm } from "./profile-forms";
 
 export const dynamic = "force-dynamic";
 
-/** Mi cuenta (Documento Maestro, 5.6): datos editables en el lugar, direcciones y accesos a pedidos y cupones. */
+/** Mi cuenta (Documento Maestro, 5.6): datos editables en el lugar, direcciones y accesos a pedidos, cupones y mensajes. */
 export default async function AccountPage() {
   const user = await requirePageUser();
-  const addresses = await listAddresses(user.id);
+  const [addresses, unread] = await Promise.all([listAddresses(user.id), user.rol === "CLIENTE" ? unreadForClient(user.id) : 0]);
 
   return (
     <main className={styles.page}>
@@ -35,6 +36,12 @@ export default async function AccountPage() {
         <Link href="/cupones" className={styles.shortcut}>
           <TicketPercent aria-hidden="true" size={24} />
           <span>Mis cupones</span>
+          <ChevronRight aria-hidden="true" size={20} className={styles.chevron} />
+        </Link>
+        <Link href="/mensajes" className={styles.shortcut}>
+          <MessageSquare aria-hidden="true" size={24} />
+          <span>Mensajes</span>
+          {unread > 0 && <StatusBadge family="wait">{unread === 1 ? "1 sin leer" : `${unread} sin leer`}</StatusBadge>}
           <ChevronRight aria-hidden="true" size={20} className={styles.chevron} />
         </Link>
       </nav>

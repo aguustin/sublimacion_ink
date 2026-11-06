@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { CancellationBreakdown } from "@/app/cancellation-breakdown";
 import { CustomOrderDetails } from "@/app/custom-order-details";
 import { DesignHistory } from "@/app/design-history";
+import { ReceiptsList } from "@/app/receipts-list";
 import { requirePageUser } from "@/app/session";
 import { formatPesos } from "@/lib/money";
 import { StatusBadge } from "@/app/ui/status-badge";
@@ -59,6 +61,11 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
   return (
     <main>
       <h1>Pedido #{order.numero}</h1>
+      {user.rol === "CLIENTE" && (
+        <p>
+          <Link href={`/mensajes?pedido=${order.id}`}>Consultar a la tienda sobre este pedido</Link>
+        </p>
+      )}
       <section className={styles.status} aria-label="Estado del pedido">
         <StatusBadge family={ORDER_FAMILY[order.estado] ?? "neutral"}>{orderPublicLabel(order.estado, order.tipo, lastExpiry?.motivo)}</StatusBadge>
         <span>{order.modalidadEntrega === "ENVIO" ? "Envío a domicilio" : "Retiro en el local"}</span>
@@ -69,6 +76,16 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
           Dirección: {address.calle}, {address.ciudad}, {address.provincia} ({address.codigoPostal})
         </p>
       )}
+
+      {/* Seguimiento del envío (RF-43): datos opcionales que carga la tienda al despachar. */}
+      {order.entrega?.despachadoEn && (
+        <p>
+          Despachado el {formatDateTime(order.entrega.despachadoEn)}
+          {order.entrega.transportista && ` · ${order.entrega.transportista}`}
+          {order.entrega.codigoSeguimiento && ` · seguimiento ${order.entrega.codigoSeguimiento}`}.
+        </p>
+      )}
+      {order.entrega?.entregadoEn && <p>Entregado el {formatDateTime(order.entrega.entregadoEn)}.</p>}
 
       {order.estado === "ENVIO_A_COTIZAR" && <p>La tienda te envía el costo del envío antes del {formatDateTime(order.venceEn!)}.</p>}
       {order.estado === "ENVIO_COTIZADO" &&
@@ -152,9 +169,10 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
           <p>El plazo de la reserva venció.</p>
         ))}
 
-      {order.fechaDespachoComprometida && (
+      {order.fechaDespachoComprometida && ["CONFIRMADO", "EN_PRODUCCION"].includes(order.estado) && (
         <p>
-          Va a estar listo para retirar el {formatDateTime(order.fechaDespachoComprometida)}.{" "}
+          {order.modalidadEntrega === "ENVIO" ? "Se despacha el" : "Va a estar listo para retirar el"}{" "}
+          {formatDateTime(order.fechaDespachoComprometida)}.{" "}
           {windowStarted
             ? "Si lo cancelás ahora, se cobra un cargo por servicio."
             : `Si lo cancelás a partir del ${formatDateTime(order.inicioVentanaCargo!)}, se cobra un cargo por servicio.`}
@@ -211,6 +229,13 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
               </li>
             ))}
           </ul>
+        </>
+      )}
+
+      {order.comprobantes.length > 0 && (
+        <>
+          <h2>Comprobantes</h2>
+          <ReceiptsList receipts={order.comprobantes} />
         </>
       )}
 
