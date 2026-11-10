@@ -1,4 +1,7 @@
-/* Tarjeta de producto (rediseño v1.38): foto cuadrada protagonista, datos debajo, sin marco pesado. */
+/*
+ * Tarjeta de producto (rediseño según diseno.txt): una tarjeta blanca que agrupa todo. La foto va
+ * adentro con un margen; debajo, la categoría y el nombre; al pie, el precio y un botón redondo.
+ */
 
 /* Las columnas dependen del ancho del contenedor (inicio a todo el ancho, catálogo con filtros). */
 .gridWrap {
@@ -8,7 +11,7 @@
 .grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--space-5) var(--space-3);
+  gap: var(--space-3);
   margin: 0;
   padding: 0;
   list-style: none;
@@ -21,7 +24,7 @@
 @container (min-width: 600px) {
   .grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: var(--space-6) var(--space-5);
+    gap: var(--space-5);
   }
 }
 
@@ -37,21 +40,43 @@
   }
 }
 
+/* ---------- Tarjeta ---------- */
 .card {
-  display: grid;
-  gap: var(--space-3);
+  display: flex;
+  flex-direction: column;
   height: 100%;
+  padding: 0.5rem;
+  border: 1px solid var(--c-border);
+  border-radius: 24px;
+  background: var(--c-surface);
   color: var(--c-text);
   text-decoration: none;
+  transition:
+    transform 220ms ease,
+    box-shadow 220ms ease,
+    border-color 220ms ease;
 }
 
+.card:hover {
+  border-color: transparent;
+  box-shadow:
+    0 18px 40px rgb(40 24 90 / 14%),
+    0 2px 6px rgb(28 27 27 / 6%);
+  transform: translateY(-4px);
+}
+
+.card:focus-visible {
+  outline: 3px solid var(--c-focus);
+  outline-offset: 3px;
+}
+
+/* ---------- Foto ---------- */
 .media {
   position: relative;
   aspect-ratio: 1;
   overflow: hidden;
-  border-radius: var(--radius-lg);
+  border-radius: 18px;
   background: var(--c-surface-raised);
-  box-shadow: inset 0 0 0 1px var(--c-border);
 }
 
 .image {
@@ -59,56 +84,50 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 300ms ease;
+  transition: transform 400ms ease;
 }
 
 .placeholder {
   display: grid;
   place-items: center;
   height: 100%;
-  background: var(--c-surface-raised);
+  background: radial-gradient(circle at 25% 20%, rgb(255 255 255 / 70%), transparent 55%), var(--c-surface-raised);
 }
 
 .placeholderLogo {
   width: auto;
-  height: 30%;
-  opacity: 0.1;
+  height: 32%;
+  opacity: 0.14;
   transition:
     opacity 300ms ease,
-    transform 300ms ease;
+    transform 400ms ease;
 }
 
 .card:hover .image,
 .card:hover .placeholderLogo {
-  transform: scale(1.04);
+  transform: scale(1.05);
 }
 
 .card:hover .placeholderLogo {
-  opacity: 0.18;
-}
-
-.card:hover .name {
-  text-decoration: underline;
-  text-decoration-thickness: 2px;
-  text-decoration-color: var(--c-accent);
-  text-underline-offset: 0.2em;
+  opacity: 0.22;
 }
 
 .badges {
   position: absolute;
-  top: var(--space-3);
-  left: var(--space-3);
+  top: 0.6rem;
+  left: 0.6rem;
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-1);
 }
 
 .badge {
-  padding: 0.2rem 0.6rem;
+  padding: 0.25rem 0.65rem;
   border-radius: 999px;
   font-size: 0.72rem;
   font-weight: 800;
-  line-height: 1.4;
+  line-height: 1.3;
+  box-shadow: 0 2px 6px rgb(28 27 27 / 12%);
 }
 
 .badgeCustom {
@@ -121,42 +140,118 @@
   color: #fff;
 }
 
+/* ---------- Datos ---------- */
 .body {
   display: grid;
-  gap: 0.15rem;
-  padding: 0 var(--space-1);
+  gap: 0.2rem;
+  padding: 0.85rem 0.6rem 0.25rem;
 }
 
 .category {
   color: var(--c-text-muted);
-  font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0.06em;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
 .name {
-  font-size: 1rem;
+  font-size: 1.02rem;
   font-weight: 800;
   line-height: 1.3;
 }
 
+/* Precio y botón al pie, siempre alineados abajo aunque los nombres ocupen distintas líneas. */
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  margin-top: auto;
+  padding: 0.6rem 0.25rem 0.25rem 0.6rem;
+}
+
 .price {
-  margin-top: var(--space-1);
-  font-size: 1.05rem;
-  font-weight: 800;
+  font-size: 1.1rem;
+  font-weight: 900;
+  letter-spacing: -0.01em;
 }
 
 .quote {
-  margin-top: var(--space-1);
-  color: var(--c-text-muted);
-  font-size: 0.92rem;
-  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.9rem;
+  font-weight: 800;
+}
+
+.go {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 999px;
+  background: var(--c-accent);
+  color: var(--ink-black);
+  transition:
+    transform 220ms ease,
+    background-color 220ms ease,
+    color 220ms ease;
+}
+
+.card:hover .go {
+  background: var(--ink-black);
+  color: var(--ink-yellow);
+  transform: translateX(2px) rotate(-8deg);
+}
+
+/* Móvil: tarjetas más compactas para que entren dos por fila con aire. */
+@container (max-width: 599px) {
+  .card {
+    padding: 0.4rem;
+    border-radius: 20px;
+  }
+
+  .media {
+    border-radius: 15px;
+  }
+
+  .body {
+    padding: 0.7rem 0.45rem 0.2rem;
+  }
+
+  .name {
+    font-size: 0.95rem;
+  }
+
+  .footer {
+    padding: 0.45rem 0.15rem 0.15rem 0.45rem;
+  }
+
+  .price {
+    font-size: 1rem;
+  }
+
+  .quote {
+    font-size: 0.8rem;
+  }
+
+  .go {
+    width: 2.15rem;
+    height: 2.15rem;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .card,
   .image,
-  .placeholderLogo {
+  .placeholderLogo,
+  .go {
     transition: none;
+  }
+
+  .card:hover {
+    transform: none;
   }
 }

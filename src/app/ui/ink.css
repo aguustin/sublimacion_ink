@@ -84,9 +84,10 @@
  * del gris azulado, bordes y sombras más suaves. Los colores de texto y de los campos son los de F11.
  */
 .ink-public {
-  --c-bg: #f6f5f1;
+  /* Fondo lila suave (elegido en v1.39): el complementario del amarillo de la marca. */
+  --c-bg: #f3f0fb;
   --c-surface: #ffffff;
-  --c-surface-raised: #f1efe9;
+  --c-surface-raised: #ebe6f7;
   color-scheme: light;
   --c-border: #e4e1d9;
   --c-text: #1c1b1b;
@@ -174,6 +175,19 @@
 :where(.ink-public .ink-base :is(h1, h2)) {
   font-weight: 900;
   letter-spacing: -0.02em;
+}
+
+/*
+ * Títulos de la tienda en Fredoka (v1.39): redondeada, con espíritu de sticker. Lleva `html` delante
+ * para ganarles a los títulos de cada pantalla, que ajustan el espaciado para Nunito Sans.
+ */
+html .ink-public :is(h1, h2, h3) {
+  font-family: var(--font-ink-display), var(--font-ink), sans-serif;
+  letter-spacing: -0.01em;
+}
+
+html .ink-public .ink-eyebrow {
+  font-family: var(--font-ink-display), var(--font-ink), sans-serif;
 }
 
 /* Etiqueta chica sobre un título de sección. */

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { InkLogo } from "../ui/ink-logo";
+import { inkDisplayFont } from "../ui/display-font";
 import { inkFont } from "../ui/font";
 import "../ui/ink.css";
 import { SiteNav } from "./site-nav";
@@ -15,7 +16,7 @@ export const metadata: Metadata = {
 /** Layout raíz de la tienda, con el tema claro de INK (Documento Maestro, sección 5). */
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="es-AR" className={inkFont.variable}>
+    <html lang="es-AR" className={`${inkFont.variable} ${inkDisplayFont.variable}`}>
       <body className={`ink-public ${styles.body}`}>
         <SiteNav />
         <div className={`ink-base ${styles.main}`}>{children}</div>

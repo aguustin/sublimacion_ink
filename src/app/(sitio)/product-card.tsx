@@ -1,3 +1,4 @@
+import { ArrowRight, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { priceLabel } from "@/lib/money";
 import type { PublicProductSummary } from "@/server/modules/catalog/catalog.service";
@@ -5,8 +6,9 @@ import { InkLogo } from "../ui/ink-logo";
 import styles from "./product-card.module.css";
 
 /**
- * Tarjeta de producto de la tienda (inicio y catálogo). Sin foto cargada muestra la marca en tono
- * suave: una superficie intencional, sin imágenes inventadas.
+ * Tarjeta de producto de la tienda (inicio y catálogo): una tarjeta completa con la foto adentro, la
+ * categoría, el nombre y, al pie, el precio con un botón que invita a entrar. Sin foto cargada muestra
+ * la marca en tono suave: una superficie intencional, sin imágenes inventadas.
  */
 export function ProductCard({ product, imageUrl }: { product: PublicProductSummary; imageUrl?: string }) {
   const custom = product.tipo === "PERSONALIZABLE";
@@ -32,7 +34,19 @@ export function ProductCard({ product, imageUrl }: { product: PublicProductSumma
       <div className={styles.body}>
         <span className={styles.category}>{product.categoria.nombre}</span>
         <span className={styles.name}>{product.nombre}</span>
-        <span className={custom ? styles.quote : styles.price}>{priceLabel(product.precioDesdeCentavos, product.variasPrecios)}</span>
+      </div>
+      <div className={styles.footer}>
+        {custom ? (
+          <span className={styles.quote}>
+            <Sparkles aria-hidden="true" size={16} />
+            Cotizá tu diseño
+          </span>
+        ) : (
+          <span className={styles.price}>{priceLabel(product.precioDesdeCentavos, product.variasPrecios)}</span>
+        )}
+        <span className={styles.go} aria-hidden="true">
+          <ArrowRight size={18} />
+        </span>
       </div>
     </Link>
   );

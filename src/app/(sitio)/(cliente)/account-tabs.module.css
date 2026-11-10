@@ -73,7 +73,7 @@
 }
 
 /* Pantallas angostas: las cuatro pestañas comparten el ancho, con el ícono arriba del rótulo. */
-@media (max-width: 479px) {
+@media (max-width: 639px) {
   .tabs ul {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));

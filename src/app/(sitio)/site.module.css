@@ -177,7 +177,7 @@
   transition: transform 140ms ease;
 }
 
-@media (max-width: 479px) {
+@media (max-width: 639px) {
   .ribbonLong {
     display: none;
   }
@@ -247,8 +247,15 @@
   gap: 0.25rem;
 }
 
-/* En móvil, cuenta y carrito solo con icono: la etiqueta queda para los lectores de pantalla. */
-@media (max-width: 479px) {
+.actionLabel {
+  white-space: nowrap;
+}
+
+/*
+ * Celular y tablet: cuenta y carrito como botones de icono (la etiqueta queda para los lectores de
+ * pantalla). La cuenta, un círculo con borde; el carrito, amarillo con su contador.
+ */
+@media (max-width: 899px) {
   .actionLabel {
     position: absolute;
     width: 1px;
@@ -256,6 +263,27 @@
     overflow: hidden;
     clip: rect(0 0 0 0);
     white-space: nowrap;
+  }
+
+  .actions {
+    align-items: center;
+    gap: var(--space-2);
+  }
+
+  .action {
+    justify-content: center;
+    min-width: var(--control-height);
+    padding: 0 0.7rem;
+  }
+
+  .action:not(.cart) {
+    width: var(--control-height);
+    padding: 0;
+    border: 1.5px solid rgb(255 255 255 / 35%);
+  }
+
+  .action:not(.cart)[aria-current="page"] {
+    border-color: var(--ink-yellow);
   }
 }
 
